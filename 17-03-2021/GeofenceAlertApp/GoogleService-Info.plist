@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>CLIENT_ID</key>
+	<string>716266457646-01obuu6dikj681ambeo2iq0iqpjqoj5v.apps.googleusercontent.com</string>
+	<key>REVERSED_CLIENT_ID</key>
+	<string>com.googleusercontent.apps.716266457646-01obuu6dikj681ambeo2iq0iqpjqoj5v</string>
+	<key>API_KEY</key>
+	<string>AIzaSyAsVlQswAHUtsi8bhc4q3GLLqwfIeH3i_c</string>
+	<key>GCM_SENDER_ID</key>
+	<string>716266457646</string>
+	<key>PLIST_VERSION</key>
+	<string>1</string>
+	<key>BUNDLE_ID</key>
+	<string>com.Succorfish.GeofenceAlertApp</string>
+	<key>PROJECT_ID</key>
+	<string>geofencealertapp</string>
+	<key>STORAGE_BUCKET</key>
+	<string>geofencealertapp.appspot.com</string>
+	<key>IS_ADS_ENABLED</key>
+	<false></false>
+	<key>IS_ANALYTICS_ENABLED</key>
+	<false></false>
+	<key>IS_APPINVITE_ENABLED</key>
+	<true></true>
+	<key>IS_GCM_ENABLED</key>
+	<true></true>
+	<key>IS_SIGNIN_ENABLED</key>
+	<true></true>
+	<key>GOOGLE_APP_ID</key>
+	<string>1:716266457646:ios:be7fc990221b44715eadbf</string>
+	<key>DATABASE_URL</key>
+	<string>https://geofencealertapp.firebaseio.com</string>
+</dict>
+</plist>
