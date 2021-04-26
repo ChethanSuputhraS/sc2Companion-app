@@ -114,6 +114,7 @@
     btnGSM.contentHorizontalAlignment = UIControlContentHorizontalAlignmentLeft;;
     [viewHeader addSubview:btnGSM];
     
+    
     btnIrridium = [[UIButton alloc] initWithFrame:CGRectMake(DEVICE_WIDTH/2+5, 60, 80, 45)];
     btnIrridium.backgroundColor = UIColor.clearColor;
     [btnIrridium setTitle:@" IRIDIUM" forState:UIControlStateNormal];
@@ -163,7 +164,7 @@
     }
     
 //    NSLog(@"Css======%@",arrGlobalChatHistory);
-//    [APP_DELEGATE startHudProcess:@"Fetching details..."];
+    [APP_DELEGATE startHudProcess:nil];
     [super viewDidLoad];
     // Do any additional setup after loading the view.
 }
@@ -172,6 +173,8 @@
 {
     strCurrentScreen = @"Chat";
     [APP_DELEGATE hideTabBar:self.tabBarController];
+    [self getMessagesfromDatabase];
+
     [super viewWillAppear:YES];
     [super viewWillAppear:animated];
 }
@@ -189,10 +192,11 @@
 
 -(void)getMessagesfromDatabase
 {
+    [APP_DELEGATE endHudProcess];
     NSMutableArray * chatDetailArr = [[NSMutableArray alloc]init];
     arrGlobalChatHistory = [[NSMutableArray alloc] init];
     
-    NSString * strMessage = [NSString stringWithFormat:@"SELECT * FROM NewChat where from_name ='%@' or to_name = '%@'",sc4NanoId,sc4NanoId];
+    NSString * strMessage = [NSString stringWithFormat:@"select * from NewChat where from_name = 'me' or to_name = 'Other'"];
     [[DataBaseManager dataBaseManager] execute:strMessage resultsArray:chatDetailArr];
     
     if ([chatDetailArr count]>0)
@@ -206,14 +210,15 @@
     for (int i=0; i<[chatDetailArr count]; i++)
     {
         NSDateFormatter *dateFormatter = [[NSDateFormatter alloc] init];
-        [dateFormatter setDateFormat:@"YYYY-MM-dd HH:mm:ss"];
+        [dateFormatter setDateFormat:@"YYYY-MM-dd HH:mm:ss"];// formate
         NSDate * dateInstalled = [dateFormatter dateFromString:[[chatDetailArr objectAtIndex:i]valueForKey:@"time"]];
 
         Message *message = [[Message alloc] init];
         message.text = [[chatDetailArr objectAtIndex:i]valueForKey:@"msg_txt"];
         message.sequences = [[chatDetailArr objectAtIndex:i]valueForKey:@"sequence"];
         message.date = dateInstalled;
-        message.chat_id =@"1";
+        message.chat_id = @"1";
+        
         if ([[[chatDetailArr objectAtIndex:i] objectForKey:@"from_name"] isEqualToString:@"Me"])
         {
             message.sender = MessageSenderMyself;
@@ -240,8 +245,12 @@
         {
             message.status = MessageStatusFailed;
         }
+        
         [self.tableArray addObject:message];
     }
+    
+    
+    
     [tblchat reloadData];
 
     if ([chatDetailArr count]>0)
@@ -271,7 +280,7 @@
         bottomHeight = 0;
     }
 
-    tblchat=[[UITableView alloc]initWithFrame:CGRectMake(0, headerHeights+40, viewWidth, DEVICE_HEIGHT-headerHeights-60-44)];
+    tblchat = [[UITableView alloc]initWithFrame:CGRectMake(0, headerHeights+40, viewWidth, DEVICE_HEIGHT-headerHeights-40)];
     tblchat.rowHeight=40;
     tblchat.delegate=self;
     tblchat.dataSource=self;
@@ -335,12 +344,11 @@
         txtViewChat.backgroundColor = UIColor.blackColor; //[UIColor colorWithRed:242.0/255 green:242.0/255 blue:242.0/255 alpha:1];
 //        txtViewChat.translatesAutoresizingMaskIntoConstraints = false;
         txtViewChat.scrollEnabled = NO;
-//        [self.view addSubview:txtViewChat];
         [viewBack addSubview:txtViewChat];
     
     lblPlceholdChat = [[UILabel alloc] initWithFrame:CGRectMake(5, 10, txtViewChat.frame.size.width, 20)];
     lblPlceholdChat.textColor = UIColor.whiteColor;
-    lblPlceholdChat.text = @"Message ";
+    lblPlceholdChat.text = @" Message";
     lblPlceholdChat.font = [UIFont fontWithName:@"Helvetica Neue" size:textSize];
     [txtViewChat addSubview:lblPlceholdChat];
 
@@ -447,10 +455,6 @@
                           atScrollPosition:UITableViewScrollPositionBottom animated:animated];
     }
 }
--(void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath
-{
-
-}
 #pragma mark- textview methods
 - (void)textViewDidBeginEditing:(UITextView *)textView
 {
@@ -460,8 +464,25 @@
     newFrame.size = CGSizeMake(fmaxf(newSize.width, fixedWidth), newSize.height+5);
     textView.frame = newFrame;
     
-    viewBack.frame = CGRectMake(0, DEVICE_HEIGHT-newSize.height-245, DEVICE_WIDTH, newSize.height+30);
-//    tblchat.frame = CGRectMake(0, DEVICE_HEIGHT-newSize.height-60, DEVICE_WIDTH, newSize.height+30);
+      viewBack.frame = CGRectMake(0, DEVICE_HEIGHT-newSize.height-250, DEVICE_WIDTH, newSize.height+30);
+      tblchat.frame = CGRectMake(0, DEVICE_HEIGHT-newSize.height-70, DEVICE_WIDTH, newSize.height+30);
+
+    if (textView == txtViewChat)
+    {
+        msgIndex = @"NA";
+        isFreeText = YES;
+        [self ShowPicker:true andView:viewMessage];
+        if ([txtChat.text isEqualToString:@"Enter message"])
+        {
+            txtChat.text = @"";
+        }
+        
+        [self ShowPicker:true andView:tblchat];
+
+        NSIndexPath *indexPath3 = [self.tableArray indexPathForLastMessage];
+        [tblchat scrollToRowAtIndexPath:indexPath3 atScrollPosition:UITableViewScrollPositionBottom
+                               animated:YES];
+    }
 
     if (IS_IPHONE_5)
     {
@@ -472,7 +493,7 @@
 {
     if  ([textView.text isEqual:@""])
         {
-            lblPlceholdChat.text = @"Message ";
+            lblPlceholdChat.text = @" Message ";
         }
         else if ([textView.text isEqual:textView.text])
         {
@@ -528,8 +549,13 @@
 {
 //    viewBack.frame = CGRectMake(0, DEVICE_HEIGHT-newSize.height-60, DEVICE_WIDTH, newSize.height-60);
     viewMessage.frame = CGRectMake(0, DEVICE_HEIGHT-60, viewWidth-0, 60);
-    tblchat.frame = CGRectMake(0, headerhHeight+40, viewWidth, DEVICE_HEIGHT-headerhHeight-60-44);
-    [self.view endEditing:true];
+//    tblchat.frame = CGRectMake(0, headerhHeight+40, viewWidth, DEVICE_HEIGHT-headerhHeight-60-44);
+    
+    
+    tblchat.frame = CGRectMake(0, xx, viewWidth, DEVICE_HEIGHT-xx-bottomHeight);
+    [self ShowPicker:false andView:viewMessage];
+
+//    [self.view endEditing:true];
 }
 - (void)scrollToBottom
 {
@@ -599,7 +625,7 @@
 }
 -(void)deleteMessagesfromDatabase
 {
-    NSString * strDelete = [NSString stringWithFormat:@"Delete from NewChat where from_nano ='%@' or to_nano = '%@'",sc4NanoId,sc4NanoId];
+    NSString * strDelete = [NSString stringWithFormat:@"Delete from NewChat where from_name ='%@' or to_name = '%@'",sc4NanoId,sc4NanoId];
     [[DataBaseManager dataBaseManager]execute:strDelete];
     
     [[NSNotificationCenter defaultCenter] postNotificationName:@"historyRefresh" object:nil];
@@ -629,13 +655,18 @@
             if (isSentVia == -1)
             {
                 [self AlertPopUPCaution:@"Please select the send Message via GSM or IRIDIUM"];
+                
+                viewBack.frame = CGRectMake(0, DEVICE_HEIGHT-60, DEVICE_WIDTH, 60);
+                txtViewChat.frame = CGRectMake(10, 10,viewWidth-60, 40);
+                
+                [self.view endEditing:true];
+                
             }
             else
             {
                 [self StartSendingMessagetoDevice];
                 NSIndexPath *indexPath3 = [self.tableArray indexPathForLastMessage];
                 [tblchat scrollToRowAtIndexPath:indexPath3 atScrollPosition:UITableViewScrollPositionBottom animated:YES];
-
             }
         }
         else
@@ -661,7 +692,7 @@
     
               NSInteger sequenceInt = [globalSequence integerValue]; //Unique Sequence No
               NSData * sequencData = [[NSData alloc] initWithBytes:&sequenceInt length:4];
-              NSString * strSqnc = [NSString stringWithFormat:@"%@",sequencData];
+              NSString * strSqnc = [NSString stringWithFormat:@"%@",sequencData.debugDescription];
               strSqnc = [strSqnc stringByReplacingOccurrencesOfString:@" " withString:@""];
               strSqnc = [strSqnc stringByReplacingOccurrencesOfString:@"<" withString:@""];
               strSqnc = [strSqnc stringByReplacingOccurrencesOfString:@">" withString:@""];
@@ -683,7 +714,7 @@
     NSNumber *timeStampObj = [NSNumber numberWithInteger: timeStamp];
     
     NSDateFormatter *DateFormatter=[[NSDateFormatter alloc] init];
-    [DateFormatter setDateFormat:@"dd-MM-yyyy hh:mm:ss"];
+    [DateFormatter setDateFormat:@"YYYY-MM-dd HH:mm:ss"];
     [DateFormatter setTimeZone:[NSTimeZone timeZoneWithName:@"UTC+5:30"]];
     
     NSString * strDateAndTime = [NSString stringWithFormat:@"%@",[DateFormatter stringFromDate:[NSDate date]]];
@@ -702,7 +733,7 @@
      [dictChat setValue:strTimeStamp forKey:@"timeStamp"];
      [arrGlobalChatHistory addObject:dictChat];
     
-    NSString * strFromName = @"me";
+    NSString * strFromName = @"Me";
     NSString * strToName =@"Other";
     NSString * strMSG = txtViewChat.text;
     NSString * strStatus = @"sent";
@@ -830,7 +861,7 @@
     [dateFormatter setDateFormat:@"YYYY-MM-dd HH:mm:ss"];
     [dateFormatter setTimeZone:[NSTimeZone localTimeZone]];
     NSString * timeStr =[dateFormatter stringFromDate:[NSDate date]];
-    NSString * strSqnc = [NSString stringWithFormat:@"%@",sequencData];
+    NSString * strSqnc = [NSString stringWithFormat:@"%@",sequencData.debugDescription];
     strSqnc = [strSqnc stringByReplacingOccurrencesOfString:@" " withString:@""];
     strSqnc = [strSqnc stringByReplacingOccurrencesOfString:@"<" withString:@""];
     strSqnc = [strSqnc stringByReplacingOccurrencesOfString:@">" withString:@""];
@@ -1132,7 +1163,7 @@
         strTime = [strTime substringWithRange:NSMakeRange([strTime length]-8, 8)];
         int intVal = [strTime intValue];
         NSData * lineLightNanoData = [[NSData alloc] initWithBytes:&intVal length:4];
-        strData = [NSString stringWithFormat:@"%@",lineLightNanoData];
+        strData = [NSString stringWithFormat:@"%@",lineLightNanoData.debugDescription];
         strData = [strTime stringByReplacingOccurrencesOfString:@" " withString:@""];
         strData = [strTime stringByReplacingOccurrencesOfString:@"<" withString:@""];
         strData = [strTime stringByReplacingOccurrencesOfString:@">" withString:@""];
@@ -1151,71 +1182,71 @@
     return strTime;
 }
 
--(void)setDummyDataforTable
-{
-    self.tableArray = [[TableArray alloc] init];
-    NSDateFormatter *dateFormatter = [[NSDateFormatter alloc] init];
-    [dateFormatter setDateFormat:@"YYYY-MM-dd HH:mm:ss"];
-    
-    //    NSDate * dateInstalled = [dateFormatter dateFromString:@"2018-12-12 11:09:04"];
-    NSDate *today = [NSDate date];
-    NSData * yDate  = [today dateByAddingTimeInterval: -86400.0];
-    
-    Message *message = [[Message alloc] init];
-    message.text = @"Go";
-    message.date = yDate;
-    message.chat_id =@"1";
-    message.sender = MessageSenderMyself;
-    message.status = MessageStatusReceived;
-    [self.tableArray addObject:message];
-    
-    Message *message1 = [[Message alloc] init];
-    message1.text = @"Ok";
-    message1.date = yDate;
-    message1.chat_id =@"1";
-    message1.sender = MessageSenderSomeone;
-    [self.tableArray addObject:message1];
-    
-    Message *message2 = [[Message alloc] init];
-    message2.text = @"Low Air";
-    message2.date = yDate;
-    message2.chat_id =@"1";
-    message2.sender = MessageSenderSomeone;
-    [self.tableArray addObject:message2];
-    
-    Message *message3 = [[Message alloc] init];
-    message3.text = @"Stop";
-    message3.date = yDate;
-    message3.chat_id =@"1";
-    message3.sender = MessageSenderMyself;
-    message3.status = MessageStatusReceived;
-    [self.tableArray addObject:message3];
-    
-    Message *message4 = [[Message alloc] init];
-    message4.text = @"Complete";
-    message4.date = yDate;
-    message4.chat_id =@"1";
-    message4.sender = MessageSenderSomeone;
-    [self.tableArray addObject:message4];
-    
-    Message *message5 = [[Message alloc] init];
-    message5.text = @"Training Complete";
-    message5.date = yDate;
-    message5.chat_id =@"1";
-    message5.sender = MessageSenderMyself;
-    message5.status = MessageStatusReceived;
-    [self.tableArray addObject:message5];
-    
-    Message *message6 = [[Message alloc] init];
-    message6.text = @"Training Complete";
-    message6.date = yDate;
-    message6.chat_id =@"1";
-    message6.sender = MessageSenderSomeone;
-    [self.tableArray addObject:message6];
-    
-
-    //Store Message in memory
-}
+//-(void)setDummyDataforTable
+//{
+//    self.tableArray = [[TableArray alloc] init];
+//    NSDateFormatter *dateFormatter = [[NSDateFormatter alloc] init];
+//    [dateFormatter setDateFormat:@"YYYY-MM-dd HH:mm:ss"];
+//
+//    //    NSDate * dateInstalled = [dateFormatter dateFromString:@"2018-12-12 11:09:04"];
+//    NSDate *today = [NSDate date];
+//    NSData * yDate  = [today dateByAddingTimeInterval: -86400.0];
+//
+//    Message *message = [[Message alloc] init];
+//    message.text = @"Go";
+//    message.date = yDate;
+//    message.chat_id =@"1";
+//    message.sender = MessageSenderMyself;
+//    message.status = MessageStatusReceived;
+//    [self.tableArray addObject:message];
+//
+//    Message *message1 = [[Message alloc] init];
+//    message1.text = @"Ok";
+//    message1.date = yDate;
+//    message1.chat_id =@"1";
+//    message1.sender = MessageSenderSomeone;
+//    [self.tableArray addObject:message1];
+//
+//    Message *message2 = [[Message alloc] init];
+//    message2.text = @"Low Air";
+//    message2.date = yDate;
+//    message2.chat_id =@"1";
+//    message2.sender = MessageSenderSomeone;
+//    [self.tableArray addObject:message2];
+//
+//    Message *message3 = [[Message alloc] init];
+//    message3.text = @"Stop";
+//    message3.date = yDate;
+//    message3.chat_id =@"1";
+//    message3.sender = MessageSenderMyself;
+//    message3.status = MessageStatusReceived;
+//    [self.tableArray addObject:message3];
+//
+//    Message *message4 = [[Message alloc] init];
+//    message4.text = @"Complete";
+//    message4.date = yDate;
+//    message4.chat_id =@"1";
+//    message4.sender = MessageSenderSomeone;
+//    [self.tableArray addObject:message4];
+//
+//    Message *message5 = [[Message alloc] init];
+//    message5.text = @"Training Complete";
+//    message5.date = yDate;
+//    message5.chat_id =@"1";
+//    message5.sender = MessageSenderMyself;
+//    message5.status = MessageStatusReceived;
+//    [self.tableArray addObject:message5];
+//
+//    Message *message6 = [[Message alloc] init];
+//    message6.text = @"Training Complete";
+//    message6.date = yDate;
+//    message6.chat_id =@"1";
+//    message6.sender = MessageSenderSomeone;
+//    [self.tableArray addObject:message6];
+//
+//
+//    //Store Message in memory
+//}
 -(void)MessageReceivedFromDevice:(NSMutableDictionary *)dictMessage
 {
     NSLog(@"Message%@",dictMessage);
@@ -1250,7 +1281,7 @@
     NSString * strPacketNo = [self stringFroHex:[dictMessage valueForKey:@"packetNo"]];
     
     NSString * strFromName = @"Other";
-    NSString * strToName = @"me";
+    NSString * strToName = @"Me";
     NSString * strStatus = @"Received";
     
     
@@ -1269,7 +1300,9 @@
     NSNumber * startNumber = [[NSNumber alloc] initWithDouble:unixStart];
     return [startNumber stringValue];
 }
+
 @end
+
 
 /*
  2020-02-28 18:06:07.422 Combat Diver[1211:302999] didUpdateValueForCharacteristic==<050b0469 301e0109 0c165c02 32>

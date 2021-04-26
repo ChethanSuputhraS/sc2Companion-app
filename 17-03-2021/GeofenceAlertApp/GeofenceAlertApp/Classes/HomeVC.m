@@ -1175,7 +1175,7 @@ dispatch_async(dispatch_get_main_queue(), ^(void)
     NSNumber *timeStampObj = [NSNumber numberWithInteger: timeStamp];
     
     NSDateFormatter *DateFormatter=[[NSDateFormatter alloc] init];
-    [DateFormatter setDateFormat:@"dd-MM-yyyy hh:mm:ss"];
+    [DateFormatter setDateFormat:@"YYYY-MM-dd HH:mm:ss"];
     [DateFormatter setTimeZone:[NSTimeZone timeZoneWithName:@"UTC+5:30"]];
     
     NSString * currentDateAndTime = [NSString stringWithFormat:@"%@",[DateFormatter stringFromDate:[NSDate date]]];
@@ -1687,7 +1687,15 @@ dispatch_async(dispatch_get_main_queue(), ^(void)
     else
     {
         // Success
-        [self GettingDeviceTokenFromURL:strIMEI];
+        if ([APP_DELEGATE isNetworkreachable])
+        {
+            [self GettingDeviceTokenFromURL:strIMEI];
+        }
+        else
+        {
+            [self ErrorPopUP:@"Please connect to the internet."];
+            [[BLEManager sharedManager] disconnectDevice:globalPeripheral];
+        }
     }
     });
 }
@@ -1704,11 +1712,12 @@ dispatch_async(dispatch_get_main_queue(), ^(void)
     else if([strVAlidate isEqualToString:@"01"]) //  valid token
     {
         [[BLEManager sharedManager] connectDevice:self->classPeripheral];
-        // send a4ff  
+        // send a4ff
     }
     else if ([strVAlidate isEqualToString:@"02"]) //  retry after some time
     {
-        
+        [self ErrorPopUP:@"Decvice token not fount !"];
+        [[BLEManager sharedManager] disconnectDevice:globalPeripheral];
     }
     });
 }
@@ -1750,7 +1759,15 @@ dispatch_async(dispatch_get_main_queue(), ^(void)
         totalPackets = [self getTotalNumberofPackets:strDeviceToken];
         [self AddPacketstoArray:arrDeviceTokenPacket withString:strDeviceToken withTotalPackets:totalPackets];
         
-        [self WriteDeviceTokenToDevicewithPacketsArray:arrDeviceTokenPacket withToalNoofPackets:totalPackets];
+        if ([APP_DELEGATE isNetworkreachable])
+        {
+            [self WriteDeviceTokenToDevicewithPacketsArray:arrDeviceTokenPacket withToalNoofPackets:totalPackets];
+        }
+        else
+        {
+            [self ErrorPopUP:@"Please connect to the internet."];
+            [[BLEManager sharedManager] disconnectDevice:globalPeripheral];
+        }
     }
 }
 -(void)AddPacketstoArray:(NSMutableArray *)arrayPackets withString:(NSString *)strDeviceToken withTotalPackets:(NSInteger )totalPackets
@@ -1808,6 +1825,7 @@ dispatch_async(dispatch_get_main_queue(), ^(void)
 //        }
     }
 }
+
 -(void)RequestForStartLivetracking:(NSString *)strState
 {
     NSInteger intCommond = [@"227" integerValue]; // E3 start and stop Live Tracking

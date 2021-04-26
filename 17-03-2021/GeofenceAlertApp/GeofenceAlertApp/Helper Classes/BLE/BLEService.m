@@ -294,7 +294,6 @@ static BLEService    *sharedInstance    = nil;
                     NSLog(@"Wrote data for Authentication=%@",finalData);
                     [[NSNotificationCenter defaultCenter] postNotificationName:@"AuthenticationCompleted" object:nil];
                     
-//                    [self RequestToGetListOFGeofenceWithtimwstamp]; // timeStamp
                     [globalHomeVC ConnectionSuccessfulStatSyncGeofence];
                 }
                 else
@@ -850,7 +849,7 @@ static BLEService    *sharedInstance    = nil;
     NSMutableData * finalData = [opCodeData mutableCopy];
     [finalData appendData:lengthData];
         
-        NSString * StrData = [NSString stringWithFormat:@"%@",finalData];
+        NSString * StrData = [NSString stringWithFormat:@"%@",finalData.debugDescription];
         StrData = [StrData stringByReplacingOccurrencesOfString:@" " withString:@""];
         StrData = [StrData stringByReplacingOccurrencesOfString:@"<" withString:@""];
         StrData = [StrData stringByReplacingOccurrencesOfString:@">" withString:@""];
@@ -881,7 +880,7 @@ static BLEService    *sharedInstance    = nil;
     NSMutableData *completeData = [dataOpcode mutableCopy];
     [completeData appendData:dataLength];
     [completeData appendData:dataID];
-    NSString * StrData = [NSString stringWithFormat:@"%@",completeData];
+    NSString * StrData = [NSString stringWithFormat:@"%@",completeData.debugDescription];
     StrData = [StrData stringByReplacingOccurrencesOfString:@" " withString:@""];
     StrData = [StrData stringByReplacingOccurrencesOfString:@"<" withString:@""];
     StrData = [StrData stringByReplacingOccurrencesOfString:@">" withString:@""];
@@ -913,7 +912,7 @@ static BLEService    *sharedInstance    = nil;
     [completeData appendData:dataID];
     NSLog(@"Wrote for Timer for Buzzer ======> %@",completeData);
     
-    NSString * StrData = [NSString stringWithFormat:@"%@",completeData];
+    NSString * StrData = [NSString stringWithFormat:@"%@",completeData.debugDescription];
     StrData = [StrData stringByReplacingOccurrencesOfString:@" " withString:@""];
     StrData = [StrData stringByReplacingOccurrencesOfString:@"<" withString:@""];
     StrData = [StrData stringByReplacingOccurrencesOfString:@">" withString:@""];
@@ -949,7 +948,7 @@ static BLEService    *sharedInstance    = nil;
 
         NSLog(@"Wrote for Getting Geofence Detail---==%@",completeData);
         
-        NSString * StrData = [NSString stringWithFormat:@"%@",completeData];
+        NSString * StrData = [NSString stringWithFormat:@"%@",completeData.debugDescription];
         StrData = [StrData stringByReplacingOccurrencesOfString:@" " withString:@""];
         StrData = [StrData stringByReplacingOccurrencesOfString:@"<" withString:@""];
         StrData = [StrData stringByReplacingOccurrencesOfString:@">" withString:@""];
@@ -957,6 +956,7 @@ static BLEService    *sharedInstance    = nil;
         NSString * strKey = [[NSUserDefaults standardUserDefaults] valueForKey:@"EncryptionKey"];
         NSString * strKeyUnsigned = [self getStringConvertedinUnsigned:strKey];
         NSData * strEncryptedData = [self GetEncryptedKeyforData:strPacket withKey:strKeyUnsigned withLength:strKey.length / 2];
+        
         NSLog(@"After Encrypion---==%@",strEncryptedData);
 
         [self WriteValuestoSC2device:strEncryptedData with:globalPeripheral];
@@ -976,7 +976,7 @@ static BLEService    *sharedInstance    = nil;
     [completeData appendData:dataLength];
     NSLog(@"Wrote A4FF---==%@",completeData);
     
-    NSString * StrData = [NSString stringWithFormat:@"%@",completeData];
+    NSString * StrData = [NSString stringWithFormat:@"%@",completeData.debugDescription];
     StrData = [StrData stringByReplacingOccurrencesOfString:@" " withString:@""];
     StrData = [StrData stringByReplacingOccurrencesOfString:@"<" withString:@""];
     StrData = [StrData stringByReplacingOccurrencesOfString:@">" withString:@""];
@@ -989,7 +989,6 @@ static BLEService    *sharedInstance    = nil;
          
 //         NSLog(@"Wrote A4FF---==%@",strEncryptedData);
      });
-
 }
 -(NSString *)GetRuleValueinDecimalfromHexaRule:(NSString *)strRule withValue:(NSString *)strValue
 {
@@ -1210,7 +1209,7 @@ static BLEService    *sharedInstance    = nil;
     [finalData appendData:timeStapData];
     [finalData appendData:sequencData];
 
-    NSString * strSqnc = [NSString stringWithFormat:@"%@",finalData];
+    NSString * strSqnc = [NSString stringWithFormat:@"%@",finalData.debugDescription];
     strSqnc = [strSqnc stringByReplacingOccurrencesOfString:@" " withString:@""];
     strSqnc = [strSqnc stringByReplacingOccurrencesOfString:@"<" withString:@""];
     strSqnc = [strSqnc stringByReplacingOccurrencesOfString:@">" withString:@""];
@@ -1256,7 +1255,7 @@ return totalPackets;
     [finalData appendData:packetNoData];
     [finalData appendData:msgData];
 
-    NSString * strSqnc = [NSString stringWithFormat:@"%@",finalData];
+    NSString * strSqnc = [NSString stringWithFormat:@"%@",finalData.debugDescription];
     strSqnc = [strSqnc stringByReplacingOccurrencesOfString:@" " withString:@""];
     strSqnc = [strSqnc stringByReplacingOccurrencesOfString:@"<" withString:@""];
     strSqnc = [strSqnc stringByReplacingOccurrencesOfString:@">" withString:@""];
@@ -1292,7 +1291,7 @@ return totalPackets;
     [finalData appendData:packetNoData];
     [finalData appendData:msgData];
 
-    NSString * strSqnc = [NSString stringWithFormat:@"%@",finalData];
+    NSString * strSqnc = [NSString stringWithFormat:@"%@",finalData.debugDescription];
     strSqnc = [strSqnc stringByReplacingOccurrencesOfString:@" " withString:@""];
     strSqnc = [strSqnc stringByReplacingOccurrencesOfString:@"<" withString:@""];
     strSqnc = [strSqnc stringByReplacingOccurrencesOfString:@">" withString:@""];
@@ -1330,7 +1329,7 @@ return totalPackets;
     [finalData appendData:opcodeData];
     [finalData appendData:sentTypeData];
 
-    NSString * strSqnc = [NSString stringWithFormat:@"%@",finalData];
+    NSString * strSqnc = [NSString stringWithFormat:@"%@",finalData.debugDescription];
     strSqnc = [strSqnc stringByReplacingOccurrencesOfString:@" " withString:@""];
     strSqnc = [strSqnc stringByReplacingOccurrencesOfString:@"<" withString:@""];
     strSqnc = [strSqnc stringByReplacingOccurrencesOfString:@">" withString:@""];
@@ -1921,7 +1920,7 @@ float ConverttoFloatfromHexadecimal(NSString *  strHex)
         strTime = [strTime substringWithRange:NSMakeRange([strTime length]-8, 8)];
         int intVal = [strTime intValue];
         NSData * lineLightNanoData = [[NSData alloc] initWithBytes:&intVal length:4];
-        strData = [NSString stringWithFormat:@"%@",lineLightNanoData];
+        strData = [NSString stringWithFormat:@"%@",lineLightNanoData.debugDescription];
         strData = [strTime stringByReplacingOccurrencesOfString:@" " withString:@""];
         strData = [strTime stringByReplacingOccurrencesOfString:@"<" withString:@""];
         strData = [strTime stringByReplacingOccurrencesOfString:@">" withString:@""];

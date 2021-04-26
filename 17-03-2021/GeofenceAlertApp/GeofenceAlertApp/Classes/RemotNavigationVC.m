@@ -38,9 +38,13 @@
 }
 -(void)viewWillAppear:(BOOL)animated
 {
-//    if ([APP_DELEGATE isNetworkreachable])
+    if ([APP_DELEGATE isNetworkreachable])
     {
         [self GetIMEInumbersForRemotetrackingVC];
+    }
+    else
+    {
+        [self showErrorsMessage:@"Please connect to internet."];
     }
 
  
