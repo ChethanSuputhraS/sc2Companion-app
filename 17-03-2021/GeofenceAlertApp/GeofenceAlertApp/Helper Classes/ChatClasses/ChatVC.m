@@ -479,9 +479,9 @@
         
         [self ShowPicker:true andView:tblchat];
 
-        NSIndexPath *indexPath3 = [self.tableArray indexPathForLastMessage];
-        [tblchat scrollToRowAtIndexPath:indexPath3 atScrollPosition:UITableViewScrollPositionBottom
-                               animated:YES];
+//        NSIndexPath *indexPath3 = [self.tableArray indexPathForLastMessage];
+//        [tblchat scrollToRowAtIndexPath:indexPath3 atScrollPosition:UITableViewScrollPositionBottom
+//                               animated:YES];
     }
 
     if (IS_IPHONE_5)

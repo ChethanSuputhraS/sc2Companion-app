@@ -42,6 +42,7 @@
 
     [FIRApp configure];
     
+    
     if ([UIApplication instancesRespondToSelector:@selector(registerUserNotificationSettings:)]){
         
         [application registerUserNotificationSettings:[UIUserNotificationSettings settingsForTypes:UIUserNotificationTypeAlert|UIUserNotificationTypeBadge|UIUserNotificationTypeSound categories:nil]];
@@ -124,7 +125,7 @@
             [UIView commitAnimations];
 
             globalHomeVC = [[HomeVC alloc]init];
-            UINavigationController *navig = [[UINavigationController   alloc]initWithRootViewController:globalHomeVC];
+            UINavigationController *navig = [[UINavigationController   alloc]initWithRootViewController:globalHomeVC]; //globalHomeVC
             self.window = [[UIWindow alloc]init];
             self.window.frame = self.window.bounds;
             self.window.rootViewController = navig;
@@ -533,11 +534,11 @@
     thirdNavigation = [[UINavigationController alloc]initWithRootViewController:thirdViewController];
     thirdNavigation.navigationBarHidden = YES;
     
-//    SOSclassVC * forthViewController = [[SOSclassVC alloc]init];
-//    forthViewController.title=@"SOS";
-//    forthViewController.tabBarItem=[[UITabBarItem alloc] initWithTitle:@"SOS" image:[[UIImage imageNamed:@"sosg.png"] imageWithRenderingMode:UIImageRenderingModeAlwaysOriginal ] selectedImage:[[UIImage imageNamed:@"sos.png"] imageWithRenderingMode:UIImageRenderingModeAlwaysOriginal] ];
-//    forthNavigation = [[UINavigationController alloc]initWithRootViewController:forthViewController];
-//    forthNavigation.navigationBarHidden = YES;
+    ChatVC * forthViewController = [[ChatVC alloc]init];
+    forthViewController.title=@"Chat";
+    forthViewController.tabBarItem=[[UITabBarItem alloc] initWithTitle:@"SOS" image:[[UIImage imageNamed:@"sosg.png"] imageWithRenderingMode:UIImageRenderingModeAlwaysOriginal ] selectedImage:[[UIImage imageNamed:@"sos.png"] imageWithRenderingMode:UIImageRenderingModeAlwaysOriginal] ];
+    forthNavigation = [[UINavigationController alloc]initWithRootViewController:forthViewController];
+    forthNavigation.navigationBarHidden = YES;
 
     mainTabBarController = [[UITabBarController alloc] init];
     mainTabBarController.viewControllers = [[NSArray alloc] initWithObjects:firstNavigation, thirdNavigation,forthNavigation, nil];
@@ -683,4 +684,9 @@
 }
 @end
 
+
+
+// LIVE  https:// ws.succorfish.net
+// STAGING https: //ws.scstg.net/
+// Staging updated  https: //ws.scstg.net/basic/v2/
 
