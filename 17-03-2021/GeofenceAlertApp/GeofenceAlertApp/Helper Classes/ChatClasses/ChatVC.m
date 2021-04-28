@@ -675,7 +675,7 @@
         }
 //        viewBack.frame = CGRectMake(0, DEVICE_HEIGHT-newSize.height-30, DEVICE_WIDTH, newSize.height+30);
       
-        [self.view endEditing:true];
+//        [self.view endEditing:true];
     }
 }
 -(void)StartSendingMessagetoDevice
