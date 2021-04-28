@@ -19,6 +19,7 @@
 #import "HistoryVC.h"
 #import "RemotNavigationVC.h"
 #import "LiveTrackingVC.h"
+#import "DeviceConfigurVC.h"
 
 
 @import Firebase;
@@ -26,7 +27,6 @@
 @interface AppDelegate ()<CLLocationManagerDelegate,UITabBarControllerDelegate>
 {
     NSTimer  *  locationUpdateTimer;
- 
 
 }
 @end
@@ -534,11 +534,11 @@
     thirdNavigation = [[UINavigationController alloc]initWithRootViewController:thirdViewController];
     thirdNavigation.navigationBarHidden = YES;
     
-    ChatVC * forthViewController = [[ChatVC alloc]init];
-    forthViewController.title=@"Chat";
-    forthViewController.tabBarItem=[[UITabBarItem alloc] initWithTitle:@"SOS" image:[[UIImage imageNamed:@"sosg.png"] imageWithRenderingMode:UIImageRenderingModeAlwaysOriginal ] selectedImage:[[UIImage imageNamed:@"sos.png"] imageWithRenderingMode:UIImageRenderingModeAlwaysOriginal] ];
-    forthNavigation = [[UINavigationController alloc]initWithRootViewController:forthViewController];
-    forthNavigation.navigationBarHidden = YES;
+//    DeviceConfigurVC * forthViewController = [[DeviceConfigurVC alloc]init];
+//    forthViewController.title=@"device";
+//    forthViewController.tabBarItem=[[UITabBarItem alloc] initWithTitle:@"SOS" image:[[UIImage imageNamed:@"sosg.png"] imageWithRenderingMode:UIImageRenderingModeAlwaysOriginal ] selectedImage:[[UIImage imageNamed:@"sos.png"] imageWithRenderingMode:UIImageRenderingModeAlwaysOriginal] ];
+//    forthNavigation = [[UINavigationController alloc]initWithRootViewController:forthViewController];
+//    forthNavigation.navigationBarHidden = YES;
 
     mainTabBarController = [[UITabBarController alloc] init];
     mainTabBarController.viewControllers = [[NSArray alloc] initWithObjects:firstNavigation, thirdNavigation,forthNavigation, nil];
@@ -686,7 +686,7 @@
 
 
 
-// LIVE  https:// ws.succorfish.net
+// LIVE  https: //ws.succorfish.net/
 // STAGING https: //ws.scstg.net/
 // Staging updated  https: //ws.scstg.net/basic/v2/
 

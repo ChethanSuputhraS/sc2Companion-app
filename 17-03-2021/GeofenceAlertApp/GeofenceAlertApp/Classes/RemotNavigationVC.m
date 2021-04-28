@@ -137,7 +137,7 @@
     URLManager *manager = [[URLManager alloc] init];
     manager.commandName = @"RemoteTrack";
     manager.delegate = self;
-    NSString *strServerUrl = @"https://ws.scstg.net/basic/v2//asset/search?view=BASIC"; // IMEI for remote tracking
+    NSString *strServerUrl = @"https://ws.succorfish.net/asset/search?view=BASIC"; // IMEI for remote tracking
     [manager postUrlCall:strServerUrl withParameters:dict];
 }
 

@@ -590,7 +590,6 @@
         lblPlceholdChat.text = @"Type a message";
         [tblchat reloadData];
         
-        
         [self.view endEditing:true];
     }
 }

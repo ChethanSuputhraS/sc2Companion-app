@@ -285,7 +285,7 @@
     tblchat.delegate=self;
     tblchat.dataSource=self;
     tblchat.allowsSelection = NO;
-    tblchat.backgroundColor=[UIColor clearColor];
+    tblchat.backgroundColor = [UIColor clearColor];
     [tblchat setSeparatorStyle:UITableViewCellSeparatorStyleNone];
     [tblchat setSeparatorColor:[UIColor clearColor]];
     [self.view addSubview:tblchat];
@@ -303,7 +303,7 @@
 //    [viewMessage addSubview:img];
     
     viewBack = [[UIView alloc] initWithFrame:CGRectMake(0, DEVICE_HEIGHT-60, DEVICE_WIDTH, 60)];
-    viewBack.backgroundColor = [UIColor lightGrayColor]; // lightGray
+    viewBack.backgroundColor = [UIColor lightGrayColor]; // lightGrayColor
 //    viewBack.alpha = 0.5;
     viewBack.userInteractionEnabled = YES;
  
@@ -465,7 +465,7 @@
     textView.frame = newFrame;
     
       viewBack.frame = CGRectMake(0, DEVICE_HEIGHT-newSize.height-250, DEVICE_WIDTH, newSize.height+30);
-      tblchat.frame = CGRectMake(0, DEVICE_HEIGHT-newSize.height-70, DEVICE_WIDTH, newSize.height+30);
+//      tblchat.frame = CGRectMake(0, newSize.height-100, DEVICE_WIDTH, newSize.height);
 
     if (textView == txtViewChat)
     {
@@ -547,12 +547,12 @@
 }
 - (void)textViewDidEndEditing:(UITextView *)textView
 {
-//    viewBack.frame = CGRectMake(0, DEVICE_HEIGHT-newSize.height-60, DEVICE_WIDTH, newSize.height-60);
+    viewBack.frame = CGRectMake(0, DEVICE_HEIGHT-newSize.height-60, DEVICE_WIDTH, newSize.height-60);
     viewMessage.frame = CGRectMake(0, DEVICE_HEIGHT-60, viewWidth-0, 60);
-//    tblchat.frame = CGRectMake(0, headerhHeight+40, viewWidth, DEVICE_HEIGHT-headerhHeight-60-44);
+    tblchat.frame = CGRectMake(0, headerhHeight+40, viewWidth, DEVICE_HEIGHT-headerhHeight-60-44);
     
     
-    tblchat.frame = CGRectMake(0, xx, viewWidth, DEVICE_HEIGHT-xx-bottomHeight);
+//    tblchat.frame = CGRectMake(0, xx, viewWidth, DEVICE_HEIGHT-xx-bottomHeight);
     [self ShowPicker:false andView:viewMessage];
 
 //    [self.view endEditing:true];
@@ -1013,7 +1013,7 @@
                 }
             if (myView == self->tblchat)
             {
-                self->tblchat.frame = CGRectMake(0, self->xx, self->viewWidth, DEVICE_HEIGHT-self->xx-self->bottomHeight-self->intkeyboardHeight);
+                self->tblchat.frame = CGRectMake(0, self->xx+40, self->viewWidth, DEVICE_HEIGHT-self->xx-self->bottomHeight-self->intkeyboardHeight);
 //                                tblchat.backgroundColor = UIColor.redColor;
                             }
                         }

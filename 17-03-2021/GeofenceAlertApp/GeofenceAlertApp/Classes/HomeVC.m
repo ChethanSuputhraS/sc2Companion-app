@@ -163,7 +163,7 @@
     URLManager *manager = [[URLManager alloc] init];
     manager.commandName = @"gettoken";
     manager.delegate = self;
-    NSString *strServerUrl = @"https://ws.scstg.net/basic/v2//device/get-token/"; // IMEI number
+    NSString *strServerUrl = @"https://ws.succorfish.net/device/get-token/"; // IMEI number
     [manager getUrlCall:[NSString stringWithFormat:@"%@%@",strServerUrl,strHexVal] withParameters:nil];
 }
 -(NSString*)hexFromStr:(NSString*)str

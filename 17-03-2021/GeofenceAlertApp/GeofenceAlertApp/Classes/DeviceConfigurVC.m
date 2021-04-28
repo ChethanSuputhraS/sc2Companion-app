@@ -388,7 +388,7 @@
          {
              UILabel * tmpLabel = [self.view viewWithTag:200 + i];
              NSLog(@"=========>>>>>%d      ==%@",[self isAllDigits:tmpLabel.text], tmpLabel.text);
-             NSString * strText = @"65535";// == ffff
+             NSString * strText = @"65535";// == ffff //
              
              if ([self isAllDigits:tmpLabel.text] == YES)
              {
