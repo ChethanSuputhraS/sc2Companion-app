@@ -163,7 +163,7 @@
     URLManager *manager = [[URLManager alloc] init];
     manager.commandName = @"gettoken";
     manager.delegate = self;
-    NSString *strServerUrl = @"https://ws.succorfish.net/device/get-token/"; // IMEI number
+    NSString *strServerUrl = @"https://ws.succorfish.net/basic/v2/device/get-token/"; // IMEI number // 
     [manager getUrlCall:[NSString stringWithFormat:@"%@%@",strServerUrl,strHexVal] withParameters:nil];
 }
 -(NSString*)hexFromStr:(NSString*)str
@@ -1125,6 +1125,7 @@ dispatch_async(dispatch_get_main_queue(), ^(void)
 -(void)FifthPockeToHome:(NSMutableArray *)arrFithPacktData
 {
     NSLog(@"=Fifth Packet Array=>%@",arrFithPacktData);
+    
     for (int i=0 ; i<[arrFithPacktData count]; i++)
     {
         [arrActons addObject:[arrFithPacktData objectAtIndex:i]];
@@ -1716,7 +1717,7 @@ dispatch_async(dispatch_get_main_queue(), ^(void)
     }
     else if ([strVAlidate isEqualToString:@"02"]) //  retry after some time
     {
-        [self ErrorPopUP:@"Decvice token not fount !"];
+        [self ErrorPopUP:@"Decvice token not found !"];
         [[BLEManager sharedManager] disconnectDevice:globalPeripheral];
     }
     });

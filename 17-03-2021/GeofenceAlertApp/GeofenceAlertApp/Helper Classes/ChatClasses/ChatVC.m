@@ -249,8 +249,6 @@
         [self.tableArray addObject:message];
     }
     
-    
-    
     [tblchat reloadData];
 
     if ([chatDetailArr count]>0)
@@ -279,8 +277,9 @@
     {
         bottomHeight = 0;
     }
+//    tblchat.frame = CGRectMake(0, headerhHeight+40, viewWidth, DEVICE_HEIGHT-headerhHeight-60-60);
 
-    tblchat = [[UITableView alloc]initWithFrame:CGRectMake(0, headerHeights+40, viewWidth, DEVICE_HEIGHT-headerHeights-40)];
+    tblchat = [[UITableView alloc]initWithFrame:CGRectMake(0, headerHeights+40, viewWidth, DEVICE_HEIGHT-headerhHeight-60-60)];
     tblchat.rowHeight=40;
     tblchat.delegate=self;
     tblchat.dataSource=self;
@@ -366,7 +365,7 @@
         img.frame = CGRectMake(0, 0, viewWidth-0, 60);
         if (IS_IPHONE_X)
         {
-            tblchat.frame = CGRectMake(0, headerHeights, viewWidth, DEVICE_HEIGHT-headerHeights-bottomHeight+15);
+            tblchat.frame = CGRectMake(0, headerHeights, viewWidth, DEVICE_HEIGHT-headerHeights-bottomHeight);
             viewMessage.frame = CGRectMake(0, DEVICE_HEIGHT-100, viewWidth-0, 60);
         }
         imgMsg.frame = CGRectMake(5, 10, 24, 20);
@@ -464,7 +463,7 @@
     newFrame.size = CGSizeMake(fmaxf(newSize.width, fixedWidth), newSize.height+5);
     textView.frame = newFrame;
     
-      viewBack.frame = CGRectMake(0, DEVICE_HEIGHT-newSize.height-250, DEVICE_WIDTH, newSize.height+30);
+      viewBack.frame = CGRectMake(0, DEVICE_HEIGHT-newSize.height-240, DEVICE_WIDTH, newSize.height+25);
 //      tblchat.frame = CGRectMake(0, newSize.height-100, DEVICE_WIDTH, newSize.height);
 
     if (textView == txtViewChat)
@@ -475,13 +474,11 @@
         if ([txtChat.text isEqualToString:@"Enter message"])
         {
             txtChat.text = @"";
+//            viewBack.frame = CGRectMake(0, DEVICE_HEIGHT-60, DEVICE_WIDTH, 60);
+            [self.view endEditing:true];
         }
         
         [self ShowPicker:true andView:tblchat];
-
-//        NSIndexPath *indexPath3 = [self.tableArray indexPathForLastMessage];
-//        [tblchat scrollToRowAtIndexPath:indexPath3 atScrollPosition:UITableViewScrollPositionBottom
-//                               animated:YES];
     }
 
     if (IS_IPHONE_5)
@@ -494,6 +491,8 @@
     if  ([textView.text isEqual:@""])
         {
             lblPlceholdChat.text = @" Message ";
+//            viewBack.frame = CGRectMake(0, DEVICE_HEIGHT-60, DEVICE_WIDTH, 60);
+//            [self.view endEditing:true];
         }
         else if ([textView.text isEqual:textView.text])
         {
@@ -501,7 +500,7 @@
         }
 
      viewMessage.frame = CGRectMake(0, DEVICE_HEIGHT-bottomHeight-220, viewWidth-0, 60);
-     tblchat.frame = CGRectMake(0, headerhHeight+40, viewWidth, DEVICE_HEIGHT-headerhHeight+40);
+//     tblchat.frame = CGRectMake(0, headerhHeight+40, viewWidth, DEVICE_HEIGHT-headerhHeight+40);
 
      CGFloat fixedWidth = txtViewChat.frame.size.width;
      newSize = [textView sizeThatFits:CGSizeMake(fixedWidth, MAX_INPUT)];
@@ -509,11 +508,13 @@
     newFrame.size = CGSizeMake(fmaxf(newSize.width, fixedWidth), newSize.height+10);
     textView.frame = newFrame;
 
+//    viewBack.frame = CGRectMake(0, DEVICE_HEIGHT-60, DEVICE_WIDTH, 60);
+
     viewBack.frame = CGRectMake(0, DEVICE_HEIGHT-newSize.height-245, DEVICE_WIDTH, newSize.height+30);
     
     if (IS_IPHONE_5)
     {
-            viewBack.frame = CGRectMake(0, DEVICE_HEIGHT-newSize.height-245, DEVICE_WIDTH, newSize.height+30);
+//            viewBack.frame = CGRectMake(0, DEVICE_HEIGHT-newSize.height-245, DEVICE_WIDTH, newSize.height+30);
     }
 //    imgSend.frame = CGRectMake(viewBack.frame.size.width-60-20, newSize.height+15, 40, 40);
 }
@@ -547,9 +548,10 @@
 }
 - (void)textViewDidEndEditing:(UITextView *)textView
 {
-    viewBack.frame = CGRectMake(0, DEVICE_HEIGHT-newSize.height-60, DEVICE_WIDTH, newSize.height-60);
-    viewMessage.frame = CGRectMake(0, DEVICE_HEIGHT-60, viewWidth-0, 60);
-    tblchat.frame = CGRectMake(0, headerhHeight+40, viewWidth, DEVICE_HEIGHT-headerhHeight-60-44);
+    viewBack.frame = CGRectMake(0, DEVICE_HEIGHT-60, DEVICE_WIDTH, 60);
+//    txtViewChat.frame = CGRectMake(10, 10,viewWidth-60, 40);
+//    viewMessage.frame = CGRectMake(0, DEVICE_HEIGHT-60, viewWidth-0, 60);
+    tblchat.frame = CGRectMake(0, headerhHeight+40, viewWidth, DEVICE_HEIGHT-headerhHeight-60-40);
     
     
 //    tblchat.frame = CGRectMake(0, xx, viewWidth, DEVICE_HEIGHT-xx-bottomHeight);
@@ -643,6 +645,11 @@
     if ([txtViewChat.text isEqual:@""])
     {
         [self AlertPopUPCaution:@"Enter message to send"];
+        
+//        viewBack.frame = CGRectMake(0, DEVICE_HEIGHT-60, DEVICE_WIDTH, 60);
+//        txtViewChat.frame = CGRectMake(10, 10,viewWidth-60, 40);
+//        [self.view endEditing:true];
+
     }
     else if([probablyEmpty isEqualToString:@""])
     {
@@ -650,31 +657,33 @@
     }
     else
     {
-        if (globalPeripheral.state == CBPeripheralStateConnected)
+//        if (globalPeripheral.state == CBPeripheralStateConnected)
         {
             if (isSentVia == -1)
             {
                 [self AlertPopUPCaution:@"Please select the send Message via GSM or IRIDIUM"];
                 
-                viewBack.frame = CGRectMake(0, DEVICE_HEIGHT-60, DEVICE_WIDTH, 60);
-                txtViewChat.frame = CGRectMake(10, 10,viewWidth-60, 40);
-                
-                [self.view endEditing:true];
-                
+//                viewBack.frame = CGRectMake(0, DEVICE_HEIGHT-60, DEVICE_WIDTH, 60);
+//                txtViewChat.frame = CGRectMake(10, 10,viewWidth-60, 40);
+//                [self.view endEditing:true];
             }
             else
             {
                 [self StartSendingMessagetoDevice];
                 NSIndexPath *indexPath3 = [self.tableArray indexPathForLastMessage];
                 [tblchat scrollToRowAtIndexPath:indexPath3 atScrollPosition:UITableViewScrollPositionBottom animated:YES];
+                
+                viewBack.frame = CGRectMake(0, DEVICE_HEIGHT-60, DEVICE_WIDTH, 60);
+
+                [self.view endEditing:true];
+
             }
         }
-        else
+//        else
         {
-            [self AlertPopUPCaution:@"Please connect to the device to send message"];
+//            [self AlertPopUPCaution:@"Please connect to the device to send message"];
         }
-//        viewBack.frame = CGRectMake(0, DEVICE_HEIGHT-newSize.height-30, DEVICE_WIDTH, newSize.height+30);
-      
+//        viewBack = [[UIView alloc] initWithFrame:CGRectMake(0, DEVICE_HEIGHT-60, DEVICE_WIDTH, 60)];
 //        [self.view endEditing:true];
     }
 }
@@ -684,9 +693,10 @@
     [self SendMessageDataPacket:totalPackets];
     self->lblPlceholdChat.text = @"Message ";
     [self InsertMessagetoDatabase];
-    
-    viewBack.frame = CGRectMake(0, DEVICE_HEIGHT-60, DEVICE_WIDTH, 60);
     txtViewChat.frame = CGRectMake(10, 10,viewWidth-60, 40);
+
+//    viewBack.frame = CGRectMake(0, DEVICE_HEIGHT-60, DEVICE_WIDTH, 60);
+//    txtViewChat.frame = CGRectMake(10, 10,viewWidth-60, 40);
     
     [self.view endEditing:true];
     
@@ -741,7 +751,6 @@
     NSString * strIsGSM = [NSString stringWithFormat:@"%ld",isSentVia];
 
   
-
     NSString * strInsertQuery =  [NSString stringWithFormat:@"insert into 'NewChat' ('from_name','to_name','msg_txt','time','status','sequence','identifier','timeStamp','isGSM') values(\"%@\",\"%@\",\"%@\",\"%@\",\"%@\",\"%@\",\"%@\",\"%@\",\"%@\")",strFromName,strToName,strMSG,strDateAndTime,strStatus,strSequence,strIdentifier,strTimeStamp,strIsGSM];
     [[DataBaseManager dataBaseManager] executeSw:strInsertQuery];
     

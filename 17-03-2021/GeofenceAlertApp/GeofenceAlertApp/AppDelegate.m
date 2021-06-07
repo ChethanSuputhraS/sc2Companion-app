@@ -528,13 +528,13 @@
     firstNavigation.navigationBarHidden = YES;
     
     
-    RemotNavigationVC * thirdViewController = [[RemotNavigationVC alloc]init];
+    RemotNavigationVC * thirdViewController = [[RemotNavigationVC alloc]init]; //RemotNavigationVC
     thirdViewController.title = @"Remote Navigation";
     thirdViewController.tabBarItem=[[UITabBarItem alloc] initWithTitle:@"Remote Navigation" image:[[UIImage imageNamed:@"remote.png"] imageWithRenderingMode:UIImageRenderingModeAlwaysOriginal ] selectedImage:[[UIImage imageNamed:@"Remote_active.png"] imageWithRenderingMode:UIImageRenderingModeAlwaysOriginal] ];
     thirdNavigation = [[UINavigationController alloc]initWithRootViewController:thirdViewController];
     thirdNavigation.navigationBarHidden = YES;
     
-//    DeviceConfigurVC * forthViewController = [[DeviceConfigurVC alloc]init];
+//    globalChatVC * forthViewController = [[globalChatVC alloc]init];
 //    forthViewController.title=@"device";
 //    forthViewController.tabBarItem=[[UITabBarItem alloc] initWithTitle:@"SOS" image:[[UIImage imageNamed:@"sosg.png"] imageWithRenderingMode:UIImageRenderingModeAlwaysOriginal ] selectedImage:[[UIImage imageNamed:@"sos.png"] imageWithRenderingMode:UIImageRenderingModeAlwaysOriginal] ];
 //    forthNavigation = [[UINavigationController alloc]initWithRootViewController:forthViewController];

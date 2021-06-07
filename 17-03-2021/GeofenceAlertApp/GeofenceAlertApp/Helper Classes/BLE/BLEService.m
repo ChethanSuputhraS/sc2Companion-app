@@ -409,6 +409,7 @@ static BLEService    *sharedInstance    = nil;
                                  NSString * strTimeStamp = [valueStr substringWithRange:NSMakeRange(24, 8)];
 
                                  [globalHomeVC SendFirstPacketToHomeVC:strID withSize:strSize withType:strType withRadius:strRadVetices withTime:strTimeStamp];
+                                 
                                  if ([strType isEqualToString:@"00"])
                                  {
                                      self->isRadialTypeGeo = YES;
@@ -453,7 +454,6 @@ static BLEService    *sharedInstance    = nil;
                                              [globalHomeVC PolygonLatLongtoHomeLatlonArray:arrLatLon];
                                          }
                                      }
-
                                  }
                              }
                          }
@@ -492,7 +492,7 @@ static BLEService    *sharedInstance    = nil;
                      }
                      else if ([[strOpcode lowercaseString] isEqualToString:@"a5"])//For Alert
                      {
-                         if ([valueStr length] >= 32)
+                         if ([valueStr length] > 32) // >= 32
                          {
                              if ([[valueStr substringWithRange:NSMakeRange(0, 2)] isEqualToString:@"a5"])//  First A5 Packet
                              {
@@ -565,7 +565,7 @@ static BLEService    *sharedInstance    = nil;
                          {
                              [globalSettings BuzzerTimeAcknowledgementfromDevice:@"00"];
                          }
-                         }
+                     }
                        else if ([[strOpcode lowercaseString] isEqualToString:@"b1"]) // For Message Acknowledgement
                         {
                             NSString * strOpcode = [valueStr substringWithRange:NSMakeRange(0, 4)];
@@ -780,7 +780,6 @@ static BLEService    *sharedInstance    = nil;
                                           {
                                               [globalHomeVC ReceievedGeofenceDatafromBLEIMEInumber:strOutput];
                                           }
-
                                       }
                                   }
                            }
@@ -1531,7 +1530,6 @@ return totalPackets;
 }
 
 
-
 -(NSString*)hexFromStr:(NSString*)str
 {
     NSData* nsData = [str dataUsingEncoding:NSUTF8StringEncoding];
@@ -1578,7 +1576,6 @@ return totalPackets;
     kp.delegate = self;
     [self CBUUIDnotification:sUUID characteristicUUID:cUUID p:kp on:NO];
 }
-
 
 -(NSString *)getStringConvertedinUnsigned:(NSString *)strNormal
 {

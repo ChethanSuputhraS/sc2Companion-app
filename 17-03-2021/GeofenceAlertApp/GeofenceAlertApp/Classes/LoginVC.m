@@ -642,7 +642,7 @@
         {
                 NSMutableDictionary *args = [[NSMutableDictionary alloc] init];
                 
-                NSString * strUrl = [NSString stringWithFormat:@"https://ws.succorfish.net/user/getOwn"];
+                NSString * strUrl = [NSString stringWithFormat:@"https://ws.succorfish.net/basic/v2/user/getOwn"];
                 
                 NSString * strbasicAuthToken;
     //            NSString * str = [NSString stringWithFormat:@"device_test:dac6hTQXJc"];
