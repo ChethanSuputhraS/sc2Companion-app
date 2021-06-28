@@ -54,6 +54,7 @@ BOOL isReconnect;
 CGFloat approaxSize;
  NSString * deviceTokenStr;
 NSData * kpsData;
+UIView * viewForNotification;
 
 BOOL isMapNavigated;
 
@@ -86,6 +87,8 @@ BOOL isMapNavigated;
 -(BOOL)isNetworkreachable;
 -(void)movetoLogin;
 -(void)MoveToHomeVCAfterLogin;
+-(void)ShowNotificationView:(UIView *)view;
+-(void)HideNotificationView:(UIView *)view;
 
 @end
 

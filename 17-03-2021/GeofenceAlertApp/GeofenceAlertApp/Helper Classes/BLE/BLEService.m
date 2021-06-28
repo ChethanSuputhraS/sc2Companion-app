@@ -409,7 +409,6 @@ static BLEService    *sharedInstance    = nil;
                                  NSString * strTimeStamp = [valueStr substringWithRange:NSMakeRange(24, 8)];
 
                                  [globalHomeVC SendFirstPacketToHomeVC:strID withSize:strSize withType:strType withRadius:strRadVetices withTime:strTimeStamp];
-                                 
                                  if ([strType isEqualToString:@"00"])
                                  {
                                      self->isRadialTypeGeo = YES;
@@ -454,6 +453,7 @@ static BLEService    *sharedInstance    = nil;
                                              [globalHomeVC PolygonLatLongtoHomeLatlonArray:arrLatLon];
                                          }
                                      }
+
                                  }
                              }
                          }
@@ -492,7 +492,7 @@ static BLEService    *sharedInstance    = nil;
                      }
                      else if ([[strOpcode lowercaseString] isEqualToString:@"a5"])//For Alert
                      {
-                         if ([valueStr length] > 32) // >= 32
+                         if ([valueStr length] >= 32)
                          {
                              if ([[valueStr substringWithRange:NSMakeRange(0, 2)] isEqualToString:@"a5"])//  First A5 Packet
                              {
@@ -512,11 +512,11 @@ static BLEService    *sharedInstance    = nil;
                                      NSString * strBreachType = @"NA";
                                      if ([strRuleId isEqualToString:@"07"])
                                      {
-                                         if ([strBreachValue isEqualToString:@"00000001"])
+                                         if ([strBreachValue isEqualToString:@"1"])
                                          {
                                              strBreachType = @"01";
                                          }
-                                         else if ([strBreachValue isEqualToString:@"00000000"])
+                                         else if ([strBreachValue isEqualToString:@"0"])
                                          {
                                              strBreachType = @"00";
                                          }
@@ -565,7 +565,7 @@ static BLEService    *sharedInstance    = nil;
                          {
                              [globalSettings BuzzerTimeAcknowledgementfromDevice:@"00"];
                          }
-                     }
+                         }
                        else if ([[strOpcode lowercaseString] isEqualToString:@"b1"]) // For Message Acknowledgement
                         {
                             NSString * strOpcode = [valueStr substringWithRange:NSMakeRange(0, 4)];
@@ -574,6 +574,10 @@ static BLEService    *sharedInstance    = nil;
                                 if([valueStr length] > 14)
                                 {
                                     NSString * strSequence = [valueStr substringWithRange:NSMakeRange(4, 8)];
+                                    strSequence = [strSequence stringByReplacingOccurrencesOfString:@" " withString:@""];
+                                    strSequence = [strSequence stringByReplacingOccurrencesOfString:@"<" withString:@""];
+                                    strSequence = [strSequence stringByReplacingOccurrencesOfString:@">" withString:@""];
+
                                     NSLog(@"----->>>>>>>Sequence No---->%@",strSequence);
                                     if (![[self checkforValidString:strSequence] isEqualToString:@"NA"])
                                     {
@@ -671,14 +675,54 @@ static BLEService    *sharedInstance    = nil;
                        {
                            if ([valueStr length] > 6)
                            {
-                               NSString * strSuccessResponse =  [valueStr substringWithRange:NSMakeRange(2, 4)];
-                               if ([strSuccessResponse isEqualToString:@"0101"])
+                               NSString * strC1PacketType =  [valueStr substringWithRange:NSMakeRange(2, 2)];
+                               if ([strC1PacketType isEqualToString:@"01"]) //For C1 Write Status
                                {
-                                   [globalDeviceConfig ReceviedSuccesResponseFromDevice:strSuccessResponse];
+                                   NSString * strSuccessResponse = [valueStr substringWithRange:NSMakeRange(2, 4)];
+                                   if ([strSuccessResponse isEqualToString:@"0101"])
+                                   {
+                                       [globalDeviceConfig ReceviedSuccesResponseFromDevice:strSuccessResponse];
+                                   }
+                                   else
+                                   {
+                                       [globalDeviceConfig ReceviedSuccesResponseFromDevice:strSuccessResponse];
+                                   }
                                }
-                               else
+                               else //For Recieving device configuration
                                {
-                                   [globalDeviceConfig ReceviedSuccesResponseFromDevice:strSuccessResponse];
+                                   if ([strC1PacketType isEqualToString:@"0E"] || [strC1PacketType isEqualToString:@"0e"])
+                                   {
+                                       if ([valueStr length] >= 32)
+                                       {
+                                           NSString * str1 = [self stringFroHex:[valueStr substringWithRange:NSMakeRange(6, 4)]];
+                                           NSString * str2 = [self stringFroHex:[valueStr substringWithRange:NSMakeRange(10,4)]];
+                                           NSString * str3 = [self stringFroHex:[valueStr substringWithRange:NSMakeRange(14,4)]];
+                                           NSString * str4 = [self stringFroHex:[valueStr substringWithRange:NSMakeRange(18,4)]];
+                                           NSString * str5 = [self stringFroHex:[valueStr substringWithRange:NSMakeRange(22,4)]];
+                                           NSString * str6 = [self stringFroHex:[valueStr substringWithRange:NSMakeRange(26,4)]];
+                                           NSString * str7 = [self stringFroHex:[valueStr substringWithRange:NSMakeRange(30,2)]];
+                                           NSArray * arrData = [[NSArray alloc] initWithObjects:str1,str2,str3,str4,str5,str6,str7, nil];
+                                           [globalDeviceConfig setDeviceConfigurationValuetoUI:arrData withType:@"01"];
+                                       }
+                                   }
+                                   else if ([strC1PacketType isEqualToString:@"08"] )
+                                   {
+                                       if ([valueStr length] >= 20)
+                                       {
+                                           NSString * str1 = [self stringFroHex:[valueStr substringWithRange:NSMakeRange(6, 2)]];
+                                           NSString * str2 = [self stringFroHex:[valueStr substringWithRange:NSMakeRange(8,2)]];
+                                           NSString * str3 = [self stringFroHex:[valueStr substringWithRange:NSMakeRange(10,2)]];
+                                           NSString * str4 = [self stringFroHex:[valueStr substringWithRange:NSMakeRange(12,2)]];
+                                           NSString * str5 = [self stringFroHex:[valueStr substringWithRange:NSMakeRange(14,2)]];
+                                           NSString * str6 = [self stringFroHex:[valueStr substringWithRange:NSMakeRange(16,2)]];
+                                           NSString * str7 = [self stringFroHex:[valueStr substringWithRange:NSMakeRange(18,2)]];
+                                           NSArray * arrData = [[NSArray alloc] initWithObjects:str1,str2,str3,str4,str5,str6,str7, nil];
+                                           [globalDeviceConfig setDeviceConfigurationValuetoUI:arrData withType:@"02"];
+                                       }
+                                   }
+                                   
+//  0xC1 0x0E 0x01 0x02 0x58 0x02 0x58 0x00 0x00 0x01 0x2C 0x00 0x00 0x01 0x2C 0x00
+//  0xC1 0x08 0x02 0x00 0xFF 0xFF 0x00 0x00 0x00 0xFF
                                }
                            }
                        }
@@ -780,6 +824,7 @@ static BLEService    *sharedInstance    = nil;
                                           {
                                               [globalHomeVC ReceievedGeofenceDatafromBLEIMEInumber:strOutput];
                                           }
+
                                       }
                                   }
                            }
@@ -1151,7 +1196,7 @@ static BLEService    *sharedInstance    = nil;
     
 }
 #pragma mark - Send Text Message Methods
--(NSInteger)SendStartPacketofMessage:(NSString *)strMsg
+-(NSInteger)SendStartPacketofMessage:(NSString *)strMsg withUniqueSequence:(NSString *)strSequence
 {
     //1. Command
     NSInteger commandInt = 177;
@@ -1184,7 +1229,7 @@ static BLEService    *sharedInstance    = nil;
         }
         NSLog(@"its integer=%ld",(long)afterPoint);
     }
-    totalPackets = totalPackets + 2;
+    totalPackets = totalPackets + 0;
     NSData * totalPacketData = [[NSData alloc] initWithBytes:&totalPackets length:1];
 
     //5. Length of Message
@@ -1196,8 +1241,7 @@ static BLEService    *sharedInstance    = nil;
     NSData *timeStapData = [NSData dataWithBytes:&mills length:4];
 
     //7. Sequence
-    globalSequence = [self GetUniqueNanoModemId];
-    NSInteger sequenceInt = [globalSequence integerValue]; //Unique Sequence No
+    NSInteger sequenceInt = [strSequence integerValue]; //Unique Sequence No
     NSData * sequencData = [[NSData alloc] initWithBytes:&sequenceInt length:4];
                             
     NSMutableData * finalData = [commandData mutableCopy];
@@ -1530,6 +1574,7 @@ return totalPackets;
 }
 
 
+
 -(NSString*)hexFromStr:(NSString*)str
 {
     NSData* nsData = [str dataUsingEncoding:NSUTF8StringEncoding];
@@ -1576,6 +1621,7 @@ return totalPackets;
     kp.delegate = self;
     [self CBUUIDnotification:sUUID characteristicUUID:cUUID p:kp on:NO];
 }
+
 
 -(NSString *)getStringConvertedinUnsigned:(NSString *)strNormal
 {

@@ -18,6 +18,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property(nonatomic, strong) CBPeripheral * classPeripheral;
 
 -(void)ReceviedSuccesResponseFromDevice:(NSString *)strResponse;
+-(void)setDeviceConfigurationValuetoUI:(NSArray *)arrData withType:(NSString *)strType;
 
 @end
 

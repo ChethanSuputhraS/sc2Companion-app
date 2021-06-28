@@ -155,7 +155,6 @@
             [arrRadioBtns addObject:dict];
                 ySwitch = ySwitch + 100;
         }
- 
 }
 -(NSInteger)getIndexfromValue:(NSString *)strValue
 {

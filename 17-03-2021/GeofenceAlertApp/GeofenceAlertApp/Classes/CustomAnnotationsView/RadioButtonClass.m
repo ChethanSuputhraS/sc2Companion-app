@@ -75,6 +75,32 @@
 {
     return selectedIndex;
 }
+-(void)SetButtonSelectedwithIndex:(int)selectedIndex withObject:(RadioButtonClass *)radioObject
+{
+    long tagVal = self.tag - 500;
+    if (tagVal < 0)
+    {
+        tagVal = 0;
+    }
+    UIImageView * img1 = [radioObject viewWithTag:0 + 100];
+    img1.image = [UIImage imageNamed:@"radiobuttonUnselected"];
+    
+    UIImageView * img2 = [radioObject viewWithTag:1 + 100];
+    img2.image = [UIImage imageNamed:@"radiobuttonUnselected"];
+
+    UIImageView * img3 = [radioObject viewWithTag:2 + 100];
+    img3.image = [UIImage imageNamed:@"radiobuttonUnselected"];
+
+    if (selectedIndex == 1)
+    {
+        [img1 setImage:[UIImage imageNamed:@"radiobuttonSelected"]];
+    }
+    else if (selectedIndex == 0)
+    {
+        [img2 setImage:[UIImage imageNamed:@"radiobuttonSelected"]];
+    }
+
+}
 
 
 @end

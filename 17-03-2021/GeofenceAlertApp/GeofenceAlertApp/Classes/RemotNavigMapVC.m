@@ -22,7 +22,7 @@
     double latestLat,latestLong;
     NSString * strScreenMode;
     MKCircle *_radialCircle;
-    bool isPinAdded;
+    bool isPinAdded, isViewDisappeared;
 
     CustomAnnotation * annotationPin;
     CustomAnnotationView* custannotationView;
@@ -34,6 +34,8 @@
 @synthesize strDEviceID,strDeviceName,strDeviceType;
 - (void)viewDidLoad
 {
+    isViewDisappeared = NO;
+    
     strScreenMode = @"Light";
     if (@available(iOS 12.0, *))
     {
@@ -57,6 +59,11 @@
     
     [APP_DELEGATE startHudProcess:@"Loading..."];
     
+//    [self GetLatLongFromSelectedDevice:strDEviceID];
+
+
+    [timerEvery1mint invalidate];
+    timerEvery1mint = nil;
     timerEvery1mint = [NSTimer scheduledTimerWithTimeInterval:60 target:self selector:@selector(timerForCallAPI) userInfo:nil repeats:YES];
     
 //    timerForEndProgressBar = [NSTimer scheduledTimerWithTimeInterval:60 target:self selector:@selector(endProgressBar) userInfo:nil repeats:NO];
@@ -66,6 +73,8 @@
 }
 -(void)viewWillAppear:(BOOL)animated
 {
+    isViewDisappeared = NO;
+    
     [APP_DELEGATE hideTabBar:self.tabBarController];
     [self GetLatLongFromSelectedDevice:strDEviceID];
     
@@ -78,6 +87,12 @@
         }
 
     }
+}
+-(void)viewWillDisappear:(BOOL)animated
+{
+    [timerEvery1mint invalidate];
+    timerEvery1mint = nil;
+    isViewDisappeared = YES;
 }
 #pragma mark - Set Frames
 -(void)setNavigationViewFrames
@@ -132,6 +147,8 @@
 }
 -(void)GetLatLongFromSelectedDevice:(NSString *)strDeviceId
 {
+    NSLog(@"GetLatLongFromSelectedDevice====>>>>>%@",strDeviceId);
+
     NSMutableDictionary * dict = [[NSMutableDictionary alloc] init];
     [dict setValue:CURRENT_USER_EMAIL forKey:@"email"];
     [dict setValue:CURRENT_USER_PASS forKey:@"password"];
@@ -140,6 +157,8 @@
     manager.commandName = @"GetLatLong";
     manager.delegate = self;
     NSString *strServerUrl = @"https://ws.succorfish.net/basic/v2/waypoint/getLatest/"; // IMEI for remote tracking
+//    NSString *strServerUrl = @"https://ws.scstg.net/basic/v2/asset/search?view=BASIC"; // IMEI for remote tracking
+
     [manager getUrlCall:[NSString stringWithFormat:@"%@%@",strServerUrl,strDeviceId] withParameters:nil];//  curent device Id
 }
 -(void)setContentViewFrames
@@ -198,7 +217,7 @@
         {
             id <MKAnnotation> mp = [annotationView annotation];
             MKCoordinateRegion region = MKCoordinateRegionMakeWithDistance
-            ([mp coordinate], 100, 100);
+            ([mp coordinate], 1000, 1000);
             if (region.center.latitude > -89 && region.center.latitude < 89 && region.center.longitude > -179 && region.center.longitude < 179 )
             {
                 [mv setRegion:region animated:YES];
@@ -239,8 +258,6 @@
            return [MKAnnotationView new];
        }
   
-       
-    
     static NSString * const identifier = @"CustomAnnotation";
     custannotationView = [[CustomAnnotationView alloc] initWithAnnotation:annotation reuseIdentifier:identifier];
     
@@ -256,10 +273,10 @@
     custannotationView.canShowCallout = NO;
     custannotationView.image = [UIImage imageNamed:@"map_pin.png"];
     
-    custannotationView.subtitle1 = [NSString stringWithFormat:@"Device name:-%@",strDeviceName];
+    custannotationView.subtitle1 = [NSString stringWithFormat:@"Device Name : %@",strDeviceName];
     custannotationView.subtitle2 = @"" ;
-    custannotationView.subtitle3 = [NSString stringWithFormat:@"Device Type:-%@",strDeviceType];
-    custannotationView.subtitle4 = @" ";
+    custannotationView.subtitle3 = [NSString stringWithFormat:@"Device Type : %@",strDeviceType];
+     custannotationView.subtitle4 = [NSString stringWithFormat:@"Updated by : %@",[self getCurrentTime]];
     
     [self TostNotification:@"Locaton updated."];
     
@@ -270,14 +287,19 @@
     
     return custannotationView;
 }
+
 -(void)btnBackClick
 {
+    isViewDisappeared = YES;
+    [timerEvery1mint invalidate];
+    timerEvery1mint = nil;
     [self.navigationController popViewControllerAnimated:true];
 }
 
 #pragma mark - UrlManager Delegate
 - (void)onResult:(NSDictionary *)result
 {
+    NSLog(@"RESULT====>>>>>%@",result);
     [APP_DELEGATE endHudProcess];
 //    if ([[result valueForKey:@"result"] isKindOfClass:[NSString class]]) //[[result valueForKey:@"result"] valueForKey:@"deviceId"]
     {
@@ -302,6 +324,9 @@
             
             NSLog(@"Lat ====>>>>%f long===>>>><<%f ",latestLat,latestLong);
             [mapView reloadInputViews];
+//            self.mapView.showAnnotations(self.mapView.annotations, animated: true)
+            [mapView showAnnotations:mapView.annotations animated:YES];
+
             
            
         }
@@ -314,7 +339,10 @@
 }
 -(void)timerForCallAPI
 {
-    [self GetLatLongFromSelectedDevice:strDEviceID];
+    if (isViewDisappeared == NO)
+    {
+        [self GetLatLongFromSelectedDevice:strDEviceID];
+    }
 }
 -(void)endProgressBar
 {
@@ -331,5 +359,13 @@
         hud.yOffset = 150.f;
         hud.removeFromSuperViewOnHide = YES;
         [hud hide:YES afterDelay:0.9];
+}
+-(NSString *)getCurrentTime
+{
+    NSDateFormatter *DateFormatter=[[NSDateFormatter alloc] init];
+    [DateFormatter setDateFormat:@"dd-MM-yyyy hh:mm:ss"];
+    [DateFormatter setTimeZone:[NSTimeZone timeZoneWithName:@"UTC"]];
+    NSString * currentDateAndTime = [NSString stringWithFormat:@"%@",[DateFormatter stringFromDate:[NSDate date]]];
+    return currentDateAndTime;
 }
 @end

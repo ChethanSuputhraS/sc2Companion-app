@@ -27,8 +27,11 @@
     UISwitch * switcGSMIRR;
     UIButton *btnGSM,*btnIrridium;
     CBPeripheral * classPeripheral;
-    BOOL isGsmSeleted;
+    BOOL isGsmSeleted ,  isBtnGSM ,isBtnIrriDum;
     NSInteger isSentVia;
+    NSMutableArray *arryCheckBox;
+    NSMutableDictionary * dictCheckBox;
+    UIEdgeInsets   currentTableEdgeInset;
 
 }
 @end
@@ -38,7 +41,6 @@
 
 - (void)viewDidLoad
 {
-    isSentVia = -1;
     
 //    NSString * strDeleteRules = [NSString stringWithFormat:@"delete from Rules_Table"];
 //
@@ -52,7 +54,10 @@
 //    [[DataBaseManager dataBaseManager] execute:alert];
 //    [[DataBaseManager dataBaseManager] execute:alertGefonce];
 
-    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(keyboardWasShown:) name:UIKeyboardDidShowNotification object:nil];
+        [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(KeyBoardShowNotification:) name:UIKeyboardWillShowNotification object:nil];//KALPESH
+        [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(KeyBoardHideNotification:) name:UIKeyboardWillHideNotification object:nil];//KALPESH
+
+//    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(keyboardWasShown:) name:UIKeyboardDidShowNotification object:nil];
     
     self.navigationController.navigationBarHidden = YES;
 //
@@ -109,7 +114,7 @@
     [btnGSM setTitle:@" GSM" forState:UIControlStateNormal];
     [btnGSM setTitleColor:UIColor.whiteColor forState:UIControlStateNormal];
     [btnGSM addTarget:self action:@selector(btnGSMclick) forControlEvents:UIControlEventTouchUpInside];
-    [btnGSM setImage:[UIImage imageNamed:@"radiobuttonUnselected.png"] forState:UIControlStateNormal];
+    [btnGSM setImage:[UIImage imageNamed:@"checked.png"] forState:UIControlStateNormal];
     btnGSM.titleLabel.font = [UIFont fontWithName:CGRegular size:textSize-2];
     btnGSM.contentHorizontalAlignment = UIControlContentHorizontalAlignmentLeft;;
     [viewHeader addSubview:btnGSM];
@@ -120,10 +125,12 @@
     [btnIrridium setTitle:@" IRIDIUM" forState:UIControlStateNormal];
     [btnIrridium setTitleColor:UIColor.whiteColor forState:UIControlStateNormal];
     [btnIrridium addTarget:self action:@selector(btnIrridumClick) forControlEvents:UIControlEventTouchUpInside];
-    [btnIrridium setImage:[UIImage imageNamed:@"radiobuttonUnselected.png"] forState:UIControlStateNormal];
+    [btnIrridium setImage:[UIImage imageNamed:@"checkEmpty.png"] forState:UIControlStateNormal];
     btnIrridium.titleLabel.font = [UIFont fontWithName:CGRegular size:textSize-2];
     btnIrridium.contentHorizontalAlignment = UIControlContentHorizontalAlignmentLeft;
     [viewHeader addSubview:btnIrridium];
+    
+    
 
 
     UIImageView * imgDelete = [[UIImageView alloc] initWithFrame:CGRectMake(viewWidth-40, 20+(headerhHeight-20-21)/2, 20, 21)];
@@ -166,6 +173,11 @@
 //    NSLog(@"Css======%@",arrGlobalChatHistory);
     [APP_DELEGATE startHudProcess:nil];
     [super viewDidLoad];
+    
+    arryCheckBox = [[NSMutableArray alloc] initWithObjects:@"1",@"0", nil];
+    
+    
+    NSLog(@"Arrayy=====%@",arryCheckBox);
     // Do any additional setup after loading the view.
 }
 
@@ -249,13 +261,26 @@
         [self.tableArray addObject:message];
     }
     
-    [tblchat reloadData];
 
     if ([chatDetailArr count]>0)
     {
-        NSIndexPath *indexPath3 = [self.tableArray indexPathForLastMessage];
-        [tblchat scrollToRowAtIndexPath:indexPath3 atScrollPosition:UITableViewScrollPositionBottom animated:false];
+        NSInteger secction = [self.tableArray numberOfSections]-1;
+        NSInteger roow = [self.tableArray numberOfMessagesInSection:secction]-1;
+
+        [tblchat scrollToRowAtIndexPath:[NSIndexPath indexPathForRow:roow inSection:secction] atScrollPosition:UITableViewScrollPositionBottom animated:YES];
+
+//        NSIndexPath *indexPath3 = [self.tableArray indexPathForLastMessage];
+//        [tblchat scrollToRowAtIndexPath:indexPath3 atScrollPosition:UITableViewScrollPositionBottom animated:false];
     }
+    
+    [tblchat reloadData];
+
+//    UIEdgeInsets   contentInsets = UIEdgeInsetsZero;
+//    contentInsets = UIEdgeInsetsMake(0.0, 0.0,0.0, 0.0);
+
+//
+//    tblchat.contentInset = contentInsets;
+    
 }
 -(void)setupMainContentView:(int)headerHeights
 {
@@ -277,9 +302,8 @@
     {
         bottomHeight = 0;
     }
-//    tblchat.frame = CGRectMake(0, headerhHeight+40, viewWidth, DEVICE_HEIGHT-headerhHeight-60-60);
 
-    tblchat = [[UITableView alloc]initWithFrame:CGRectMake(0, headerHeights+40, viewWidth, DEVICE_HEIGHT-headerhHeight-60-60)];
+    tblchat = [[UITableView alloc]initWithFrame:CGRectMake(0, headerHeights+40, viewWidth, DEVICE_HEIGHT-headerHeights-40 - 60)];
     tblchat.rowHeight=40;
     tblchat.delegate=self;
     tblchat.dataSource=self;
@@ -337,7 +361,7 @@
         txtViewChat.textColor = UIColor.whiteColor;
         txtViewChat.font = [UIFont fontWithName:CGRegular size:textSize+1];
         txtViewChat.keyboardType = UIKeyboardTypeDefault;
-//        txtViewChat.returnKeyType = UIReturnKeyDone;
+        txtViewChat.returnKeyType = UIReturnKeyDone;
         txtViewChat.clipsToBounds = true;
         txtViewChat.layer.cornerRadius = 20;
         txtViewChat.backgroundColor = UIColor.blackColor; //[UIColor colorWithRed:242.0/255 green:242.0/255 blue:242.0/255 alpha:1];
@@ -365,9 +389,12 @@
         img.frame = CGRectMake(0, 0, viewWidth-0, 60);
         if (IS_IPHONE_X)
         {
-            tblchat.frame = CGRectMake(0, headerHeights, viewWidth, DEVICE_HEIGHT-headerHeights-bottomHeight);
+            tblchat.frame = CGRectMake(0, headerHeights + 40, viewWidth, DEVICE_HEIGHT-headerHeights-bottomHeight+15 - 60);
+            
+
             viewMessage.frame = CGRectMake(0, DEVICE_HEIGHT-100, viewWidth-0, 60);
         }
+        
         imgMsg.frame = CGRectMake(5, 10, 24, 20);
         imgSend.frame = CGRectMake(viewBack.frame.size.width-45, 10, 40, 40);
         btnMsgSend.frame = CGRectMake(viewWidth-65, 0, 65, 60);
@@ -454,6 +481,59 @@
                           atScrollPosition:UITableViewScrollPositionBottom animated:animated];
     }
 }
+#pragma mark - Database Methods
+-(void)deleteMessagesfromDatabase
+{
+    NSString * strDelete = [NSString stringWithFormat:@"Delete from NewChat where from_name ='%@' or to_name = '%@'",sc4NanoId,sc4NanoId];
+    [[DataBaseManager dataBaseManager]execute:strDelete];
+    
+    [[NSNotificationCenter defaultCenter] postNotificationName:@"historyRefresh" object:nil];
+    NSString * strUpdate = [NSString stringWithFormat:@"update NewContact set msg = '' where SC4_nano_id = '%@'",sc4NanoId];//KP13-04-2015.
+    [[DataBaseManager dataBaseManager]execute:strUpdate];
+    
+    [self.tableArray removeAllObjects];
+    self.tableArray = [[TableArray alloc] init];
+    [tblchat reloadData];
+}
+-(void)InsertMessagetoDatabase:(NSString *)strSequenceNo
+{
+    NSTimeInterval timeStamp = [[NSDate date] timeIntervalSince1970];
+    NSNumber *timeStampObj = [NSNumber numberWithInteger: timeStamp];
+    
+    NSDateFormatter *DateFormatter=[[NSDateFormatter alloc] init];
+    [DateFormatter setDateFormat:@"YYYY-MM-dd HH:mm:ss"];
+    [DateFormatter setTimeZone:[NSTimeZone timeZoneWithName:@"UTC+5:30"]];
+    
+    NSString * strDateAndTime = [NSString stringWithFormat:@"%@",[DateFormatter stringFromDate:[NSDate date]]];
+    NSString * strTimeStamp = [NSString stringWithFormat:@"%@",timeStampObj];
+    NSString * strIdentifier = [NSString stringWithFormat:@"%@",globalPeripheral.identifier] ;
+    
+//       NSInteger sequenceInt = [globalSequence integerValue]; //Unique Sequence No
+//       NSData * sequencData = [[NSData alloc] initWithBytes:&sequenceInt length:4];
+    
+    NSMutableDictionary * dictChat  = [[NSMutableDictionary alloc] init];
+     
+     [dictChat setValue:txtViewChat.text forKey:@"msg_txt"];
+     [dictChat setValue:strDateAndTime forKey:@"time"];
+     [dictChat setValue:@"sent" forKey:@"status"];
+     [dictChat setValue:strIdentifier forKey:@"identifier"];
+     [dictChat setValue:strTimeStamp forKey:@"timeStamp"];
+    [dictChat setValue:strSequenceNo forKey:@"sequence"];
+
+     [arrGlobalChatHistory addObject:dictChat];
+    
+    NSString * strFromName = @"Me";
+    NSString * strToName =@"Other";
+    NSString * strMSG = txtViewChat.text;
+    NSString * strStatus = @"sent";
+    NSString * strIsGSM = [NSString stringWithFormat:@"%ld",isSentVia];
+
+  
+
+    NSString * strInsertQuery =  [NSString stringWithFormat:@"insert into 'NewChat' ('from_name','to_name','msg_txt','time','status','sequence','identifier','timeStamp','isGSM') values(\"%@\",\"%@\",\"%@\",\"%@\",\"%@\",\"%@\",\"%@\",\"%@\",\"%@\")",strFromName,strToName,strMSG,strDateAndTime,strStatus,strSequenceNo,strIdentifier,strTimeStamp,strIsGSM];
+    [[DataBaseManager dataBaseManager] executeSw:strInsertQuery];
+    
+}
 #pragma mark- textview methods
 - (void)textViewDidBeginEditing:(UITextView *)textView
 {
@@ -463,8 +543,8 @@
     newFrame.size = CGSizeMake(fmaxf(newSize.width, fixedWidth), newSize.height+5);
     textView.frame = newFrame;
     
-      viewBack.frame = CGRectMake(0, DEVICE_HEIGHT-newSize.height-240, DEVICE_WIDTH, newSize.height+25);
-//      tblchat.frame = CGRectMake(0, newSize.height-100, DEVICE_WIDTH, newSize.height);
+      viewBack.frame = CGRectMake(0, DEVICE_HEIGHT-newSize.height-245, DEVICE_WIDTH, newSize.height+30);
+//      tblchat.frame = CGRectMake(0, newSize.height-80, DEVICE_WIDTH, newSize.height-80);
 
     if (textView == txtViewChat)
     {
@@ -474,8 +554,6 @@
         if ([txtChat.text isEqualToString:@"Enter message"])
         {
             txtChat.text = @"";
-//            viewBack.frame = CGRectMake(0, DEVICE_HEIGHT-60, DEVICE_WIDTH, 60);
-            [self.view endEditing:true];
         }
         
         [self ShowPicker:true andView:tblchat];
@@ -491,24 +569,17 @@
     if  ([textView.text isEqual:@""])
         {
             lblPlceholdChat.text = @" Message ";
-//            viewBack.frame = CGRectMake(0, DEVICE_HEIGHT-60, DEVICE_WIDTH, 60);
-//            [self.view endEditing:true];
         }
         else if ([textView.text isEqual:textView.text])
         {
             lblPlceholdChat.text = @"";
         }
 
-     viewMessage.frame = CGRectMake(0, DEVICE_HEIGHT-bottomHeight-220, viewWidth-0, 60);
-//     tblchat.frame = CGRectMake(0, headerhHeight+40, viewWidth, DEVICE_HEIGHT-headerhHeight+40);
-
-     CGFloat fixedWidth = txtViewChat.frame.size.width;
-     newSize = [textView sizeThatFits:CGSizeMake(fixedWidth, MAX_INPUT)];
+    CGFloat fixedWidth = txtViewChat.frame.size.width;
+    newSize = [textView sizeThatFits:CGSizeMake(fixedWidth, MAX_INPUT)];
     CGRect newFrame = textView.frame;
     newFrame.size = CGSizeMake(fmaxf(newSize.width, fixedWidth), newSize.height+10);
     textView.frame = newFrame;
-
-//    viewBack.frame = CGRectMake(0, DEVICE_HEIGHT-60, DEVICE_WIDTH, 60);
 
     viewBack.frame = CGRectMake(0, DEVICE_HEIGHT-newSize.height-245, DEVICE_WIDTH, newSize.height+30);
     
@@ -549,9 +620,8 @@
 - (void)textViewDidEndEditing:(UITextView *)textView
 {
     viewBack.frame = CGRectMake(0, DEVICE_HEIGHT-60, DEVICE_WIDTH, 60);
-//    txtViewChat.frame = CGRectMake(10, 10,viewWidth-60, 40);
 //    viewMessage.frame = CGRectMake(0, DEVICE_HEIGHT-60, viewWidth-0, 60);
-    tblchat.frame = CGRectMake(0, headerhHeight+40, viewWidth, DEVICE_HEIGHT-headerhHeight-60-40);
+//    tblchat.frame = CGRectMake(0, headerhHeight+40, viewWidth, DEVICE_HEIGHT-headerhHeight-60-44);
     
     
 //    tblchat.frame = CGRectMake(0, xx, viewWidth, DEVICE_HEIGHT-xx-bottomHeight);
@@ -559,6 +629,7 @@
 
 //    [self.view endEditing:true];
 }
+
 - (void)scrollToBottom
 {
     CGFloat yOffset = 0;
@@ -615,29 +686,6 @@
 {
 //    [self hideMorePopUpView:YES];
 }
--(void)OverLayTaped:(id)sender
-{
-    NSLog(@"Tapped");
-    [self hideMorePopUpView:YES];
-}
--(void)msgSelectionClick
-{
-    [self ShowPicker:false andView:viewMessage];
-//    [self showMessageList];
-}
--(void)deleteMessagesfromDatabase
-{
-    NSString * strDelete = [NSString stringWithFormat:@"Delete from NewChat where from_name ='%@' or to_name = '%@'",sc4NanoId,sc4NanoId];
-    [[DataBaseManager dataBaseManager]execute:strDelete];
-    
-    [[NSNotificationCenter defaultCenter] postNotificationName:@"historyRefresh" object:nil];
-    NSString * strUpdate = [NSString stringWithFormat:@"update NewContact set msg = '' where SC4_nano_id = '%@'",sc4NanoId];//KP13-04-2015.
-    [[DataBaseManager dataBaseManager]execute:strUpdate];
-    
-    [self.tableArray removeAllObjects];
-    self.tableArray = [[TableArray alloc] init];
-    [tblchat reloadData];
-}
 -(void)btnSendClick
 {
     NSString *probablyEmpty = [txtViewChat.text stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceCharacterSet]];
@@ -645,11 +693,6 @@
     if ([txtViewChat.text isEqual:@""])
     {
         [self AlertPopUPCaution:@"Enter message to send"];
-        
-//        viewBack.frame = CGRectMake(0, DEVICE_HEIGHT-60, DEVICE_WIDTH, 60);
-//        txtViewChat.frame = CGRectMake(10, 10,viewWidth-60, 40);
-//        [self.view endEditing:true];
-
     }
     else if([probablyEmpty isEqualToString:@""])
     {
@@ -657,55 +700,100 @@
     }
     else
     {
-//        if (globalPeripheral.state == CBPeripheralStateConnected)
+        if (globalPeripheral.state == CBPeripheralStateConnected)
         {
-            if (isSentVia == -1)
+            NSString * strCheckBox = [arryCheckBox componentsJoinedByString:@""];
+            if ([strCheckBox isEqualToString:@"00"])
             {
                 [self AlertPopUPCaution:@"Please select the send Message via GSM or IRIDIUM"];
-                
-//                viewBack.frame = CGRectMake(0, DEVICE_HEIGHT-60, DEVICE_WIDTH, 60);
-//                txtViewChat.frame = CGRectMake(10, 10,viewWidth-60, 40);
-//                [self.view endEditing:true];
+                [self.view endEditing:true];
             }
             else
             {
                 [self StartSendingMessagetoDevice];
                 NSIndexPath *indexPath3 = [self.tableArray indexPathForLastMessage];
                 [tblchat scrollToRowAtIndexPath:indexPath3 atScrollPosition:UITableViewScrollPositionBottom animated:YES];
-                
                 viewBack.frame = CGRectMake(0, DEVICE_HEIGHT-60, DEVICE_WIDTH, 60);
-
-                [self.view endEditing:true];
 
             }
         }
-//        else
+        else
         {
-//            [self AlertPopUPCaution:@"Please connect to the device to send message"];
+            [self AlertPopUPCaution:@"Please connect to the device to send message"];
+            [self.view endEditing:true];
+
         }
-//        viewBack = [[UIView alloc] initWithFrame:CGRectMake(0, DEVICE_HEIGHT-60, DEVICE_WIDTH, 60)];
-//        [self.view endEditing:true];
+        viewBack.frame = CGRectMake(0, DEVICE_HEIGHT-60, DEVICE_WIDTH, 60);
+        txtViewChat.frame = CGRectMake(10, 10,viewWidth-60, 40);
+
+        [self.view endEditing:true];
     }
 }
+-(void)btnResendClick:(id)sender
+{
+    
+}
+-(void)btnGSMclick
+{
+    if ([[arryCheckBox objectAtIndex:0] isEqualToString:@"0"])
+    {
+        [arryCheckBox replaceObjectAtIndex:0 withObject:@"1"];
+        [btnGSM setImage:[UIImage imageNamed:@"checked.png"] forState:UIControlStateNormal];
+    }
+    else
+    {
+        [arryCheckBox replaceObjectAtIndex:0 withObject:@"0"];
+        [btnGSM setImage:[UIImage imageNamed:@"checkEmpty.png"] forState:UIControlStateNormal];
+    }
+}
+-(void)btnIrridumClick
+{
+    if ([[arryCheckBox objectAtIndex:1] isEqualToString:@"0"])
+    {
+        [arryCheckBox replaceObjectAtIndex:1 withObject:@"1"];
+        [btnIrridium setImage:[UIImage imageNamed:@"checked.png"] forState:UIControlStateNormal];
+    }
+    else
+    {
+        [arryCheckBox replaceObjectAtIndex:1 withObject:@"0"];
+        [btnIrridium setImage:[UIImage imageNamed:@"checkEmpty.png"] forState:UIControlStateNormal];
+    }
+}
+-(void)AlertPopUPCaution:(NSString *)strMessage
+{
+    FCAlertView *alert = [[FCAlertView alloc] init];
+    alert.colorScheme = [UIColor blackColor];
+    [alert makeAlertTypeCaution];
+    [alert showAlertInView:self
+                 withTitle:@"SC2 Companion App"
+              withSubtitle:strMessage
+           withCustomImage:[UIImage imageNamed:@"logo.png"]
+       withDoneButtonTitle:nil
+                andButtons:nil];
+}
+
+#pragma mark - BLE Methods to send Message
 -(void)StartSendingMessagetoDevice
 {
-    NSInteger totalPackets = [[BLEService sharedInstance] SendStartPacketofMessage:txtViewChat.text];
-    [self SendMessageDataPacket:totalPackets];
-    self->lblPlceholdChat.text = @"Message ";
-    [self InsertMessagetoDatabase];
-    txtViewChat.frame = CGRectMake(10, 10,viewWidth-60, 40);
-
-//    viewBack.frame = CGRectMake(0, DEVICE_HEIGHT-60, DEVICE_WIDTH, 60);
-//    txtViewChat.frame = CGRectMake(10, 10,viewWidth-60, 40);
-    
-    [self.view endEditing:true];
-    
+              globalSequence = [self GetUniqueNanoModemId];
               NSInteger sequenceInt = [globalSequence integerValue]; //Unique Sequence No
               NSData * sequencData = [[NSData alloc] initWithBytes:&sequenceInt length:4];
               NSString * strSqnc = [NSString stringWithFormat:@"%@",sequencData.debugDescription];
               strSqnc = [strSqnc stringByReplacingOccurrencesOfString:@" " withString:@""];
               strSqnc = [strSqnc stringByReplacingOccurrencesOfString:@"<" withString:@""];
               strSqnc = [strSqnc stringByReplacingOccurrencesOfString:@">" withString:@""];
+    [self InsertMessagetoDatabase:strSqnc];
+
+    NSInteger totalPackets = [[BLEService sharedInstance] SendStartPacketofMessage:txtViewChat.text withUniqueSequence:globalSequence];
+    [self SendMessageDataPacket:totalPackets];
+
+    self->lblPlceholdChat.text = @"Message ";
+    
+    viewBack.frame = CGRectMake(0, DEVICE_HEIGHT-60, DEVICE_WIDTH, 60);
+    txtViewChat.frame = CGRectMake(10, 10,viewWidth-60, 40);
+    
+    [self.view endEditing:true];
+
 
               Message *message = [[Message alloc] init];
               message.text = txtViewChat.text;
@@ -714,47 +802,13 @@
               message.status = MessageStatusSent;
               message.sequences = [NSString stringWithFormat:@"%@",strSqnc];
               [self.tableArray addObject:message];
-              txtViewChat.text = @"";
-              [tblchat reloadData];
-    
-}
--(void)InsertMessagetoDatabase
-{
-    NSTimeInterval timeStamp = [[NSDate date] timeIntervalSince1970];
-    NSNumber *timeStampObj = [NSNumber numberWithInteger: timeStamp];
-    
-    NSDateFormatter *DateFormatter=[[NSDateFormatter alloc] init];
-    [DateFormatter setDateFormat:@"YYYY-MM-dd HH:mm:ss"];
-    [DateFormatter setTimeZone:[NSTimeZone timeZoneWithName:@"UTC+5:30"]];
-    
-    NSString * strDateAndTime = [NSString stringWithFormat:@"%@",[DateFormatter stringFromDate:[NSDate date]]];
-    NSString * strTimeStamp = [NSString stringWithFormat:@"%@",timeStampObj];
-    NSString * strIdentifier = [NSString stringWithFormat:@"%@",globalPeripheral.identifier] ;
-    
-//       NSInteger sequenceInt = [globalSequence integerValue]; //Unique Sequence No
-//       NSData * sequencData = [[NSData alloc] initWithBytes:&sequenceInt length:4];
-    
-    NSMutableDictionary * dictChat  = [[NSMutableDictionary alloc] init];
-     
-     [dictChat setValue:txtViewChat.text forKey:@"msg_txt"];
-     [dictChat setValue:strDateAndTime forKey:@"time"];
-     [dictChat setValue:@"sent" forKey:@"status"];
-     [dictChat setValue:strIdentifier forKey:@"identifier"];
-     [dictChat setValue:strTimeStamp forKey:@"timeStamp"];
-     [arrGlobalChatHistory addObject:dictChat];
-    
-    NSString * strFromName = @"Me";
-    NSString * strToName =@"Other";
-    NSString * strMSG = txtViewChat.text;
-    NSString * strStatus = @"sent";
-    NSString * strSequence = globalSequence;
-    NSString * strIsGSM = [NSString stringWithFormat:@"%ld",isSentVia];
+   
+    txtViewChat.text = @"";
+    [tblchat reloadData];
 
-  
-    NSString * strInsertQuery =  [NSString stringWithFormat:@"insert into 'NewChat' ('from_name','to_name','msg_txt','time','status','sequence','identifier','timeStamp','isGSM') values(\"%@\",\"%@\",\"%@\",\"%@\",\"%@\",\"%@\",\"%@\",\"%@\",\"%@\")",strFromName,strToName,strMSG,strDateAndTime,strStatus,strSequence,strIdentifier,strTimeStamp,strIsGSM];
-    [[DataBaseManager dataBaseManager] executeSw:strInsertQuery];
     
 }
+
 -(void)SendMessageDataPacket:(NSInteger)totalPackets
 {
     if (totalPackets == 1)
@@ -788,99 +842,23 @@
             }
         }
     }
-    [[BLEService sharedInstance] SendEndPacketofMessage:totalPackets withisGSM:isSentVia];
+//    viewBack.frame = CGRectMake(0, DEVICE_HEIGHT-60, DEVICE_WIDTH, 60);
+
+    NSString * strCheckBox = [arryCheckBox componentsJoinedByString:@""];
+    if ([strCheckBox isEqualToString:@"10"])//GSM Only
+    {
+        [[BLEService sharedInstance] SendEndPacketofMessage:totalPackets withisGSM:1];
+    }
+    else if ([strCheckBox isEqualToString:@"01"])//Irridium Only
+    {
+        [[BLEService sharedInstance] SendEndPacketofMessage:totalPackets withisGSM:2];
+    }
+    if ([strCheckBox isEqualToString:@"11"])//Both GSM & Irridium
+    {
+        [[BLEService sharedInstance] SendEndPacketofMessage:totalPackets withisGSM:3];
+    }
 }
--(void)btnResendClick:(id)sender
-{
-    
-}
--(void)btnGSMclick
-{
-    isSentVia = 1;
-    [btnGSM setImage:[UIImage imageNamed:@"radiobuttonSelected.png"] forState:UIControlStateNormal];
-    [btnIrridium setImage:[UIImage imageNamed:@"radiobuttonUnselected.png"] forState:UIControlStateNormal];
-}
--(void)btnIrridumClick
-{
-    isSentVia = 2;
-    [btnIrridium setImage:[UIImage imageNamed:@"radiobuttonSelected.png"] forState:UIControlStateNormal];
-    [btnGSM setImage:[UIImage imageNamed:@"radiobuttonUnselected.png"] forState:UIControlStateNormal];
 
-}
--(void)AlertPopUPCaution:(NSString *)strMessage
-{
-    FCAlertView *alert = [[FCAlertView alloc] init];
-    alert.colorScheme = [UIColor blackColor];
-    [alert makeAlertTypeCaution];
-    [alert showAlertInView:self
-                 withTitle:@"SC2 Companion App"
-              withSubtitle:strMessage
-           withCustomImage:[UIImage imageNamed:@"logo.png"]
-       withDoneButtonTitle:nil
-                andButtons:nil];
-}
-#pragma mark - BLE Methods EVent
--(void)sendMessagetoDevice
-{
-//    if (isFreeText)
-//    {
-//        NSMutableArray * tmpArr = [[NSMutableArray alloc] init];
-//        NSString * strQuery = [NSString stringWithFormat:@"select * from DiverMessage where Message = '%@'",lblChatText.text];
-//        [[DataBaseManager dataBaseManager] execute:strQuery resultsArray:tmpArr];
-//        if ([tmpArr count]>0)
-//        {
-//            isFreeText = NO;
-//            msgIndex = [[tmpArr objectAtIndex:0] valueForKey:@"indexStr"];
-//        }
-//    }
-    
-    [self ShowPicker:false andView:viewMessage];
-    
-    NSInteger cmdInt = [@"05" integerValue]; //Command
-    NSData * cmdData = [[NSData alloc] initWithBytes:&cmdInt length:1];
-
-    NSInteger lengthInt = [@"06" integerValue]; //length of Message
-    NSData * lengthData = [[NSData alloc] initWithBytes:&lengthInt length:1];
-
-    NSInteger nanoInt = [sc4NanoId integerValue]; //Nano Modem ID
-    NSData * nanoData = [[NSData alloc] initWithBytes:&nanoInt length:4];
-
-    NSInteger opcodeInt = [@"01" integerValue]; //Opcode
-    NSData * opcodeData = [[NSData alloc] initWithBytes:&opcodeInt length:1];
-
-    NSInteger dataInt=  [msgIndex integerValue]; // Message data
-    NSData * dataData = [[NSData alloc] initWithBytes:&dataInt length:1];
-    
-    NSInteger sequenceInt = [globalSequence integerValue]; //Unique Sequence No
-    NSData * sequencData = [[NSData alloc] initWithBytes:&sequenceInt length:4];
-
-    NSMutableData *completeData = [cmdData mutableCopy];
-    [completeData appendData:lengthData];
-    [completeData appendData:nanoData];
-    [completeData appendData:opcodeData];
-    [completeData appendData:dataData];
-    [completeData appendData:sequencData];
-
-//    [[BLEService sharedInstance] writeValuetoDevice:completeData with:globalPeripheral];
-    NSLog(@"Sent Msg from Chat >>>%@",completeData);
-
-    double dateStamp = [[NSDate date] timeIntervalSince1970];
-
-    NSDateFormatter *dateFormatter = [[NSDateFormatter alloc] init];
-    [dateFormatter setDateFormat:@"YYYY-MM-dd HH:mm:ss"];
-    [dateFormatter setTimeZone:[NSTimeZone localTimeZone]];
-    NSString * timeStr =[dateFormatter stringFromDate:[NSDate date]];
-    NSString * strSqnc = [NSString stringWithFormat:@"%@",sequencData.debugDescription];
-    strSqnc = [strSqnc stringByReplacingOccurrencesOfString:@" " withString:@""];
-    strSqnc = [strSqnc stringByReplacingOccurrencesOfString:@"<" withString:@""];
-    strSqnc = [strSqnc stringByReplacingOccurrencesOfString:@">" withString:@""];
-    
-    NSString * strNa = @"NA";
-
-    NSString * strInsertCan = [NSString stringWithFormat:@"insert into 'tbl_Message' ('from','to','to_IMEI','msg_text','time','time_stamp','status','sequence','is_active') values ('%@','%@','%@','%@','%@','%f','%@','%@','%@')",@"Me",sc4NanoId,@"to imei",txtViewChat.text,timeStr,dateStamp,@"Sent",strSqnc,strNa];
-    
-    [[DataBaseManager dataBaseManager] execute:strInsertCan];
-}
 #pragma mark - View for Choosing Contacts
 -(void)showMessageList
 {
@@ -1023,6 +1001,8 @@
             if (myView == self->tblchat)
             {
                 self->tblchat.frame = CGRectMake(0, self->xx+40, self->viewWidth, DEVICE_HEIGHT-self->xx-self->bottomHeight-self->intkeyboardHeight);
+//                self->tblchat.frame = CGRectMake(0, self->xx+40, self->viewWidth, DEVICE_HEIGHT-60);
+
 //                                tblchat.backgroundColor = UIColor.redColor;
                             }
                         }
@@ -1117,6 +1097,8 @@
 }
 -(void)GotSentMessageAcknowledgement:(NSString *)strSeqence withStatus:(NSString *)strStatus
 {
+    dispatch_async(dispatch_get_main_queue(), ^{
+        
     for (int i =0; i<[self.tableArray numberOfSections]; i++)
     {
         for (int k = 0; k < [self.tableArray numberOfMessagesInSection:i]; k++)
@@ -1140,9 +1122,9 @@
                 {
                     [[self.tableArray objectAtIndexPath:indexPath] setStatus:MessageStatusFailed];
                     NSString * strUser = @"User";
-                    if (![[self checkforValidString:userName] isEqualToString:@"NA"])
+                    if (![[self checkforValidString:self->userName] isEqualToString:@"NA"])
                     {
-                        strUser = userName;
+                        strUser = self->userName;
                     }
                     NSString * strMsg = [NSString stringWithFormat:@"%@ did not recieve message : %@. Please try again later.",strUser,message.text];
                     FCAlertView *alert = [[FCAlertView alloc] init];
@@ -1159,7 +1141,8 @@
             }
         }
     }
-    [tblchat reloadData];
+        [self->tblchat reloadData];
+    });
 }
 -(NSString *)GetUniqueNanoModemId
 {
@@ -1309,7 +1292,52 @@
     NSNumber * startNumber = [[NSNumber alloc] initWithDouble:unixStart];
     return [startNumber stringValue];
 }
+#pragma mark- Keyboadr SHOW HIDE method
+-(void)KeyBoardHideNotification:(NSNotification *)keyboardnotification
+{
+    NSDictionary * info = keyboardnotification.userInfo;
+    CGRect sizeKeyboard = [[info objectForKey:(UIKeyboardFrameBeginUserInfoKey)] CGRectValue] ;
+    CGSize keyboardSize = sizeKeyboard.size;
 
+    UIEdgeInsets   contentInsets = UIEdgeInsetsZero;
+    contentInsets = UIEdgeInsetsMake(0.0, 0.0,40, 0.0);
+
+//
+    tblchat.contentInset = contentInsets;
+
+//    NSInteger secction = [self.tableArray numberOfSections]-1;
+//    NSInteger roow = [self.tableArray numberOfMessagesInSection:secction]-1;
+
+//    [tblchat scrollToRowAtIndexPath:[NSIndexPath indexPathForRow:roow inSection:secction] atScrollPosition:UITableViewScrollPositionBottom animated:YES];
+//    tblchat.scrollIndicatorInsets = tblchat.contentInset;
+
+}
+-(void)KeyBoardShowNotification :(NSNotification *)Keyboardnotification
+{
+    NSLog(@"keyboard was shown");
+    
+    NSDictionary * info = Keyboardnotification.userInfo;
+    CGRect sizeKeyboard = [[info objectForKey:(UIKeyboardFrameBeginUserInfoKey)] CGRectValue] ;
+    CGSize keyboardSize = sizeKeyboard.size;
+    
+    UIEdgeInsets   contentInsets = UIEdgeInsetsZero;
+
+    contentInsets = UIEdgeInsetsMake(0.0, 0.0, keyboardSize.height + 45, 0.0);
+
+
+    tblchat.contentInset = contentInsets;
+
+    NSInteger secction = [self.tableArray numberOfSections]-1;
+    NSInteger roow = [self.tableArray numberOfMessagesInSection:secction]-1;
+    
+    if (roow > 0)
+    {
+        [tblchat scrollToRowAtIndexPath:[NSIndexPath indexPathForRow:roow inSection:secction] atScrollPosition:UITableViewScrollPositionTop animated:YES];
+
+    }
+    tblchat.scrollIndicatorInsets = tblchat.contentInset;
+    
+}
 @end
 
 

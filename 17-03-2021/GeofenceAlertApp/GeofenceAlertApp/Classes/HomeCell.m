@@ -59,11 +59,11 @@
         [lblConnect setTextAlignment:NSTextAlignmentRight];
         [self.contentView addSubview:lblConnect];
 
-//        btnConnect = [[UIButton alloc] initWithFrame:CGRectMake(DEVICE_WIDTH-200, 0, 100, 60)];
+        btnConnect = [[UIButton alloc] initWithFrame:CGRectMake(DEVICE_WIDTH/2, 5, DEVICE_WIDTH/2-10, 50)];
 //        [btnConnect setTitle:@"Coonect" forState:UIControlStateNormal];
-//        [btnConnect setBackgroundColor:UIColor.clearColor];
-//        btnConnect.contentHorizontalAlignment = UIControlContentHorizontalAlignmentRight;
-//        [self.contentView addSubview:btnConnect];
+        [btnConnect setBackgroundColor:UIColor.clearColor];
+        btnConnect.contentHorizontalAlignment = UIControlContentHorizontalAlignmentRight;
+        [self.contentView addSubview:btnConnect];
 
         
         btnMore = [[UIButton alloc] initWithFrame:CGRectMake(DEVICE_WIDTH-50, 0, 50, 60)];
@@ -102,21 +102,23 @@
         [btnmessage addSubview:lblmessage];
 
         
+        UILabel * lblmap = [[UILabel alloc] init];
+        lblmap.frame = CGRectMake(btnWidth, 27.5,btnWidth, 23);
+        lblmap.backgroundColor= UIColor.clearColor;
+        lblmap.text = @"Geofence\nBreaches";
+        lblmap.textColor = UIColor.whiteColor;
+        lblmap.textAlignment = NSTextAlignmentCenter;
+        lblmap.numberOfLines = 2;
+        lblmap.font = [UIFont fontWithName:CGRegular size:8.5];
+        [optionView addSubview:lblmap];
+        
         btnGeofence = [UIButton buttonWithType:UIButtonTypeCustom];
         btnGeofence.frame = CGRectMake(btnWidth, 0, btnWidth, 40);
         btnGeofence.backgroundColor = [UIColor clearColor];
         [btnGeofence setImage:[UIImage imageNamed:@"map-marker.png"] forState:UIControlStateNormal];
         [optionView addSubview:btnGeofence];
         
-        UILabel * lblmap = [[UILabel alloc] init];
-        lblmap.frame = CGRectMake(0, 35, btnGeofence.frame.size.width, 10);
-        lblmap.backgroundColor= UIColor.clearColor;
-        lblmap.text = @"Geofence";
-        lblmap.textColor = UIColor.whiteColor;
-        lblmap.textAlignment = NSTextAlignmentCenter;
-        lblmap.font = [UIFont fontWithName:CGRegular size:10];
-        [btnGeofence addSubview:lblmap];
-        
+
         lblBadgeCount = [[UILabel alloc] init];
         lblBadgeCount.frame = CGRectMake(btnGeofence.frame.size.width/2+5, 2, 20, 20);
         lblBadgeCount.backgroundColor= UIColor.redColor;

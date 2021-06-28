@@ -174,7 +174,7 @@
 
 -(void)WriteNSDataforEncryptionAndthenSendtoPeripheral:(NSData *)packetData withPeripheral:(CBPeripheral *)peripheral;
 //Chat Messaging Feature
--(NSInteger)SendStartPacketofMessage:(NSString *)strMsg;
+-(NSInteger)SendStartPacketofMessage:(NSString *)strMsg withUniqueSequence:(NSString *)strSequence;
 -(void)sendMessageDataPacketToDevice:(NSData *)strMsg paketNo:(NSInteger)packetNo withPeripheral:(CBPeripheral *)peripheral;
 -(void)SendEndPacketofMessage:(NSInteger)totalPacket withisGSM:(NSInteger)isGSM;
 // css added

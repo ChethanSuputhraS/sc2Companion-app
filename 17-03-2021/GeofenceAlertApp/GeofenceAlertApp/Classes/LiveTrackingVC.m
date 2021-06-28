@@ -29,7 +29,8 @@
 @synthesize classPeripheral,strBLEaddress;
 - (void)viewDidLoad
 {
-    
+    strCurrentScreen = @"LiveTracking";
+
     strScreenMode = @"Light";
     if (@available(iOS 12.0, *))
     {
@@ -49,7 +50,7 @@
     [self setNavigationViewFrames];
     [self setContentViewFrames];
     [[BLEService sharedInstance] setDelegate:self];
-    [APP_DELEGATE startHudProcess:@"Loading..."];
+    [APP_DELEGATE startHudProcess:@"Waiting for GPS Fix..."];
     [super viewDidLoad];
 
     // Do any additional setup after loading the view.
@@ -57,11 +58,15 @@
 
 -(void)viewWillAppear:(BOOL)animated
 {
+    strCurrentScreen = @"LiveTracking";
     
     [APP_DELEGATE hideTabBar:self.tabBarController];
     [super viewWillAppear:YES];
     [self.navigationController setNavigationBarHidden:YES animated:NO];
-
+}
+-(void)viewWillDisappear:(BOOL)animated
+{
+    strCurrentScreen = @"NA";//Kalpesh26062021
 }
 #pragma mark - Set Frames
 -(void)setNavigationViewFrames
@@ -264,10 +269,10 @@
     custannotationView.canShowCallout = NO;
     custannotationView.image = [UIImage imageNamed:@"map_pin.png"];
     
-    custannotationView.subtitle1 = [NSString stringWithFormat:@"Device Name:-%@",strName];
+    custannotationView.subtitle1 = [NSString stringWithFormat:@"Device Name : %@",strName];
     custannotationView.subtitle2 =@"" ;
-    custannotationView.subtitle3 = [NSString stringWithFormat:@"Device :-%@",strAddress];
-    custannotationView.subtitle4 =@" ";
+    custannotationView.subtitle3 = [NSString stringWithFormat:@"Device ID : %@",strAddress];
+    custannotationView.subtitle4 =[NSString stringWithFormat:@"Updated by : %@",[self getCurrentTime]];
     
 //    [self TostNotification:@"Locaton updated."];
   
@@ -329,6 +334,8 @@
         self->dictLatLong = dict;
         [self TostNotification:@"Location updated."];
         [self->mapView reloadInputViews];
+        
+        [self->mapView showAnnotations:self->mapView.annotations animated:YES];
 
     });
 }
@@ -343,5 +350,13 @@
         hud.tag = 9999;
         hud.removeFromSuperViewOnHide = YES;
         [hud hide:YES afterDelay:0.9];
+}
+-(NSString *)getCurrentTime
+{
+    NSDateFormatter *DateFormatter=[[NSDateFormatter alloc] init];
+    [DateFormatter setDateFormat:@"dd-MM-yyyy hh:mm:ss"];
+    [DateFormatter setTimeZone:[NSTimeZone timeZoneWithName:@"UTC"]];
+    NSString * currentDateAndTime = [NSString stringWithFormat:@"%@",[DateFormatter stringFromDate:[NSDate date]]];
+    return currentDateAndTime;
 }
 @end

@@ -37,8 +37,12 @@
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions
 {
     
+    
+              NSInteger sequenceInt = 80302044; //Unique Sequence No
+              NSData * sequencData = [[NSData alloc] initWithBytes:&sequenceInt length:4];
+
     NSData* nsData = [@"$%^&!@*#$$%%()?<:{}{|+`~}" dataUsingEncoding:NSUTF8StringEncoding];
-    NSLog(@"=================================%@",nsData);
+    NSLog(@"=================================%@",sequencData);
 
     [FIRApp configure];
     
@@ -107,6 +111,13 @@
     
     deviceTokenStr = @"1234567";
     
+//    globalDeviceConfig = [[DeviceConfigurVC alloc]init];
+//    UINavigationController *navig = [[UINavigationController alloc]initWithRootViewController:globalDeviceConfig];
+//    self.window = [[UIWindow alloc]init];
+//    self.window.frame = self.window.bounds;
+//    self.window.rootViewController = navig;
+//    [self.window makeKeyAndVisible];
+
     if ([[NSUserDefaults standardUserDefaults]boolForKey:@"IS_LOGGEDIN"] == false)
     {
         LoginVC *view1 = [[LoginVC alloc]init];
@@ -528,15 +539,15 @@
     firstNavigation.navigationBarHidden = YES;
     
     
-    RemotNavigationVC * thirdViewController = [[RemotNavigationVC alloc]init]; //RemotNavigationVC
+    RemotNavigationVC * thirdViewController = [[RemotNavigationVC alloc]init];
     thirdViewController.title = @"Remote Navigation";
     thirdViewController.tabBarItem=[[UITabBarItem alloc] initWithTitle:@"Remote Navigation" image:[[UIImage imageNamed:@"remote.png"] imageWithRenderingMode:UIImageRenderingModeAlwaysOriginal ] selectedImage:[[UIImage imageNamed:@"Remote_active.png"] imageWithRenderingMode:UIImageRenderingModeAlwaysOriginal] ];
     thirdNavigation = [[UINavigationController alloc]initWithRootViewController:thirdViewController];
     thirdNavigation.navigationBarHidden = YES;
     
-//    globalChatVC * forthViewController = [[globalChatVC alloc]init];
+//    ChatVC * forthViewController = [[ChatVC alloc]init];
 //    forthViewController.title=@"device";
-//    forthViewController.tabBarItem=[[UITabBarItem alloc] initWithTitle:@"SOS" image:[[UIImage imageNamed:@"sosg.png"] imageWithRenderingMode:UIImageRenderingModeAlwaysOriginal ] selectedImage:[[UIImage imageNamed:@"sos.png"] imageWithRenderingMode:UIImageRenderingModeAlwaysOriginal] ];
+//    forthViewController.tabBarItem=[[UITabBarItem alloc] initWithTitle:@"Chat" image:[[UIImage imageNamed:@"sosg.png"] imageWithRenderingMode:UIImageRenderingModeAlwaysOriginal ] selectedImage:[[UIImage imageNamed:@"sos.png"] imageWithRenderingMode:UIImageRenderingModeAlwaysOriginal] ];
 //    forthNavigation = [[UINavigationController alloc]initWithRootViewController:forthViewController];
 //    forthNavigation.navigationBarHidden = YES;
 
@@ -634,6 +645,14 @@
 -(void)endHudProcess
 {
     [HUD hide:YES];
+}
+-(void)ShowNotificationView:(UIView *)view
+{
+    
+}
+-(void)HideNotificationView:(UIView *)view
+{
+    
 }
 // This code block is invoked when application is in foreground (active-mode)
 -(void)application:(UIApplication *)application didReceiveLocalNotification:(UILocalNotification *)notification

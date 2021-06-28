@@ -17,6 +17,7 @@
     UILabel *lblMenu;
     NSString *strTextFieldEnterd;
     NSMutableArray * arrRadioBtns;
+    NSTimer * timerConfig;
 }
 @end
 
@@ -32,14 +33,22 @@
     {
         yy = 44;
     }
-     UIImageView * imgLogo = [[UIImageView alloc] init];
-     imgLogo.frame = CGRectMake(0, 0, DEVICE_WIDTH, DEVICE_HEIGHT);
-     imgLogo.image = [UIImage imageNamed:@"Splash_bg.png"];
-     imgLogo.userInteractionEnabled = YES;
-     [self.view addSubview:imgLogo];
-
+    
+    UIImageView * imgLogo = [[UIImageView alloc] init];
+    imgLogo.frame = CGRectMake(0, 0, DEVICE_WIDTH, DEVICE_HEIGHT);
+    imgLogo.image = [UIImage imageNamed:@"Splash_bg.png"];
+    imgLogo.userInteractionEnabled = YES;
+    [self.view addSubview:imgLogo];
 
     [self setNavigationViewFrames];
+    
+    if (classPeripheral.state == CBPeripheralStateConnected)
+    {
+        [timerConfig invalidate];
+        timerConfig = [NSTimer scheduledTimerWithTimeInterval:3 target:self selector:@selector(timeOutforFetchConfig) userInfo:nil repeats:NO];
+        [APP_DELEGATE startHudProcess:@"Fetching Configuration..."];
+        [self GetDeviceConfiguration:@"1"];
+    }
     [super viewDidLoad];
     // Do any additional setup after loading the view.
 }
@@ -89,7 +98,8 @@
     NSString * sqlquery = [NSString stringWithFormat:@"select * from tbl_DeviceConfig"];
     [[DataBaseManager dataBaseManager] execute:sqlquery resultsArray:arrayData];
       
-    NSArray *   arrNote = [NSArray arrayWithObjects:@"Interval between waypoint reports in seconds. Setting this value to 0 will disable cellular waypoint reporting", @"GSM timeout in seconds", @"Time in seconds between internal waypoints. Setting this value to 0 will disable storing the waypoints internally.",@"GPS timeout in seconds",@"Satellite Interval",@"Satellite Timeout",@"Specifies how many retries over cheaper medium required before more expensive method is used.", nil];
+        NSArray *   arrNote = [NSArray arrayWithObjects:@"GSM Interval in seconds", @"GSM timeout in seconds", @"GPS Interval in seconds",@"GPS timeout in seconds",@"Satellite Interval in seconds",@"Satellite Timeout in seconds",@"Cheapest Mode Multiplier", nil];
+
     
     NSArray * arrPlacehOlder = [NSArray arrayWithObjects:@"Enter GSM Interval", @"Enter GSM Timeout", @"Enter GPS Interval",@"Enter GPS Timeout",@"Enter Satellite Interval",@"Enter Satellite Timeout",@"Enter Cheapest multiplier", nil];
     
@@ -165,6 +175,7 @@
         switchView.layer.borderColor = [UIColor grayColor].CGColor;
         switchView.layer.borderWidth = 0.6;
         switchView.layer.cornerRadius = 12;
+        switchView.tag = 9999 +  i;
         [scrlContent addSubview:switchView];
         
         UILabel *lblMenu = [[UILabel alloc] initWithFrame:CGRectMake(10,0, switchView.frame.size.width - 20, 30)];
@@ -253,14 +264,7 @@
             }
         }
     }
-//    NSString * string = @"NA";
-    
-//    NSRange range = NSMakeRange (0, customField.text.length);
-//
-//    [self textField:customField shouldChangeCharactersInRange:range replacementString:string];
-    
     [customField becomeFirstResponder];
-    
     [alert addTextFieldWithCustomTextField:customField andPlaceholder:nil andTextReturnBlock:^(NSString *text)
     {
     }];
@@ -274,6 +278,7 @@
        withDoneButtonTitle:OK_BTN
                 andButtons:nil];
 }
+#pragma mark :- FCAlertview Delegate Methods
 - (void)FCAlertView:( FCAlertView *)alertView clickedButtonIndex:(NSInteger)index buttonTitle:(NSString *)title;
 {
 }
@@ -363,6 +368,7 @@
         [[arrRadioBtns objectAtIndex:currentIndex] setValue:strValue forKey:@"selection"];
     }
 }
+#pragma mark - Database Method
 -(void)InsertingtoDatabaseOnlyRadioButtons:(NSMutableArray *)arrayData
 {
     if (classPeripheral.state == CBPeripheralStateConnected)
@@ -439,7 +445,6 @@
          NSMutableArray *  tmpArray = [[NSMutableArray alloc] init];
           NSString * sqlquery = [NSString stringWithFormat:@"select * from tbl_DeviceConfig"];
           [[DataBaseManager dataBaseManager] execute:sqlquery resultsArray:tmpArray];
-        
          
          if (tmpArray.count > 0)
          {
@@ -463,6 +468,29 @@
         [self showErrorMessage:@"Device Disconnected. Please connect first."];
     }
 }
+
+- (BOOL)isAllDigits:(NSString *)strTexr
+{
+    NSCharacterSet* nonNumbers = [[NSCharacterSet decimalDigitCharacterSet] invertedSet];
+    NSRange r = [strTexr rangeOfCharacterFromSet: nonNumbers];
+    return r.location == NSNotFound && strTexr.length > 0;
+}
+-(void)ReceviedSuccesResponseFromDevice:(NSString *)strResponse
+{
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [APP_DELEGATE endHudProcess];
+        if ([strResponse isEqualToString:@"0101"])
+        {
+            [self showTypeSuccessMessage:@"Device configuration svaed"];
+        }
+        else
+        {
+            [self showErrorMessage:@"Faied to configure device Please try agin later"];
+        }
+    });
+}
+
+#pragma mark: - BLE Methods
 -(void)WriteSecondOpcodeAfterDelay:(NSArray *)arrData
 {
     [self WriteDeviceConfigurationtoDevice:@"2" withDataArray:arrData];
@@ -475,7 +503,6 @@
     NSInteger intOpCode = [strOpcode integerValue];
     NSData * dataOpcode = [[NSData alloc] initWithBytes:&intOpCode length:1];
 
-    
     NSInteger intLength = 14;// 13 previously
     BOOL isOpcodefirst = YES;
     if ([strOpcode isEqualToString:@"2"])
@@ -489,7 +516,6 @@
     [completeData appendData:dataLength];
     [completeData appendData:dataOpcode];
 
-    
     if (isOpcodefirst == YES)
     {
         for (int i =0 ; i < [arrData count]; i++)
@@ -515,26 +541,143 @@
         [[BLEService sharedInstance] WriteNSDataforEncryptionAndthenSendtoPeripheral:completeData withPeripheral:classPeripheral];
     }
 }
-- (BOOL)isAllDigits:(NSString *)strTexr
+-(void)GetDeviceConfiguration:(NSString *)strOpcode
 {
-    NSCharacterSet* nonNumbers = [[NSCharacterSet decimalDigitCharacterSet] invertedSet];
-    NSRange r = [strTexr rangeOfCharacterFromSet: nonNumbers];
-    return r.location == NSNotFound && strTexr.length > 0;
+    NSInteger intCommand = [@"193" integerValue];
+    NSData * dataCommand = [[NSData alloc] initWithBytes:&intCommand length:1];
+
+    NSInteger intOpCode = [strOpcode integerValue];
+    NSData * dataOpcode = [[NSData alloc] initWithBytes:&intOpCode length:1];
+
+    NSInteger intLength = 1;// 13 previously
+    NSData * dataLength = [[NSData alloc] initWithBytes:&intLength length:1];
+        
+    NSMutableData *completeData = [dataCommand mutableCopy];
+    [completeData appendData:dataLength];
+    [completeData appendData:dataOpcode];
+
+    [[BLEService sharedInstance] WriteNSDataforEncryptionAndthenSendtoPeripheral:completeData withPeripheral:classPeripheral];
 }
--(void)ReceviedSuccesResponseFromDevice:(NSString *)strResponse
+-(void)setDeviceConfigurationValuetoUI:(NSArray *)arrData withType:(NSString *)strType
 {
-    dispatch_async(dispatch_get_main_queue(), ^{
+    if ([strType isEqualToString:@"01"])
+    {
+        for (int i = 0 ; i < [arrData count]; i++)
+        {
+            NSString * strText = [arrData objectAtIndex:i];
+            UILabel * lbltemp = [self.view viewWithTag:i + 200];
+            lbltemp.text = strText;
+            if ([[strText lowercaseString] isEqualToString:@"ffff"] || [[strText lowercaseString] isEqualToString:@"65535"])//65535
+            {
+                lbltemp.text = @"";
+            }
+        }
+        [self GetDeviceConfiguration:@"2"];
+    }
+    else if ([strType isEqualToString:@"02"])
+    {
+        for (int i = 0 ; i < [arrData count]; i++)
+        {
+            UIView * tmpView = [self.view viewWithTag:9999 +i];
+            NSArray * arr = [tmpView subviews];
+            
+            for (int j = 0; j < arr.count; j++)
+            {
+                id objct = [arr objectAtIndex:j];
+                if ([objct isKindOfClass:[RadioButtonClass class]])
+                {
+                    if ([[arrData objectAtIndex:i] isEqualToString:@"1"])
+                    {
+                        [objct SetButtonSelectedwithIndex:1 withObject:objct];
+                    }
+                    else if ([[arrData objectAtIndex:i] isEqualToString:@"0"])
+                    {
+                        [objct SetButtonSelectedwithIndex:0 withObject:objct];
+                    }
+                    else if ([[arrData objectAtIndex:i] isEqualToString:@"255"])
+                    {
+                        [objct SetButtonSelectedwithIndex:2 withObject:objct];
+                    }
+                }
+            }
+        }
+        [timerConfig invalidate];
+        timerConfig = nil;
+    }
+}
+
+-(void)TestingMethod
+{
+    NSString * valueStr = @"C1080200FFFF000000FF";
+    //  0xC1 0x0E 0x01 0x02 0x58 0x02 0x58 0x00 0x00 0x01 0x2C 0x00 0x00 0x01 0x2C 0x00
+    //  0xC1 0x08 0x02 0x00 0xFF 0xFF 0x00 0x00 0x00 0xFF
+    {
+        if ([valueStr length] > 6)
+        {
+            NSString * strC1PacketType =  [valueStr substringWithRange:NSMakeRange(2, 2)];
+            if ([strC1PacketType isEqualToString:@"01"]) //For C1 Write Status
+            {
+                NSString * strSuccessResponse = [valueStr substringWithRange:NSMakeRange(2, 4)];
+                if ([strSuccessResponse isEqualToString:@"0101"])
+                {
+                    [globalDeviceConfig ReceviedSuccesResponseFromDevice:strSuccessResponse];
+                }
+                else
+                {
+                    [globalDeviceConfig ReceviedSuccesResponseFromDevice:strSuccessResponse];
+                }
+            }
+            else //For Recieving device configuration
+            {
+                if ([strC1PacketType isEqualToString:@"0E"] || [strC1PacketType isEqualToString:@"0e"])
+                {
+                    if ([valueStr length] >= 32)
+                    {
+                        NSString * str1 = [self stringFroHex:[valueStr substringWithRange:NSMakeRange(6, 4)]];
+                        NSString * str2 = [self stringFroHex:[valueStr substringWithRange:NSMakeRange(10,4)]];
+                        NSString * str3 = [self stringFroHex:[valueStr substringWithRange:NSMakeRange(14,4)]];
+                        NSString * str4 = [self stringFroHex:[valueStr substringWithRange:NSMakeRange(18,4)]];
+                        NSString * str5 = [self stringFroHex:[valueStr substringWithRange:NSMakeRange(22,4)]];
+                        NSString * str6 = [self stringFroHex:[valueStr substringWithRange:NSMakeRange(26,4)]];
+                        NSString * str7 = [self stringFroHex:[valueStr substringWithRange:NSMakeRange(30,2)]];
+                        NSArray * arrData = [[NSArray alloc] initWithObjects:str1,str2,str3,str4,str5,str6,str7, nil];
+                        [globalDeviceConfig setDeviceConfigurationValuetoUI:arrData withType:@"01"];
+                    }
+                }
+                else if ([strC1PacketType isEqualToString:@"08"] )
+                {
+                    if ([valueStr length] >= 20)
+                    {
+                        NSString * str1 = [self stringFroHex:[valueStr substringWithRange:NSMakeRange(6, 2)]];
+                        NSString * str2 = [self stringFroHex:[valueStr substringWithRange:NSMakeRange(8,2)]];
+                        NSString * str3 = [self stringFroHex:[valueStr substringWithRange:NSMakeRange(10,2)]];
+                        NSString * str4 = [self stringFroHex:[valueStr substringWithRange:NSMakeRange(12,2)]];
+                        NSString * str5 = [self stringFroHex:[valueStr substringWithRange:NSMakeRange(14,2)]];
+                        NSString * str6 = [self stringFroHex:[valueStr substringWithRange:NSMakeRange(16,2)]];
+                        NSString * str7 = [self stringFroHex:[valueStr substringWithRange:NSMakeRange(18,2)]];
+                        NSArray * arrData = [[NSArray alloc] initWithObjects:str1,str2,str3,str4,str5,str6,str7, nil];
+                        [globalDeviceConfig setDeviceConfigurationValuetoUI:arrData withType:@"02"];
+                    }
+                }
+                
+            }
+        }
+    }
+}
+-(NSString*)stringFroHex:(NSString *)hexStr
+{
+    unsigned long long startlong;
+    NSScanner* scanner1 = [NSScanner scannerWithString:hexStr];
+    [scanner1 scanHexLongLong:&startlong];
+    double unixStart = startlong;
+    NSNumber * startNumber = [[NSNumber alloc] initWithDouble:unixStart];
+    return [startNumber stringValue];
+}
+-(void)timeOutforFetchConfig
+{
     [APP_DELEGATE endHudProcess];
-    if ([strResponse isEqualToString:@"0101"])
-    {
-        [self showTypeSuccessMessage:@"Device configuration svaed"];
-    }
-    else
-    {
-        [self showErrorMessage:@"Faied to configure device Please try agin later"];
-    }
-    });
 }
+
 @end
 
 

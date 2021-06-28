@@ -641,7 +641,8 @@
     dispatch_async(dispatch_get_main_queue(), ^(void){
         {
                 NSMutableDictionary *args = [[NSMutableDictionary alloc] init];
-                
+                //https://ws.succorfish.net/user/getOwn
+                //https://ws.succorfish.net/basic/v2/user/getOwn
                 NSString * strUrl = [NSString stringWithFormat:@"https://ws.succorfish.net/basic/v2/user/getOwn"];
                 
                 NSString * strbasicAuthToken;
@@ -687,7 +688,6 @@
                     NSString * simpleStr = [self base64String:str];
                     [[NSUserDefaults standardUserDefaults] setObject:simpleStr forKey:@"BasicAuthToken"];
                 
-                  
                     [[NSUserDefaults standardUserDefaults] synchronize];
                     
     //                [self getAccountdetailsofUser]; //To get industry from

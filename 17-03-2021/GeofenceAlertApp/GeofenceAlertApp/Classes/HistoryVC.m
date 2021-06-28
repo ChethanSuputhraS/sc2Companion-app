@@ -127,7 +127,14 @@
             strName = [[arrGeofence objectAtIndex:indexPath.row] valueForKey:@"geofence"];
         }
     }
-    cell.lblNote.text = [[arrGeofence objectAtIndex:indexPath.row] valueForKey:@"Message"]; //@"note"
+    if([[self checkforValidString:[[arrGeofence objectAtIndex:indexPath.row] valueForKey:@"Message"]] isEqualToString:@"NA"])
+    {
+        
+    }
+    else
+    {
+        cell.lblNote.text = [[arrGeofence objectAtIndex:indexPath.row] valueForKey:@"Message"]; //@"note"
+    }
     cell.lblGeoFncID.text = [NSString stringWithFormat:@"Geofence ID : %@",strName] ; //@"geofence id"
 //isViewed
     if ([[[arrGeofence objectAtIndex:indexPath.row] valueForKey:@"isViewed"] isEqualToString:@"1"])

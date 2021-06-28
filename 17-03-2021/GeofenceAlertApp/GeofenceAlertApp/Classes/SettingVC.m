@@ -150,7 +150,7 @@
               cell.swReconnect.hidden = false;
               cell.lblForSetting.text = @"Re-connect Device Enable";
               
-              if (isReconnect == true)
+              if ([[NSUserDefaults standardUserDefaults] boolForKey:@"BLEAutoconnect"] == true)//Kalpesh26062021
               {
                   [cell.swReconnect setOn:YES animated:YES];
               }
@@ -494,11 +494,13 @@
        if ([RecntSwitch isOn])
               {
                   isReconnect = true;
+                  [[NSUserDefaults standardUserDefaults] setBool:YES forKey:@"BLEAutoconnect"];//Kalpesh26062021
                   [self TostNotification:@"Device Re-Connect Enabled"];
               }
               else
               {
                   isReconnect = false;
+                  [[NSUserDefaults standardUserDefaults] setBool:NO forKey:@"BLEAutoconnect"];//Kalpesh26062021
                   [self TostNotification:@"Device Re-Connect Disabled"];
               }
 }

@@ -106,7 +106,7 @@
     searchBarIMEi.layer.cornerRadius = 26;
     searchBarIMEi.layer.borderWidth = .6;
     searchBarIMEi.layer.borderColor = UIColor.whiteColor.CGColor;
-    self->searchBarIMEi.placeholder =@"Search by name";
+    self->searchBarIMEi.placeholder =@"Search by Name";
     [self.view addSubview:searchBarIMEi];
     
     tblDeviceList = [[UITableView alloc] initWithFrame:CGRectMake(0, yy+globalStatusHeight+55, DEVICE_WIDTH, DEVICE_HEIGHT-yy-globalStatusHeight-110)];
@@ -138,6 +138,8 @@
     manager.commandName = @"RemoteTrack";
     manager.delegate = self;
     NSString *strServerUrl = @"https://ws.succorfish.net/basic/v2/asset/search?view=BASIC"; // IMEI for remote tracking
+    //https://ws.scstg.net/basic/v2/asset/search?view=BASIC
+//https://ws.succorfish.net/basic/v2/user/getOwn
     [manager postUrlCall:strServerUrl withParameters:dict];
 }
 
@@ -189,7 +191,6 @@
     {
         tmpDict = [arryDeviceList objectAtIndex:indexPath.row];
     }
-//
     cell.lblGeoFncID.text = [tmpDict valueForKey:@"name"];
     
     cell.selectionStyle = UITableViewCellSelectionStyleNone;
@@ -203,7 +204,7 @@
         
         if ([strID isKindOfClass:[NSNull class]])
         {
-            [self showErrorsMessage:@"Device id not available."];
+            [self TostNotification:@"Device data not available."];
         }
         else
         {
@@ -322,4 +323,17 @@
        withDoneButtonTitle:nil
                 andButtons:nil];
 }
+-(void)TostNotification:(NSString *)StrToast
+    {
+        MBProgressHUD * hud = [MBProgressHUD showHUDAddedTo:self.navigationController.view animated:YES];
+
+        // Configure for text only and offset down
+        hud.mode = MBProgressHUDModeText;
+        hud.labelText = StrToast;
+        hud.margin = 10.f;
+        hud.yOffset = 150.f;
+        hud.removeFromSuperViewOnHide = YES;
+        [hud hide:YES afterDelay:0.9];
+}
+
 @end

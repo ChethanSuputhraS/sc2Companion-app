@@ -188,7 +188,7 @@
         yy = 84;
     }
     _mapView = [[MKMapView alloc] initWithFrame:CGRectMake(0, yy, DEVICE_WIDTH, DEVICE_HEIGHT-yy)];
-    _mapView.showsUserLocation = YES;
+    _mapView.showsUserLocation = NO;
     _mapView.delegate = self;
     [self.view addSubview:_mapView];
 }
@@ -261,15 +261,15 @@
 
 - (MKOverlayRenderer *)mapView:(MKMapView *)mapView rendererForOverlay:(id<MKOverlay>)overlay
 {
-    UIColor * overlayColor = [UIColor blackColor];
+    UIColor * overlayColor = [UIColor colorWithRed:0 green:0 blue:0 alpha:0.4];
     if ([strScreenMode isEqualToString:@"Dark"])
     {
         overlayColor = [UIColor blueColor];
     }
     MKCircleRenderer * renderer = [[MKCircleRenderer alloc] initWithCircle:_radialCircle];
-    renderer.strokeColor = overlayColor;
+    renderer.strokeColor = [UIColor blackColor];
     renderer.fillColor = overlayColor;
-    renderer.alpha = .4f;
+    renderer.alpha = 1;
     renderer.lineWidth = 1;
     return renderer;
 }
