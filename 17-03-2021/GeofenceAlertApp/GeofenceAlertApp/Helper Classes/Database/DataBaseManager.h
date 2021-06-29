@@ -67,7 +67,7 @@
 -(BOOL)recordExistOrNot:(NSString *)query;
 -(BOOL)Create_Geofence_Alert_Table;
 -(void)Add_sequence_to_NewChat;
-
+-(void)Add_MacAddress_to_NewChat;
 
 @end
 

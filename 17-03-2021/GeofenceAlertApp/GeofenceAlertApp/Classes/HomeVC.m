@@ -48,6 +48,7 @@
     NSIndexPath *  previousIndexPath;
     NSInteger selectedMoreIndex;
     NSMutableDictionary * notificationDict;
+    NSString * strBleAddresstoChat;
 }
 @end
 
@@ -496,6 +497,8 @@
 
         cell.lblDeviceName.text = [[arrayDevices  objectAtIndex:indexPath.row]valueForKey:@"name"];
         cell.lblAddress.text = [[arrayDevices  objectAtIndex:indexPath.row]valueForKey:@"bleAddress"];
+         
+    
         cell.backgroundColor = UIColor.clearColor;
         cell.selectionStyle = UITableViewCellSelectionStyleNone;
 
@@ -713,6 +716,7 @@
         NSLog(@"-==================> I am nil==========>");
     }
     NSString * strBleAddress = [self checkforValidString:[detailDict valueForKey:@"bleAddress"]];
+    
     if (![strBleAddress isEqualToString:@"NA"])
     {
         NSString * strBadgeCount = [self checkforValidString:[[NSUserDefaults standardUserDefaults] valueForKey:strBleAddress]];
@@ -1706,8 +1710,11 @@ dispatch_async(dispatch_get_main_queue(), ^(void)
 {
     if (classPeripheral.state == CBPeripheralStateConnected)
     {
+   
         globalChatVC  = [[ChatVC alloc] init];
+        globalChatVC.bleAdd = [[arrGlobalDevices objectAtIndex:[sender tag]] valueForKey:@"bleAddress"];
         [self.navigationController pushViewController:globalChatVC animated:true];
+
     }
     else
     {

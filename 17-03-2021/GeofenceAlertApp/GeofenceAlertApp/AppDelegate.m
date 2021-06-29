@@ -44,7 +44,7 @@
     NSData* nsData = [@"$%^&!@*#$$%%()?<:{}{|+`~}" dataUsingEncoding:NSUTF8StringEncoding];
     NSLog(@"=================================%@",sequencData);
 
-    [FIRApp configure];
+//    [FIRApp configure];// dont forget //IMP_UNCOMMENT
     
     
     if ([UIApplication instancesRespondToSelector:@selector(registerUserNotificationSettings:)]){

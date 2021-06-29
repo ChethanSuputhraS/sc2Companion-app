@@ -25,19 +25,20 @@
     UITextView *txtViewChat;
     CGSize newSize;
     UISwitch * switcGSMIRR;
-    UIButton *btnGSM,*btnIrridium;
+    UIButton *btnGSM,*btnIrridium,*btnMsgSend;
     CBPeripheral * classPeripheral;
     BOOL isGsmSeleted ,  isBtnGSM ,isBtnIrriDum;
     NSInteger isSentVia;
     NSMutableArray *arryCheckBox;
     NSMutableDictionary * dictCheckBox;
     UIEdgeInsets   currentTableEdgeInset;
+    NSTimer * timerForSendMsg;
 
 }
 @end
 
 @implementation ChatVC
-@synthesize userNano,isFrom,userName,sc4NanoId;
+@synthesize userNano,isFrom,userName,sc4NanoId,bleAdd;
 
 - (void)viewDidLoad
 {
@@ -176,8 +177,7 @@
     
     arryCheckBox = [[NSMutableArray alloc] initWithObjects:@"1",@"0", nil];
     
-    
-    NSLog(@"Arrayy=====%@",arryCheckBox);
+    //    NSLog(@"Arrayy=====%@",arryCheckBox);
     // Do any additional setup after loading the view.
 }
 
@@ -198,7 +198,7 @@
 -(void)viewDidAppear:(BOOL)animated
 {
     [APP_DELEGATE endHudProcess];
-    [self getMessagesfromDatabase];
+//    [self getMessagesfromDatabase];
     [super viewDidAppear:YES];
 }
 
@@ -208,7 +208,7 @@
     NSMutableArray * chatDetailArr = [[NSMutableArray alloc]init];
     arrGlobalChatHistory = [[NSMutableArray alloc] init];
     
-    NSString * strMessage = [NSString stringWithFormat:@"select * from NewChat where from_name = 'me' or to_name = 'Other'"];
+    NSString * strMessage = [NSString stringWithFormat:@"select * from NewChat where from_name = 'me' or to_name = 'Other' and bleAdress = '%@'",bleAdd];
     [[DataBaseManager dataBaseManager] execute:strMessage resultsArray:chatDetailArr];
     
     if ([chatDetailArr count]>0)
@@ -377,7 +377,7 @@
 
 //    [txtChat setValue:[UIColor whiteColor] forKeyPath:@"_placeholderLabel.textColor"];
     
-    UIButton * btnMsgSend = [UIButton buttonWithType:UIButtonTypeCustom];
+    btnMsgSend = [UIButton buttonWithType:UIButtonTypeCustom];
     btnMsgSend.frame = CGRectMake(viewWidth-60, 0, 60, 60);
     btnMsgSend.backgroundColor = UIColor.clearColor;
     [btnMsgSend addTarget:self action:@selector(btnSendClick) forControlEvents:UIControlEventTouchUpInside];
@@ -528,9 +528,7 @@
     NSString * strStatus = @"sent";
     NSString * strIsGSM = [NSString stringWithFormat:@"%ld",isSentVia];
 
-  
-
-    NSString * strInsertQuery =  [NSString stringWithFormat:@"insert into 'NewChat' ('from_name','to_name','msg_txt','time','status','sequence','identifier','timeStamp','isGSM') values(\"%@\",\"%@\",\"%@\",\"%@\",\"%@\",\"%@\",\"%@\",\"%@\",\"%@\")",strFromName,strToName,strMSG,strDateAndTime,strStatus,strSequenceNo,strIdentifier,strTimeStamp,strIsGSM];
+    NSString * strInsertQuery =  [NSString stringWithFormat:@"insert into 'NewChat' ('from_name','to_name','msg_txt','time','status','sequence','identifier','timeStamp','isGSM','bleAdress') values(\"%@\",\"%@\",\"%@\",\"%@\",\"%@\",\"%@\",\"%@\",\"%@\",\"%@\",\"%@\")",strFromName,strToName,strMSG,strDateAndTime,strStatus,strSequenceNo,strIdentifier,strTimeStamp,strIsGSM,bleAdd];
     [[DataBaseManager dataBaseManager] executeSw:strInsertQuery];
     
 }
@@ -710,6 +708,13 @@
             }
             else
             {
+                [timerForSendMsg invalidate];
+                timerForSendMsg = nil;
+                timerForSendMsg = [NSTimer scheduledTimerWithTimeInterval:10 target:self selector:@selector(timerForSendMsgTimerMethod) userInfo:nil repeats:NO];
+
+                txtViewChat.editable = NO;
+                btnMsgSend.userInteractionEnabled = NO;
+                
                 [self StartSendingMessagetoDevice];
                 NSIndexPath *indexPath3 = [self.tableArray indexPathForLastMessage];
                 [tblchat scrollToRowAtIndexPath:indexPath3 atScrollPosition:UITableViewScrollPositionBottom animated:YES];
@@ -777,11 +782,27 @@
 {
               globalSequence = [self GetUniqueNanoModemId];
               NSInteger sequenceInt = [globalSequence integerValue]; //Unique Sequence No
-              NSData * sequencData = [[NSData alloc] initWithBytes:&sequenceInt length:4];
+    NSData * sequencData = [[NSData alloc] initWithBytes:&sequenceInt length:4];
               NSString * strSqnc = [NSString stringWithFormat:@"%@",sequencData.debugDescription];
               strSqnc = [strSqnc stringByReplacingOccurrencesOfString:@" " withString:@""];
               strSqnc = [strSqnc stringByReplacingOccurrencesOfString:@"<" withString:@""];
               strSqnc = [strSqnc stringByReplacingOccurrencesOfString:@">" withString:@""];
+    NSLog(@"====StartSendingMessagetoDevice===%@ and valuesofarr=%@",strSqnc, [arrGlobalChatHistory valueForKey:@"sequence"]);
+    if ([[arrGlobalChatHistory valueForKey:@"sequence"] containsObject:strSqnc])
+    {
+        
+        int r = arc4random() % 100;
+        NSInteger currentSqnc = [strSqnc integerValue] + r;
+        globalSequence = [NSString stringWithFormat:@"%ld",(long)currentSqnc];
+        
+        NSInteger sequenceInt = [globalSequence integerValue]; //Unique Sequence No
+        sequencData = [[NSData alloc] initWithBytes:&sequenceInt length:4];
+        strSqnc = [NSString stringWithFormat:@"%@",sequencData.debugDescription];
+        strSqnc = [strSqnc stringByReplacingOccurrencesOfString:@" " withString:@""];
+        strSqnc = [strSqnc stringByReplacingOccurrencesOfString:@"<" withString:@""];
+        strSqnc = [strSqnc stringByReplacingOccurrencesOfString:@">" withString:@""];
+
+    }
     [self InsertMessagetoDatabase:strSqnc];
 
     NSInteger totalPackets = [[BLEService sharedInstance] SendStartPacketofMessage:txtViewChat.text withUniqueSequence:globalSequence];
@@ -1095,10 +1116,21 @@
                     andButtons:nil];
     }
 }
+-(void)timerForSendMsgTimerMethod
+{
+    [timerForSendMsg invalidate];
+    timerForSendMsg = nil;
+    
+    self->txtViewChat.editable = YES;
+    self->btnMsgSend.userInteractionEnabled = YES;
+}
 -(void)GotSentMessageAcknowledgement:(NSString *)strSeqence withStatus:(NSString *)strStatus
 {
     dispatch_async(dispatch_get_main_queue(), ^{
         
+        self->txtViewChat.editable = YES;
+        self->btnMsgSend.userInteractionEnabled = YES;
+
     for (int i =0; i<[self.tableArray numberOfSections]; i++)
     {
         for (int k = 0; k < [self.tableArray numberOfMessagesInSection:i]; k++)
@@ -1146,7 +1178,9 @@
 }
 -(NSString *)GetUniqueNanoModemId
 {
-    NSTimeInterval timeInSeconds = [[NSDate date] timeIntervalSince1970];
+    int r = arc4random() % 1000;
+
+    NSTimeInterval timeInSeconds = [[NSDate date] timeIntervalSince1970] + r;
     NSString * strTime = [NSString stringWithFormat:@"%f",timeInSeconds];
     strTime = [strTime stringByReplacingOccurrencesOfString:@"." withString:@""];
     NSString * strData ;

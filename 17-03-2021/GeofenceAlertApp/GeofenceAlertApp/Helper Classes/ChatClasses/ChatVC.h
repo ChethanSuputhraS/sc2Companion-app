@@ -29,6 +29,8 @@
 @property (nonatomic , strong)NSString * isFrom;
 @property (nonatomic , strong)NSString * sc4NanoId;
 @property (strong, nonatomic) TableArray *tableArray;
+@property (nonatomic , strong)NSString * bleAdd;
+
 -(void)GotMessagefromDiver:(NSMutableDictionary *)strDict;
 -(void)GotMessageSendAck:(NSString *)strStatus;
 -(void)GotSentMessageAcknowledgement:(NSString *)strSeqence withStatus:(NSString *)strStatus;

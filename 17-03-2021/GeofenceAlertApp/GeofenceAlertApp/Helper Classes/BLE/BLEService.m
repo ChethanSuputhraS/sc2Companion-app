@@ -258,7 +258,7 @@ static BLEService    *sharedInstance    = nil;
 - (void) peripheral:(CBPeripheral *)peripheral didUpdateValueForCharacteristic:(CBCharacteristic *)characteristic error:(NSError *)error
 {
     //Kalpesh here notification will come
-    NSLog(@"<<<<<Kalpesh>>>>Recieved_from_Device>>%@",characteristic);
+//    NSLog(@"<<<<<Kalpesh>>>>Recieved_from_Device>>%@",characteristic);
     NSString * strUUID = [NSString stringWithFormat:@"%@",characteristic.UUID];
     if ([strUUID isEqualToString:@"0000BA01-0143-08B2-A708-E5F9B34FB005"])//For Authentication 0000AB01-0143-0800-0008-E5F9B34FB000
     {
@@ -306,7 +306,7 @@ static BLEService    *sharedInstance    = nil;
                         NSString * strKeyUnsigned = [self getStringConvertedinUnsigned:strKey];
                         NSString * strFirstPacket = [self getStringConvertedinUnsigned:strRawDataFirst];
                         NSString * valueStr = [self GetDecrypedDataKeyforData:strFirstPacket withKey:strKeyUnsigned withLength:strKey.length / 2];
-                        NSLog(@"Decrypted.................=%@",valueStr);
+//                        NSLog(@"Decrypted.................=%@",valueStr);
                         
                      NSString * strOpcode = [valueStr substringWithRange:NSMakeRange(0, 2)];
                      if ([[strOpcode lowercaseString] isEqualToString:@"a4"])
@@ -521,6 +521,7 @@ static BLEService    *sharedInstance    = nil;
                                              strBreachType = @"00";
                                          }
                                      }
+                                     
                                      NSMutableDictionary * dictData = [[NSMutableDictionary alloc] init];
                                      [dictData setObject:strGeoID forKey:@"geofence_ID"];
                                      [dictData setObject:strBreachType forKey:@"Breach_Type"];
@@ -568,6 +569,8 @@ static BLEService    *sharedInstance    = nil;
                          }
                        else if ([[strOpcode lowercaseString] isEqualToString:@"b1"]) // For Message Acknowledgement
                         {
+                            NSLog(@"Decrypted Recieved Chat Msg.................=%@",valueStr);
+
                             NSString * strOpcode = [valueStr substringWithRange:NSMakeRange(0, 4)];
                             if ([strOpcode isEqualToString:@"b105"]) // Acknowledgement
                             {
@@ -613,7 +616,8 @@ static BLEService    *sharedInstance    = nil;
                                                     {
                                                         strStatus = @"Failed";//Failed to send the message over Iridium
                                                     }
-                                                    NSString * strUpdate = [NSString stringWithFormat:@"Update NewChat set status = '%@' where sequence = '%@'",strStatus,strSequence];
+                                                    
+                                                    NSString * strUpdate = [NSString stringWithFormat:@"Update NewChat set status = '%@'  where sequence = '%@'",strStatus,strSequence];
                                                     [[DataBaseManager dataBaseManager] execute:strUpdate];
                                                     
                                                     if ([strCurrentScreen isEqualToString:@"Chat"])
@@ -1227,7 +1231,7 @@ static BLEService    *sharedInstance    = nil;
         {
             totalPackets = [[tmpArr objectAtIndex:0] integerValue] + 1;
         }
-        NSLog(@"its integer=%ld",(long)afterPoint);
+//        NSLog(@"its integer=%ld",(long)afterPoint);
     }
     totalPackets = totalPackets + 0;
     NSData * totalPacketData = [[NSData alloc] initWithBytes:&totalPackets length:1];
@@ -1262,7 +1266,7 @@ static BLEService    *sharedInstance    = nil;
         NSString * strKeyUnsigned = [self getStringConvertedinUnsigned:strKey];
         NSData * strEncryptedData = [self GetEncryptedKeyforData:strPacket withKey:strKeyUnsigned withLength:strKey.length / 2];
         
-        NSLog(@"Start packet=======>Encrypted Messages=====%@",strEncryptedData);
+//        NSLog(@"Start packet=======>Encrypted Messages=====%@",strEncryptedData);
         NSLog(@"Start packet=======>Normal Messages=====%@",strSqnc);
 
         
@@ -1308,8 +1312,8 @@ return totalPackets;
     NSString * strKeyUnsigned = [self getStringConvertedinUnsigned:strKey];
     NSData * strEncryptedData = [self GetEncryptedKeyforData:strPacket withKey:strKeyUnsigned withLength:strKey.length / 2];
         
-    NSLog(@"Message Data packet=======>Encrypted Messages=====%@",strEncryptedData);
-    NSLog(@"Message Data packet=======>Normal Messages=====%@",strSqnc);
+//    NSLog(@"Message Data packet=======>Encrypted Messages=====%@",strEncryptedData);
+//    NSLog(@"Message Data packet=======>Normal Messages=====%@",strSqnc);
 
     [self SendCommandNSData:strEncryptedData withPeripheral:globalPeripheral]; //cheking
 }
@@ -1382,8 +1386,8 @@ return totalPackets;
     NSString * strKeyUnsigned = [self getStringConvertedinUnsigned:strKey];
     NSData * strEncryptedData = [self GetEncryptedKeyforData:strPacket withKey:strKeyUnsigned withLength:strKey.length / 2];
         
-    NSLog(@"End packet=======>Encrypted Messages=====%@",strEncryptedData);
-    NSLog(@"End packet=======>Normal Messages=====%@",strSqnc);
+//    NSLog(@"End packet=======>Encrypted Messages=====%@",strEncryptedData);
+//    NSLog(@"End packet=======>Normal Messages=====%@",strSqnc);
 
     [self SendCommandNSData:strEncryptedData withPeripheral:globalPeripheral]; //cheking
    
@@ -1908,7 +1912,7 @@ float ConverttoFloatfromHexadecimal(NSString *  strHex)
             strResult = [strResult stringByAppendingFormat:@"%@", [NSString stringWithFormat:@"%02x",tempResultOp[i]]];
         }
     }
-    NSLog(@"Decrypted Result2222222=====%@",strResult);
+//    NSLog(@"Decrypted Result2222222=====%@",strResult);
 
     return strResult;
 }

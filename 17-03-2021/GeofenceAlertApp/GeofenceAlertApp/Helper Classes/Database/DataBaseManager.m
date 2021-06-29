@@ -319,7 +319,7 @@ static DataBaseManager * dataBaseManager = nil;
     int rc;
     // SQL to create new database
     NSArray* queries = [NSArray arrayWithObjects:
-                        @"create table 'NewChat' (id integer primary key autoincrement not null,'from_name' varchar(255),'to_name' varchar(255),'msg_txt' varchar(255),'time' varchar(255),'status' varchar(255),'sequence' varchar(255),'identifier' varchar(255),'timeStamp' real,'isGSM' VARCHAR)",nil];
+                        @"create table 'NewChat' (id integer primary key autoincrement not null,'from_name' varchar(255),'to_name' varchar(255),'msg_txt' varchar(255),'time' varchar(255),'status' varchar(255),'sequence' varchar(255),'identifier' varchar(255),'timeStamp' real,'isGSM' VARCHAR ,'bleAdress' VARCHAR)",nil];
     if(queries != nil)
     {
         for (NSString* sql in queries)
@@ -532,6 +532,23 @@ static DataBaseManager * dataBaseManager = nil;
     
     sqlite3_finalize(createStmt);
 }
+-(void)Add_MacAddress_to_NewChat
+{
+    sqlite3_stmt *createStmt = nil;
+    
+    NSString *query = [NSString stringWithFormat:@"ALTER TABLE NewChat ADD COLUMN bleAdress TEXT"];
+    
+    if (sqlite3_prepare_v2(_database, [query UTF8String], -1, &createStmt, NULL) == SQLITE_OK)
+    {
+        sqlite3_exec(_database, [query UTF8String], NULL, NULL, NULL);
+    }
+    else
+    {
+        NSLog(@"The Session table already exist in NewChat");
+    }
+    
+    sqlite3_finalize(createStmt);
+}
 #pragma mark - Insert Query 
 /*
  * Method to execute the simple queries
@@ -543,7 +560,6 @@ static DataBaseManager * dataBaseManager = nil;
 	//NSLog(@"%@",sqlStatement);
 	const char *sql = (const char*)[sqlStatement UTF8String];
     
-	
 	if(sqlite3_prepare_v2(_database, sql, -1, &statement, NULL) != SQLITE_OK)
     {
        NSAssert1(0, @"Error while preparing  statement. '%s'", sqlite3_errmsg(_database));
