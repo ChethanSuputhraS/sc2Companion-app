@@ -108,7 +108,7 @@
     NSString * sqlquery = [NSString stringWithFormat:@"select * from tbl_industryspecific"];
     [[DataBaseManager dataBaseManager] execute:sqlquery resultsArray:arrayData];*/
 
-        NSArray * arrItems = [NSArray arrayWithObjects:@"off", @"cellular",@"satellite", nil];
+        NSArray * arrItems = [NSArray arrayWithObjects:@"Off", @"Cellular ON",@"Satellite ON", nil];
         NSArray * arrHeadding = [NSArray arrayWithObjects:@"Flight mode",@"Garage mode", @"GIGO mode",@"Depth and temperature mode", nil];
         NSArray *  arrDatabaseKye = [NSArray arrayWithObjects:@"flight_mode",@"garage_mode", @"gigo_mode",@"depthtemp_mode", nil];
 

@@ -560,6 +560,7 @@
 }
 -(void)setDeviceConfigurationValuetoUI:(NSArray *)arrData withType:(NSString *)strType
 {
+    dispatch_async(dispatch_get_main_queue(), ^{
     if ([strType isEqualToString:@"01"])
     {
         for (int i = 0 ; i < [arrData count]; i++)
@@ -604,6 +605,7 @@
         [timerConfig invalidate];
         timerConfig = nil;
     }
+});
 }
 
 -(void)TestingMethod

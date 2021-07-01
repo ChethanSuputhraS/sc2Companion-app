@@ -355,6 +355,8 @@ static BLEService    *sharedInstance    = nil;
                      }
                      else if ([[strOpcode lowercaseString] isEqualToString:@"a8"])  //If Geofence modified ...
                      {
+                         NSLog(@"----New Geofence-------->>>>>%@",valueStr);
+
                          if([valueStr length] >= 16)
                          {
                              NSString * strData = [valueStr substringWithRange:NSMakeRange(0, 4)];
@@ -362,8 +364,8 @@ static BLEService    *sharedInstance    = nil;
                              {
                              
                              }
-                         else
-                         {
+                             else if ([strData  isEqual: @"a802"])
+                             {
                              BOOL isDataVali = NO;
                              NSString * strGeoId = [valueStr substringWithRange:NSMakeRange(6, 4)];
                              NSString * strTimeStamp = [valueStr substringWithRange:NSMakeRange(10, 8)];
@@ -437,6 +439,11 @@ static BLEService    *sharedInstance    = nil;
                                  }
                                  else //Polygon
                                  {
+                                     latFloat = 0;
+                                     longFloat = 0;
+                                     
+                                     [globalHomeVC SendSecondPacketLatLongtoHomeVC:latFloat withLongitude:longFloat];
+
                                      if([valueStr length] > 22)
                                      {
                                          if ([[valueStr substringWithRange:NSMakeRange(0, 6)] isEqualToString:@"a20208"]) // 08
@@ -616,6 +623,7 @@ static BLEService    *sharedInstance    = nil;
                                                     {
                                                         strStatus = @"Failed";//Failed to send the message over Iridium
                                                     }
+                                                    
                                                     
                                                     NSString * strUpdate = [NSString stringWithFormat:@"Update NewChat set status = '%@'  where sequence = '%@'",strStatus,strSequence];
                                                     [[DataBaseManager dataBaseManager] execute:strUpdate];
@@ -1220,6 +1228,7 @@ static BLEService    *sharedInstance    = nil;
     NSString * strLength = [NSString stringWithFormat:@"%f",lenghtFloat / 12];
     NSArray * tmpArr = [strLength componentsSeparatedByString:@"."];
     NSInteger totalPackets = 0;
+    
     if ([tmpArr count]>1)
     {
         NSInteger afterPoint = [[tmpArr objectAtIndex:1] integerValue];

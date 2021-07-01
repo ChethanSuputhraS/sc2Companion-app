@@ -157,7 +157,7 @@
     manager.commandName = @"GetLatLong";
     manager.delegate = self;
     NSString *strServerUrl = @"https://ws.succorfish.net/basic/v2/waypoint/getLatest/"; // IMEI for remote tracking
-//    NSString *strServerUrl = @"https://ws.scstg.net/basic/v2/asset/search?view=BASIC"; // IMEI for remote tracking
+//    NSString *strServerUrl = @"https://ws.succorfish.net/basic/v2/asset/search?view=BASIC"; // IMEI for remote tracking
 
     [manager getUrlCall:[NSString stringWithFormat:@"%@%@",strServerUrl,strDeviceId] withParameters:nil];//  curent device Id
 }

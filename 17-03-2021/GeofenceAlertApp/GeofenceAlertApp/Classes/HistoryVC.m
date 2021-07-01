@@ -164,6 +164,7 @@
             {
                 [UIApplication sharedApplication].applicationIconBadgeNumber = 0;
             }
+            
             [[arrGeofence objectAtIndex:indexPath.row] setObject:@"1" forKey:@"isViewed"];
         }
         
@@ -229,7 +230,6 @@
     
     return strValid;
 }
-
 -(void)TostNotification:(NSString *)StrToast
     {
         MBProgressHUD *hud = [MBProgressHUD showHUDAddedTo:self.navigationController.view animated:YES];

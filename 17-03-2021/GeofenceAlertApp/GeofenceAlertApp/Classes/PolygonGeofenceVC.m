@@ -137,6 +137,7 @@
     }
 
 
+
     [super viewDidLoad];
     // Do any additional setup after loading the view.
 
@@ -177,6 +178,13 @@
     [btnBack setFrame:CGRectMake(0, 0, 80, yy+globalStatusHeight)];
     [btnBack addTarget:self action:@selector(btnBackClick) forControlEvents:UIControlEventTouchUpInside];
     [viewHeader addSubview:btnBack];
+    
+    UIButton * btnRefresh = [UIButton buttonWithType:UIButtonTypeCustom];
+    [btnRefresh setFrame:CGRectMake(DEVICE_WIDTH-60, globalStatusHeight-10, 60, 60)];
+    btnRefresh.backgroundColor = UIColor.clearColor;
+    [btnRefresh setImage:[UIImage imageNamed:@"reload.png"] forState:UIControlStateNormal];
+    [btnRefresh addTarget:self action:@selector(refreshBtnClick) forControlEvents:UIControlEventTouchUpInside];
+//    [viewHeader addSubview:btnRefresh];
 }
 -(void)setUpMapView
 {
@@ -189,6 +197,8 @@
     _mapView = [[MKMapView alloc] initWithFrame:CGRectMake(0, yy, DEVICE_WIDTH, DEVICE_HEIGHT-yy)];
     _mapView.showsUserLocation = YES;
     _mapView.delegate = self;
+
+    _mapView.showsBuildings = NO;
     [self.view addSubview:_mapView];
     
     CLLocation  * currentLocation= [[CLLocation alloc] initWithLatitude:breachLat longitude:breachLong];
@@ -367,7 +377,7 @@
         {
             id <MKAnnotation> mp = [annotationView annotation];
             MKCoordinateRegion region = MKCoordinateRegionMakeWithDistance
-            ([mp coordinate], 500, 500);
+            ([mp coordinate], 250, 250);
             if (region.center.latitude > -89 && region.center.latitude < 89 && region.center.longitude > -179 && region.center.longitude < 179 )
             {
                 [mv setRegion:region animated:YES];
@@ -476,7 +486,11 @@
     NSLog(@"THIS IS OUTCOME=%d",c);
 //        return c;
 }
-
+-(void)refreshBtnClick
+{
+    [_mapView reloadInputViews];
+    
+}
 /*-(void)checkIfLocIsInsideGeofence:(double)latitude :(double)logitude
 {
 

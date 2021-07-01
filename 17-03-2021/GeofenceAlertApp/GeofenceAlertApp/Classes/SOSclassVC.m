@@ -41,7 +41,7 @@
     imgBack.image = [UIImage imageNamed:@"Splash_bg.png"];
     [self.view addSubview:imgBack];
 
-    arrPreDfnmsg = [[NSMutableArray alloc] initWithObjects:@"Help...!",@"Call me",@"Location",@"Find me ?",@"Connect support", nil];
+    arrPreDfnmsg = [[NSMutableArray alloc] initWithObjects:@"Help...!",@"Call me",@"Location",@"Find me ?",@"Connect support",@"Tecgnical issue",@"Conection lost",@"Internet issue",@"Service not Found", @"Tecgnical issue",@"Tecgnical issue", nil];
   
     
      headerhHeight = 64;
@@ -181,7 +181,7 @@
     tblchat.delegate=self;
     tblchat.dataSource=self;
     tblchat.allowsSelection = NO;
-    tblchat.backgroundColor=[UIColor clearColor];
+    tblchat.backgroundColor = [UIColor clearColor];
     [tblchat setSeparatorStyle:UITableViewCellSeparatorStyleNone];
     [tblchat setSeparatorColor:[UIColor clearColor]];
     [self.view addSubview:tblchat];
@@ -427,12 +427,16 @@
         
         cellH.lblBack.hidden = true;
         cellH.optionView.hidden = true;
-        cellH.lblDeviceName.textColor = UIColor.blackColor;
+        cellH.lblDeviceName.textColor = UIColor.whiteColor;
         cellH.lblAddress.hidden = true;
         
-        cellH.lblDeviceName.frame = CGRectMake(10, 0, DEVICE_WIDTH/2-20, 50);
+        cellH.lblDeviceName.frame = CGRectMake(10, 0, DEVICE_WIDTH/2-20, 44);
         cellH.lblDeviceName.text = [arrPreDfnmsg objectAtIndex:indexPath.row];
+        cellH.lblDeviceName.font = [UIFont fontWithName:CGRegular size:textSize-1];
         
+        cellH.backgroundColor = [UIColor colorWithPatternImage:[UIImage imageNamed:@"cell_bg.png"]];
+
+
         return cellH;
     }
     else if (tableView == tblchat)
@@ -452,12 +456,13 @@
         return cell;
 
     }
+    
     MessageCell *cell = [tableView dequeueReusableCellWithIdentifier:CellIdentifier];
     return cell;
 }
 - (void)tableView:(UITableView *)tableView willDisplayCell:(UITableViewCell *)cell forRowAtIndexPath:(NSIndexPath *)indexPath;
 {
-        cell.backgroundColor = [UIColor colorWithPatternImage:[UIImage imageNamed:@"cell_bg.png"]];
+//        cell.backgroundColor = [UIColor colorWithPatternImage:[UIImage imageNamed:@"cell_bg.png"]];
 }
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath
 {
@@ -468,7 +473,7 @@
         
         [UIView transitionWithView:self.view duration:0.3 options:UIViewAnimationOptionCurveEaseOut animations:^
          {
-        self-> viewPreDfnTblview.frame = CGRectMake(20, DEVICE_HEIGHT, DEVICE_WIDTH-40, DEVICE_HEIGHT-120);
+        self-> viewPreDfnTblview.frame = CGRectMake(20, DEVICE_HEIGHT, DEVICE_WIDTH-40, DEVICE_HEIGHT-150);
          }
             completion:(^(BOOL finished)
           {
@@ -488,7 +493,7 @@
     }
     else
     {
-        return 50;
+        return 44;
     }
   
     return 0;
@@ -501,7 +506,7 @@
     }
     else
     {
-        return 25;
+        return 44;
     }
     return 40.0;
 }
@@ -533,7 +538,7 @@
     UILabel *label = [[UILabel alloc] init];
     label.text = strheaderTitle;
     label.textAlignment = NSTextAlignmentCenter;
-    label.font = [UIFont fontWithName:CGRegular size:textSize+5];
+    label.font = [UIFont fontWithName:CGRegular size:textSize+1];
     [label sizeToFit];
     label.center = view.center;
     label.font = [UIFont fontWithName:CGRegular size:textSize];
@@ -543,6 +548,36 @@
     label.autoresizingMask = UIViewAutoresizingNone;
     [view addSubview:label];
 
+    
+    if (tableView == tblPreDfnMsg)
+    {
+        label.text = @"Select message to send";
+        label.textColor = [UIColor blackColor];
+        label.textAlignment = NSTextAlignmentLeft;
+        label.backgroundColor = [UIColor blackColor];
+
+        label.frame = CGRectMake(0, 0, tableView.frame.size.width, 44);
+        view.backgroundColor = [UIColor blackColor];
+        
+        UIFontDescriptor *fontDescriptor1 = [UIFontDescriptor fontDescriptorWithName:CGBold size:textSize];
+        UIFontDescriptor *symbolicFontDescriptor1 = [fontDescriptor1 fontDescriptorWithSymbolicTraits:UIFontDescriptorTraitBold];
+        
+        NSMutableAttributedString *hintText = [[NSMutableAttributedString alloc] initWithString:@"* Select message to send"];
+        UIFont *fontWithDescriptor = [UIFont fontWithDescriptor:fontDescriptor1 size:textSize+1];
+        UIFont *fontWithDescriptor1 = [UIFont fontWithDescriptor:symbolicFontDescriptor1 size:textSize];
+        UIFont *fontWithDescriptor2 = [UIFont fontWithDescriptor:symbolicFontDescriptor1 size:textSize];
+        
+        [hintText setAttributes:@{NSFontAttributeName:fontWithDescriptor1, NSForegroundColorAttributeName:[UIColor grayColor]} range:NSMakeRange(0, hintText.length)];
+        [hintText setAttributes:@{NSFontAttributeName:fontWithDescriptor, NSForegroundColorAttributeName:[UIColor redColor]} range:NSMakeRange(0, 1)];
+        [hintText setAttributes:@{NSFontAttributeName:fontWithDescriptor2, NSForegroundColorAttributeName:[UIColor whiteColor]} range:NSMakeRange(8, 9)];
+        
+        [label setAttributedText:hintText];
+        label.textAlignment = NSTextAlignmentLeft;
+        label.font = [UIFont fontWithName:CGRegular size:textSize];
+        
+        view.backgroundColor = [UIColor blackColor];
+    }
+    
     if (IS_IPHONE)
     {
         label.font = [UIFont fontWithName:CGRegular size:textSize-1];
@@ -601,11 +636,11 @@
 {
     [self SetupForPredefineMessaes];
 }
--(void)btnCancelClick
+-(void)btnCloseClick
 {
     [UIView transitionWithView:self.view duration:0.3 options:UIViewAnimationOptionCurveEaseOut animations:^
      {
-    self-> viewPreDfnTblview.frame = CGRectMake(20, DEVICE_HEIGHT, DEVICE_WIDTH-40, DEVICE_HEIGHT-120);
+    self-> viewPreDfnTblview.frame = CGRectMake(20, DEVICE_HEIGHT, DEVICE_WIDTH-40, DEVICE_HEIGHT-150);
      }
         completion:(^(BOOL finished)
       {
@@ -621,40 +656,73 @@
     viewPredfnMSgback.alpha = 0.5;
     [self.view addSubview:viewPredfnMSgback];
     
-    UIImageView * imgBack = [[UIImageView alloc] init];
-    imgBack.contentMode = UIViewContentModeScaleAspectFit;
-    imgBack.frame = CGRectMake(0, 0, DEVICE_WIDTH, DEVICE_HEIGHT);
-    imgBack.image = [UIImage imageNamed:[[NSUserDefaults standardUserDefaults]valueForKey:@"globalBackGroundImage"]];
-    imgBack.userInteractionEnabled = YES;
-//        [self->viewSSIDback addSubview:imgBack];
     
-    viewPreDfnTblview = [[UIView alloc] initWithFrame:CGRectMake(20, DEVICE_HEIGHT, DEVICE_WIDTH-40, DEVICE_HEIGHT-120)];
-    viewPreDfnTblview.backgroundColor = UIColor.whiteColor;//[UIColor colorWithRed:1 green:1 blue:1 alpha:1]; // white
+    viewPreDfnTblview = [[UIView alloc] initWithFrame:CGRectMake(20, DEVICE_HEIGHT, DEVICE_WIDTH-40, DEVICE_HEIGHT-150)];
+    viewPreDfnTblview.backgroundColor = UIColor.clearColor;//[UIColor colorWithRed:1 green:1 blue:1 alpha:1]; // white
     viewPreDfnTblview.layer.cornerRadius = 6;
     viewPreDfnTblview.alpha = 1;
     viewPreDfnTblview.clipsToBounds = true;
    [self.view addSubview:viewPreDfnTblview];
+    
+    backContactView = [[UIImageView alloc] init];
+    backContactView.frame = CGRectMake(0, 0, viewPreDfnTblview.frame.size.width, viewPreDfnTblview.frame.size.height);
+    backContactView.image = [UIImage imageNamed:@"pop_up_bg.png"];
+    backContactView.userInteractionEnabled = YES;
+    [viewPreDfnTblview addSubview:backContactView];
+    
+    
+    UIButton * btnCancel = [UIButton buttonWithType:UIButtonTypeCustom];
+    btnCancel.frame = CGRectMake(20, 30, 50, 44);
+    [btnCancel setTitle:@"Cancel" forState:UIControlStateNormal];
+    btnCancel.titleLabel.font = [UIFont fontWithName:CGRegular size:textSize-1];
+    [btnCancel setTitleColor:[UIColor grayColor] forState:UIControlStateNormal];
+    [btnCancel addTarget:self action:@selector(btnCloseClick) forControlEvents:UIControlEventTouchUpInside];
+    [backContactView addSubview:btnCancel];
+    
+    
+    UIButton * btnDone = [UIButton buttonWithType:UIButtonTypeCustom];
+    btnDone.frame = CGRectMake(backContactView.frame.size.width-80, 30, 50, 44);
+    [btnDone setTitle:@"Done" forState:UIControlStateNormal];
+    btnDone.titleLabel.font = [UIFont fontWithName:CGRegular size:textSize-1];
+    [btnDone setTitleColor:[UIColor grayColor] forState:UIControlStateNormal];
+    [btnDone addTarget:self action:@selector(btnCloseClick) forControlEvents:UIControlEventTouchUpInside];
+//    [backContactView addSubview:btnDone];
+    
+    UILabel * lblline = [[UILabel alloc] init];
+    lblline.frame = CGRectMake(5, 43.5, backContactView.frame.size.width-10, 0.5);
+    lblline.backgroundColor = [UIColor lightGrayColor];
+    [backContactView addSubview:lblline];
 
-    tblPreDfnMsg = [[UITableView alloc] initWithFrame:CGRectMake(5, 5, viewPreDfnTblview.frame.size.width-10, viewPreDfnTblview.frame.size.height-50)];
+    
+    tblPreDfnMsg = [[UITableView alloc] initWithFrame:CGRectMake(0, 44, viewPreDfnTblview.frame.size.width-0, viewPreDfnTblview.frame.size.height-44)];
     tblPreDfnMsg.backgroundColor = UIColor.clearColor;
     tblPreDfnMsg.delegate = self;
     tblPreDfnMsg.dataSource = self;
+    tblPreDfnMsg.separatorStyle = UITableViewCellSeparatorStyleNone;
     [viewPreDfnTblview addSubview:tblPreDfnMsg];
 
-    UIButton *  btnCancel = [[UIButton alloc]init];
-    btnCancel.frame = CGRectMake(5, viewPreDfnTblview.frame.size.height-50, viewPreDfnTblview.frame.size.width-10, 45);
-    [btnCancel addTarget:self action:@selector(btnCancelClick) forControlEvents:UIControlEventTouchUpInside];
-    [btnCancel setTitleColor:UIColor.whiteColor forState:UIControlStateNormal];
-    btnCancel.backgroundColor = UIColor.blackColor;
-    [btnCancel setTitle:@"Cancel" forState:normal];
-    [btnCancel setTitleColor:UIColor.whiteColor forState:normal];
-    btnCancel.titleLabel.font = [UIFont fontWithName:CGBold size:textSize+2];
-    btnCancel.titleLabel.textAlignment = NSTextAlignmentCenter;
-    [viewPreDfnTblview addSubview:btnCancel];
+    if (IS_IPHONE)
+    {
+        backContactView.image = [UIImage imageNamed:@" "];
+        backContactView.backgroundColor = [UIColor blackColor];
+        backContactView.layer.cornerRadius = 10;
+        backContactView.layer.borderWidth = 1.0;
+        backContactView.layer.masksToBounds = YES;
+        viewPreDfnTblview.frame = CGRectMake(10, DEVICE_HEIGHT, viewWidth-20, DEVICE_HEIGHT-100);
+        btnCancel.frame = CGRectMake(0, 0, 60, 50);
+        btnDone.frame = CGRectMake(backContactView.frame.size.width-60, 0, 60, 50);
+        tblMessages.frame = CGRectMake(0, 44, backContactView.frame.size.width-0, DEVICE_HEIGHT-44-50);
+        
+        if (IS_IPHONE_5 || IS_IPHONE_4)
+        {
+            backContactView.frame = CGRectMake(10, DEVICE_HEIGHT, viewWidth-20, DEVICE_HEIGHT-80);
+            tblMessages.frame = CGRectMake(0, 50, backContactView.frame.size.width-0, DEVICE_HEIGHT-80-50);
+        }
+    }
 
     [UIView transitionWithView:self.view duration:0.3 options:UIViewAnimationOptionCurveEaseOut animations:^
     {
-        self->viewPreDfnTblview.frame = CGRectMake(20, (DEVICE_HEIGHT-(DEVICE_HEIGHT-120))/2, DEVICE_WIDTH-40, DEVICE_HEIGHT-120);
+        self->viewPreDfnTblview.frame = CGRectMake(20, (DEVICE_HEIGHT-(DEVICE_HEIGHT-150))/2, DEVICE_WIDTH-40, DEVICE_HEIGHT-150);
     }
         completion:NULL];
 }

@@ -360,7 +360,6 @@ static BLEManager    *sharedManager    = nil;
         }
     }
 }
-
 - (void)centralManager:(CBCentralManager *)central didConnectPeripheral:(CBPeripheral *)peripheral
 {
     /*-------This method will call after succesfully device Ble device connect-----*/

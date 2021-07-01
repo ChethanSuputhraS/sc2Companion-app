@@ -147,6 +147,7 @@
    
     [self createDatabase];
     [self getLocationMethod];
+    
 
 
     //google api key
@@ -198,6 +199,8 @@
             [[DataBaseManager dataBaseManager] executeSw:requestStr1];
         }
     }
+ 
+  
     
     
 
@@ -269,7 +272,6 @@
                 notification.alertBody = [NSString stringWithFormat:@"Device entered in %@ geofence",[dataDetail valueForKey:@"name"]];
                 notification.timeZone = [NSTimeZone defaultTimeZone];
                 notification.soundName = UILocalNotificationDefaultSoundName;
-//                notification.applicationIconBadgeNumber = 10;
                 
                 [[UIApplication sharedApplication] scheduleLocalNotification:notification];
             }
@@ -295,7 +297,6 @@
             notification.alertBody = [NSString stringWithFormat:@"Device is out of %@ geofence",[dataDetail valueForKey:@"name"]];
             notification.timeZone = [NSTimeZone defaultTimeZone];
             notification.soundName = UILocalNotificationDefaultSoundName;
-//            notification.applicationIconBadgeNumber = 10;
             
             [[UIApplication sharedApplication] scheduleLocalNotification:notification];
         }
@@ -545,9 +546,9 @@
     thirdNavigation = [[UINavigationController alloc]initWithRootViewController:thirdViewController];
     thirdNavigation.navigationBarHidden = YES;
     
-//    ChatVC * forthViewController = [[ChatVC alloc]init];
+//    SOSclassVC * forthViewController = [[SOSclassVC alloc]init];
 //    forthViewController.title=@"device";
-//    forthViewController.tabBarItem=[[UITabBarItem alloc] initWithTitle:@"Chat" image:[[UIImage imageNamed:@"sosg.png"] imageWithRenderingMode:UIImageRenderingModeAlwaysOriginal ] selectedImage:[[UIImage imageNamed:@"sos.png"] imageWithRenderingMode:UIImageRenderingModeAlwaysOriginal] ];
+//    forthViewController.tabBarItem=[[UITabBarItem alloc] initWithTitle:@"sos" image:[[UIImage imageNamed:@"sosg.png"] imageWithRenderingMode:UIImageRenderingModeAlwaysOriginal ] selectedImage:[[UIImage imageNamed:@"sos.png"] imageWithRenderingMode:UIImageRenderingModeAlwaysOriginal] ];
 //    forthNavigation = [[UINavigationController alloc]initWithRootViewController:forthViewController];
 //    forthNavigation.navigationBarHidden = YES;
 
@@ -657,8 +658,7 @@
 // This code block is invoked when application is in foreground (active-mode)
 -(void)application:(UIApplication *)application didReceiveLocalNotification:(UILocalNotification *)notification
 {
-
-
+//    [UIApplication sharedApplication].applicationIconBadgeNumber = globalBadgeCount;
 }
 - (void)applicationWillResignActive:(UIApplication *)application
 {

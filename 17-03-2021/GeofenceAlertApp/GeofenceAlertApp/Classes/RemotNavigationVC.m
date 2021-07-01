@@ -138,8 +138,6 @@
     manager.commandName = @"RemoteTrack";
     manager.delegate = self;
     NSString *strServerUrl = @"https://ws.succorfish.net/basic/v2/asset/search?view=BASIC"; // IMEI for remote tracking
-    //https://ws.scstg.net/basic/v2/asset/search?view=BASIC
-//https://ws.succorfish.net/basic/v2/user/getOwn
     [manager postUrlCall:strServerUrl withParameters:dict];
 }
 

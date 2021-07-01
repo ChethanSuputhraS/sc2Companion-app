@@ -70,7 +70,7 @@
     NSMutableArray * tmpArr = [[NSMutableArray alloc] init];
     [[DataBaseManager dataBaseManager] execute:strQuery resultsArray:tmpArr];
     globalBadgeCount = [tmpArr count];
-    [UIApplication sharedApplication].applicationIconBadgeNumber = globalBadgeCount; // for testing
+    [UIApplication sharedApplication].applicationIconBadgeNumber = globalBadgeCount;
 
     [self setNavigationViewFrames];
     
@@ -94,6 +94,7 @@
     
     arrGlobalDeviceNames = [[NSMutableArray alloc] init];
     arrGlobalDeviceNames = [[[NSUserDefaults standardUserDefaults] arrayForKey:@"DeviceName"] mutableCopy];
+    
     if ([arrGlobalDeviceNames count] == 0)
     {
         arrGlobalDeviceNames = [[NSMutableArray alloc] init];
@@ -108,9 +109,9 @@
     [APP_DELEGATE startHudProcess:@"Scanning..."];
     
     
-    
 //    [self SendignDeviceTokenTotheDeVice:@"eyJhbGciOiJIUzI1NiJ9.eyJkZXZpY2VTbiI6IjM1NDY3OTA5Mjk1NjAzOSJ9.dw58sc7YrVi49k1v6DW6CYPiF8NVj2Eh4ZkEhIk1Oos"];
 //    [[self.tabBarController.tabBar.items objectAtIndex:1] setBadgeValue:[NSString stringWithFormat:@"%d",globalBadgeCount]];
+    
     [super viewDidLoad];
     // Do any additional setup after loading the view.
 }
@@ -169,7 +170,7 @@
     manager.commandName = @"gettoken";
     manager.delegate = self;
     NSString *strServerUrl = @"https://ws.succorfish.net/basic/v2/device/get-token/"; // IMEI number
-    //    NSString *strServerUrl = @"https://ws.scstg.net/basic/v2/asset/search?view=BASIC"; // IMEI for remote tracking
+    //    NSString *strServerUrl = @"https://ws.succorfish.net/basic/v2/asset/search?view=BASIC"; // IMEI for remote tracking
 
     [manager getUrlCall:[NSString stringWithFormat:@"%@%@",strServerUrl,strHexVal] withParameters:nil];
 }
@@ -702,7 +703,6 @@
         view1.dictGeofenceInfo = notificationDict;
         [self.navigationController pushViewController:view1 animated:true];
     }
-
 }
 -(void)btnNotificationIgnoreClick
 {
@@ -715,6 +715,7 @@
     {
         NSLog(@"-==================> I am nil==========>");
     }
+    
     NSString * strBleAddress = [self checkforValidString:[detailDict valueForKey:@"bleAddress"]];
     
     if (![strBleAddress isEqualToString:@"NA"])
@@ -741,8 +742,11 @@
     {
         lblBadgeHistry.frame = CGRectMake(DEVICE_WIDTH-25, globalStatusHeight, 20, 20);
     }
+    
+    [UIApplication sharedApplication].applicationIconBadgeNumber = globalBadgeCount; // biayya changed
+
     dispatch_async(dispatch_get_main_queue(), ^{
-        UIApplication *app=[UIApplication sharedApplication];
+        UIApplication * app=[UIApplication sharedApplication];
         if (app.applicationState == UIApplicationStateBackground)
         {
             NSLog(@"We are in the background Disconnect");
@@ -750,7 +754,6 @@
             if ((notifySettings.types & UIUserNotificationTypeAlert)!=0)
             {
 //                globalBadgeCount = globalBadgeCount+1;
-                [UIApplication sharedApplication].applicationIconBadgeNumber = globalBadgeCount;
 
                 UILocalNotification *notification=[UILocalNotification new];
                 notification.soundName = @"alert_alarm.mp3";
@@ -1375,12 +1378,12 @@ dispatch_async(dispatch_get_main_queue(), ^(void)
             if ([arrGlobalGeofenceList count] > foundIndex)
             {
                 isGotData = YES;
-                strGeoType = [[arrGlobalGeofenceList objectAtIndex:foundIndex] valueForKey:@"type"];
-                strGeoName = [[arrGlobalGeofenceList objectAtIndex:foundIndex] valueForKey:@"geofence_ID"];
-                strGeoTimeStamp = [[arrGlobalGeofenceList objectAtIndex:foundIndex] valueForKey:@"time_stamp"];
-                strGeoLat = [[arrGlobalGeofenceList objectAtIndex:foundIndex] valueForKey:@"lat"];
-                strGeoLog = [[arrGlobalGeofenceList objectAtIndex:foundIndex] valueForKey:@"long"];
-                strGeoRadius = [[arrGlobalGeofenceList objectAtIndex:foundIndex] valueForKey:@"radiusOrvertices"];
+                strGeoType = [self checkforValidString:[[arrGlobalGeofenceList objectAtIndex:foundIndex] valueForKey:@"type"]];
+                strGeoName = [self checkforValidString:[[arrGlobalGeofenceList objectAtIndex:foundIndex] valueForKey:@"geofence_ID"]];
+                strGeoTimeStamp = [self checkforValidString:[[arrGlobalGeofenceList objectAtIndex:foundIndex] valueForKey:@"time_stamp"]];
+                strGeoLat = [self checkforValidString:[[arrGlobalGeofenceList objectAtIndex:foundIndex] valueForKey:@"lat"]];
+                strGeoLog = [self checkforValidString:[[arrGlobalGeofenceList objectAtIndex:foundIndex] valueForKey:@"long"]];
+                strGeoRadius = [self checkforValidString:[[arrGlobalGeofenceList objectAtIndex:foundIndex] valueForKey:@"radiusOrvertices"]];
             }
         }
     }
@@ -1524,13 +1527,14 @@ dispatch_async(dispatch_get_main_queue(), ^(void)
         BOOL recordExist = [[DataBaseManager dataBaseManager] recordExistOrNot:query];
         NSString * strName = [self stringFroHex:strGeoFncID];
 
+
         if ([strGeoFncType isEqualToString:@"01"])
         {
-            [globalDict setValue:[NSNumber numberWithFloat:0] forKey:@"lat"];
-            [globalDict setValue:[NSNumber numberWithFloat:0] forKey:@"long"];
+            [globalDict setValue:[NSString stringWithFormat:@"0"] forKey:@"lat"];
+            [globalDict setValue:[NSString stringWithFormat:@"0"] forKey:@"long"];
             
-            strLat = [self checkforValidString:[NSString stringWithFormat:@"%f", [[globalDict valueForKey:@"lat"] floatValue]]];
-            strLong = [self checkforValidString:[NSString stringWithFormat:@"%f", [[globalDict valueForKey:@"long"] floatValue]]];
+            strLat = @"0";
+            strLong = @"0";
         }
         
         NSLog(@"=======================>Geofence Data===%@",globalDict);
@@ -1840,7 +1844,7 @@ dispatch_async(dispatch_get_main_queue(), ^(void)
     }
     else if ([strVAlidate isEqualToString:@"02"]) //  retry after some time
     {
-        [self ErrorPopUP:@"Decvice token not fount !"];
+        [self ErrorPopUP:@"Decvice token not found !"];
         [[BLEManager sharedManager] disconnectDevice:globalPeripheral];
     }
     });

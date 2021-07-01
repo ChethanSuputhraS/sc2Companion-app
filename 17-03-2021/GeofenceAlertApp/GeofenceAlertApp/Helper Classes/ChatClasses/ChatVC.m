@@ -612,7 +612,7 @@
     NSUInteger newLength = [textView.text length] + [text length] - range.length;
         
     return (newLength > 160) ? NO : YES;
-        }
+    }
     return YES;
 }
 - (void)textViewDidEndEditing:(UITextView *)textView
@@ -776,21 +776,20 @@
        withDoneButtonTitle:nil
                 andButtons:nil];
 }
-
 #pragma mark - BLE Methods to send Message
 -(void)StartSendingMessagetoDevice
 {
-              globalSequence = [self GetUniqueNanoModemId];
-              NSInteger sequenceInt = [globalSequence integerValue]; //Unique Sequence No
+    globalSequence = [self GetUniqueNanoModemId];
+    NSInteger sequenceInt = [globalSequence integerValue]; //Unique Sequence No
     NSData * sequencData = [[NSData alloc] initWithBytes:&sequenceInt length:4];
-              NSString * strSqnc = [NSString stringWithFormat:@"%@",sequencData.debugDescription];
-              strSqnc = [strSqnc stringByReplacingOccurrencesOfString:@" " withString:@""];
-              strSqnc = [strSqnc stringByReplacingOccurrencesOfString:@"<" withString:@""];
-              strSqnc = [strSqnc stringByReplacingOccurrencesOfString:@">" withString:@""];
+    NSString * strSqnc = [NSString stringWithFormat:@"%@",sequencData.debugDescription];
+    strSqnc = [strSqnc stringByReplacingOccurrencesOfString:@" " withString:@""];
+    strSqnc = [strSqnc stringByReplacingOccurrencesOfString:@"<" withString:@""];
+    strSqnc = [strSqnc stringByReplacingOccurrencesOfString:@">" withString:@""];
+    
     NSLog(@"====StartSendingMessagetoDevice===%@ and valuesofarr=%@",strSqnc, [arrGlobalChatHistory valueForKey:@"sequence"]);
     if ([[arrGlobalChatHistory valueForKey:@"sequence"] containsObject:strSqnc])
     {
-        
         int r = arc4random() % 100;
         NSInteger currentSqnc = [strSqnc integerValue] + r;
         globalSequence = [NSString stringWithFormat:@"%ld",(long)currentSqnc];
@@ -801,8 +800,8 @@
         strSqnc = [strSqnc stringByReplacingOccurrencesOfString:@" " withString:@""];
         strSqnc = [strSqnc stringByReplacingOccurrencesOfString:@"<" withString:@""];
         strSqnc = [strSqnc stringByReplacingOccurrencesOfString:@">" withString:@""];
-
     }
+    
     [self InsertMessagetoDatabase:strSqnc];
 
     NSInteger totalPackets = [[BLEService sharedInstance] SendStartPacketofMessage:txtViewChat.text withUniqueSequence:globalSequence];
@@ -815,21 +814,18 @@
     
     [self.view endEditing:true];
 
-
-              Message *message = [[Message alloc] init];
-              message.text = txtViewChat.text;
-              message.date = [NSDate date];
-              message.sender = MessageSenderMyself;
-              message.status = MessageStatusSent;
-              message.sequences = [NSString stringWithFormat:@"%@",strSqnc];
-              [self.tableArray addObject:message];
+    Message *message = [[Message alloc] init];
+    message.text = txtViewChat.text;
+    message.date = [NSDate date];
+    message.sender = MessageSenderMyself;
+    message.status = MessageStatusSent;
+    message.sequences = [NSString stringWithFormat:@"%@",strSqnc];
+    [self.tableArray addObject:message];
    
     txtViewChat.text = @"";
     [tblchat reloadData];
 
-    
 }
-
 -(void)SendMessageDataPacket:(NSInteger)totalPackets
 {
     if (totalPackets == 1)

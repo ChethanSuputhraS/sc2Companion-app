@@ -190,6 +190,7 @@
     _mapView = [[MKMapView alloc] initWithFrame:CGRectMake(0, yy, DEVICE_WIDTH, DEVICE_HEIGHT-yy)];
     _mapView.showsUserLocation = NO;
     _mapView.delegate = self;
+    _mapView.showsBuildings = NO;
     [self.view addSubview:_mapView];
 }
 
