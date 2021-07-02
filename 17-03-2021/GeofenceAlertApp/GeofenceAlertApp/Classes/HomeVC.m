@@ -21,9 +21,6 @@
 #import "LoginVC.h"
 #import "LiveTrackingVC.h"
 
-
-
-
 #if __has_feature(objc_arc)
   #define DLog(format, ...) CFShow((__bridge CFStringRef)[NSString stringWithFormat:format, ## __VA_ARGS__]);
 #else
@@ -32,23 +29,6 @@
 
 @interface HomeVC()<UITableViewDelegate,UITableViewDataSource,FCAlertViewDelegate,CBCentralManagerDelegate,URLManagerDelegate>
 {
-    NSMutableArray * arrGeofence,* arrActons, * arrPolygon, * arrRules, * arrAllSavedRules;
-    CBCentralManager*centralManager;
-    NSTimer * connectionTimer, * advertiseTimer,* timerForNotification;;
-    CBPeripheral * classPeripheral;
-    NSMutableDictionary * currentAlertDict, * waitDict;
-//    int historyCount;
-    FCAlertView * geofenceAlertPopup;
-    UITextField *customField;
-    NSInteger selectedIndex;
-    NSMutableArray * arrTempListGeofence, * arrAlertPacketsQueue,*arryForIsviewd;
-    CBPeripheral * tempSelectedPeripheral;
-    
-    bool isAnyGeofenceFoundSynced;
-    NSIndexPath *  previousIndexPath;
-    NSInteger selectedMoreIndex;
-    NSMutableDictionary * notificationDict;
-    NSString * strBleAddresstoChat;
 }
 @end
 
@@ -56,16 +36,14 @@
 
 - (void)viewDidLoad
 {
+    self.navigationController.navigationBarHidden = true;
+
     selectedMoreIndex = -1;
     arrTempListGeofence=[[NSMutableArray alloc] init];
-    arrAlertPacketsQueue =[[NSMutableArray alloc] init];
-
-    
-    self.navigationController.navigationBarHidden = true;
-    
     centralManager = [[CBCentralManager alloc] initWithDelegate:self queue:nil];
-
     globalBadgeCount = [UIApplication sharedApplication].applicationIconBadgeNumber;
+    
+    //Fetch data from Database for Badge Count
     NSString * strQuery = [NSString stringWithFormat:@"Select * from Geofence_alert_Table where isViewed = '0'"];
     NSMutableArray * tmpArr = [[NSMutableArray alloc] init];
     [[DataBaseManager dataBaseManager] execute:strQuery resultsArray:tmpArr];
@@ -74,7 +52,7 @@
 
     [self setNavigationViewFrames];
     
-    arrGeofence = [[NSMutableArray alloc]init];
+    NSMutableArray * arrGeofence = [[NSMutableArray alloc]init];
     NSString * str = [NSString stringWithFormat:@"Select * from Geofence"];
     [[DataBaseManager dataBaseManager] execute:str resultsArray:arrGeofence];
     arrGlobalGeofenceList = [[NSMutableArray alloc]init];
@@ -88,6 +66,7 @@
     arrRules = [[NSMutableArray alloc] init];
     currentAlertDict = [[NSMutableDictionary alloc] init];
     arrAllSavedRules = [[NSMutableArray alloc] init];
+    
     [advertiseTimer invalidate];
     advertiseTimer = nil;
     advertiseTimer = [NSTimer scheduledTimerWithTimeInterval:5 target:self selector:@selector(AdvertiseTimerMethod) userInfo:nil repeats:NO];
@@ -99,90 +78,41 @@
     {
         arrGlobalDeviceNames = [[NSMutableArray alloc] init];
     }
-        
-    arryForIsviewd = [[NSMutableArray alloc] init];
-    NSString * strGetViwed = [NSString stringWithFormat:@"Select * from Geofence_alert_Table where bleAddress & isViewed = '1'"];
-    [[DataBaseManager dataBaseManager] execute:strGetViwed resultsArray:arryForIsviewd];
-    
     
     [APP_DELEGATE endHudProcess];
     [APP_DELEGATE startHudProcess:@"Scanning..."];
     
+    [self InitialBLE];
+
+    [[NSNotificationCenter defaultCenter] removeObserver:self name:@"AuthenticationCompleted" object:nil];
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(AuthenticationCompleted) name:@"AuthenticationCompleted" object:nil];
+
+//[self SendignDeviceTokenTotheDeVice:@"eyJhbGciOiJIUzI1NiJ9.eyJkZXZpY2VTbiI6IjM1NDY3OTA5Mjk1NjAzOSJ9.dw58sc7YrVi49k1v6DW6CYPiF8NVj2Eh4ZkEhIk1Oos"];
     
-//    [self SendignDeviceTokenTotheDeVice:@"eyJhbGciOiJIUzI1NiJ9.eyJkZXZpY2VTbiI6IjM1NDY3OTA5Mjk1NjAzOSJ9.dw58sc7YrVi49k1v6DW6CYPiF8NVj2Eh4ZkEhIk1Oos"];
-//    [[self.tabBarController.tabBar.items objectAtIndex:1] setBadgeValue:[NSString stringWithFormat:@"%d",globalBadgeCount]];
-    
+    arrIMEITokens = [[NSMutableArray alloc] init];
+    [[DataBaseManager dataBaseManager] execute:@"select * from tbl_Device_IMEI" resultsArray:arrIMEITokens];
     [super viewDidLoad];
     // Do any additional setup after loading the view.
 }
 -(void)viewWillAppear:(BOOL)animated
 {
     strCurrentScreen = @"NA";//Kalpesh26062021
-    if (globalBadgeCount >0)
-    {
-        lblBadgeHistry.hidden = true; // false
-        lblBadgeHistry.text = [NSString stringWithFormat:@"%ld",(long)globalBadgeCount];
-    }
-    else
-    {
-        lblBadgeHistry.hidden = true;
-    }
-    
-    if (globalBadgeCount >= 100)
-    {
-        lblBadgeHistry.frame = CGRectMake(DEVICE_WIDTH-30, globalStatusHeight, 28, 20);
-    }
-    else
-    {
-        lblBadgeHistry.frame = CGRectMake(DEVICE_WIDTH-25, globalStatusHeight, 20, 20);
-    }
 
-    [self InitialBLE];
-
-    [[NSNotificationCenter defaultCenter] removeObserver:self name:@"AuthenticationCompleted" object:nil];
-    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(AuthenticationCompleted) name:@"AuthenticationCompleted" object:nil];
-    
     [APP_DELEGATE showTabBar:self.tabBarController];
-    [super viewWillAppear:YES];
 
     [self.navigationController setNavigationBarHidden:YES animated:NO];
     
     [tblDeviceList reloadData];
-}
--(void)viewWillDisappear:(BOOL)animated
-{
-//    [APP_DELEGATE hideTabBar:self.tabBarController];
-
-    [[NSNotificationCenter defaultCenter] removeObserver:self name:@"updateUTCtime" object:nil];
-    [[NSNotificationCenter defaultCenter] removeObserver:self name:@"UpdateCurrentGPSlocation" object:nil];
-    [[NSNotificationCenter defaultCenter] removeObserver:self name:@"AuthenticationCompleted" object:nil];
-    [super viewWillDisappear:YES];
+    
+    [super viewWillAppear:YES];
 }
 -(void)viewDidAppear:(BOOL)animated
 {
     [self refreshBtnClick];
 }
--(void)GettingDeviceTokenFromURL:(NSString *)strIMEINUM
+-(void)viewWillDisappear:(BOOL)animated
 {
-    NSString * strHexVal = [self stringFroHex:strIMEINUM];
-
-    URLManager *manager = [[URLManager alloc] init];
-    manager.commandName = @"gettoken";
-    manager.delegate = self;
-    NSString *strServerUrl = @"https://ws.succorfish.net/basic/v2/device/get-token/"; // IMEI number
-    //    NSString *strServerUrl = @"https://ws.succorfish.net/basic/v2/asset/search?view=BASIC"; // IMEI for remote tracking
-
-    [manager getUrlCall:[NSString stringWithFormat:@"%@%@",strServerUrl,strHexVal] withParameters:nil];
-}
--(NSString*)hexFromStr:(NSString*)str
-{
-    NSData* nsData = [str dataUsingEncoding:NSUTF8StringEncoding];
-    const char* data = [nsData bytes];
-    NSUInteger len = nsData.length;
-    NSMutableString* hex = [NSMutableString string];
-    for(int i = 0; i < len; ++i)
-        [hex appendFormat:@"%02X", data[i]];
-    return hex;
+    [super viewWillDisappear:YES];
 }
 #pragma mark - Set Frames
 -(void)setNavigationViewFrames
@@ -210,35 +140,7 @@
     [lblTitle setFont:[UIFont fontWithName:CGRegular size:textSize+2]];
     [lblTitle setTextColor:[UIColor whiteColor]];
     [viewHeader addSubview:lblTitle];
-    
-    UIButton *btnhistory=[[UIButton alloc]initWithFrame:CGRectMake(DEVICE_WIDTH-60, globalStatusHeight-10, 60, 60)];
-    btnhistory.backgroundColor = UIColor.clearColor;
-    btnhistory.clipsToBounds = true;
-    [btnhistory setImage:[UIImage imageNamed:@"history.png"] forState:UIControlStateNormal];
-    [btnhistory addTarget:self action:@selector(btnHistoyClick) forControlEvents:UIControlEventTouchUpInside];
-//    [viewHeader addSubview:btnhistory];
-    
-    lblBadgeHistry = [[UILabel alloc] initWithFrame:CGRectMake(DEVICE_WIDTH-25, globalStatusHeight, 20, 20)];
-    lblBadgeHistry.backgroundColor = UIColor.redColor;
-    lblBadgeHistry.layer.cornerRadius = 10;
-    lblBadgeHistry.clipsToBounds = true;
-//    lblBadgeHistry.text = @"20";
-    lblBadgeHistry.font = [UIFont fontWithName:CGBold size:12];
-    lblBadgeHistry.textColor = UIColor.whiteColor;
-    lblBadgeHistry.textAlignment = NSTextAlignmentCenter;
-    lblBadgeHistry.hidden = true;
-//    [viewHeader addSubview:lblBadgeHistry];
-    
-    if (globalBadgeCount > 0)
-    {
-        lblBadgeHistry.hidden = false;// flase;
-        lblBadgeHistry.text = [NSString stringWithFormat:@"%ld",(long)globalBadgeCount];
-        if (globalBadgeCount >= 100)
-        {
-            lblBadgeHistry.frame = CGRectMake(DEVICE_WIDTH-30, globalStatusHeight, 28, 20);
-        }
-    }
-
+        
     UIButton * btnLogout = [UIButton buttonWithType:UIButtonTypeCustom];
     [btnLogout setFrame:CGRectMake(10, globalStatusHeight-10, 60, 60)];
     btnLogout.backgroundColor = UIColor.clearColor;
@@ -288,77 +190,55 @@
     [self.view addSubview:lblNoDevice];
     
 }
--(void)ShowNotificationofGeofence:(NSString *)strTitle withMsg:(NSString *)strMsg withData:(NSDictionary *)dataDict
+#pragma mark : API to Device Token from Server
+-(void)GettingDeviceTokenFromURL:(NSString *)strIMEINUM
 {
-    notificationDict = [[NSMutableDictionary alloc] init];
-    notificationDict = [dataDict mutableCopy];
-    
-    strMsg = [strMsg stringByReplacingOccurrencesOfString:@"\n" withString:@" "];
-    
-    [viewForNotification removeFromSuperview];
-    viewForNotification = [[UIView alloc] initWithFrame:CGRectMake(0, -140, DEVICE_WIDTH, 140)];
-    viewForNotification.backgroundColor = [UIColor colorWithRed:66.0/255.0 green:66.0/255.0 blue:69.0/255.0 alpha:1];
-    [[APP_DELEGATE window] addSubview:viewForNotification];
-    
-    UILabel * lblNotifyTitle = [[UILabel alloc] initWithFrame:CGRectMake(8, 30, DEVICE_WIDTH-16, 22)];
-    lblNotifyTitle.text = [NSString stringWithFormat:@"%@!",strTitle];
-    lblNotifyTitle.backgroundColor = [UIColor clearColor];
-    lblNotifyTitle.textColor = UIColor.whiteColor;
-    lblNotifyTitle.font = [UIFont fontWithName:CGBold size:textSize+1];
-    [viewForNotification addSubview:lblNotifyTitle];
-    
-    UILabel * lblAlertMsg = [[UILabel alloc] initWithFrame:CGRectMake(8, 47, DEVICE_WIDTH-16, 40)];
-    lblAlertMsg.text = strMsg;
-    lblAlertMsg.backgroundColor = UIColor.clearColor;
-    lblAlertMsg.textColor = UIColor.whiteColor;
-    lblAlertMsg.numberOfLines = 0;
-    lblAlertMsg.font = [UIFont fontWithName:CGRegular size:textSize-2];
-    [viewForNotification addSubview:lblAlertMsg];
-
-    if (IS_IPHONE_X)
-    {
-        lblAlertMsg.frame = CGRectMake(8, 44, DEVICE_WIDTH - 16, 22);
-        viewForNotification.frame = CGRectMake(0, -140 - 44, DEVICE_WIDTH, 140);
-    }
-    
-    CGFloat btnWidth = (viewForNotification.frame.size.width / 2 ) - 10;
-    UIButton * btnSeenInMap = [[UIButton alloc] initWithFrame:CGRectMake(5, viewForNotification.frame.size.height-50, btnWidth, 44)];
-    btnSeenInMap.backgroundColor = UIColor.clearColor;
-    [btnSeenInMap setTitle:@"See in map" forState:UIControlStateNormal];
-    [btnSeenInMap setTitleColor:UIColor.redColor forState:UIControlStateNormal];
-    [btnSeenInMap addTarget:self action:@selector(btnNotificationSeeMapClick) forControlEvents:UIControlEventTouchUpInside];
-    btnSeenInMap.layer.cornerRadius = 4;
-    btnSeenInMap.layer.borderColor = [UIColor whiteColor].CGColor;
-    btnSeenInMap.layer.borderWidth = 1;
-    [viewForNotification addSubview:btnSeenInMap];
-    
-    UIButton * btnIgnore = [[UIButton alloc] initWithFrame:CGRectMake(btnWidth + 10 + 5, viewForNotification.frame.size.height-50, btnWidth, 44)];
-    btnIgnore.backgroundColor = UIColor.redColor;
-    [btnIgnore setTitle:@"Ignore" forState:UIControlStateNormal];
-    [btnIgnore setTitleColor:UIColor.whiteColor forState:UIControlStateNormal];
-    btnIgnore.layer.cornerRadius = 4;
-    btnIgnore.layer.borderColor = [UIColor whiteColor].CGColor;
-    btnIgnore.layer.borderWidth = 1;
-    [btnIgnore addTarget:self action:@selector(btnNotificationIgnoreClick) forControlEvents:UIControlEventTouchUpInside];
-    [viewForNotification addSubview:btnIgnore];
-
-    UILabel * lblLine = [[UILabel alloc] initWithFrame:CGRectMake(0, viewForNotification.frame.size.height-1, viewForNotification.frame.size.width, 1)];
-    lblLine.backgroundColor = [UIColor blackColor];
-    [viewForNotification addSubview:lblLine];
-
-    [timerForNotification invalidate];
-    timerForNotification = nil;
-    timerForNotification = [NSTimer scheduledTimerWithTimeInterval:3 target:self selector:@selector(TimeoutforHideNotification) userInfo:nil repeats:NO];
-    
-    [UIView transitionWithView:self.view duration:0.3 options:UIViewAnimationOptionCurveEaseOut animations:^
-       {
-        viewForNotification.frame = CGRectMake(0, 0, DEVICE_WIDTH-0, 140);
-       }
-       completion:(^(BOOL finished)
-       {
-      })];
-
+    NSString * strHexVal = [self stringFroHex:strIMEINUM];
+    URLManager *manager = [[URLManager alloc] init];
+    manager.commandName = @"gettoken";
+    manager.strIMEI = strIMEINUM;
+    manager.delegate = self;
+    NSString *strServerUrl = @"https://ws.succorfish.net/basic/v2/device/get-token/"; // IMEI number
+    [manager getUrlCall:[NSString stringWithFormat:@"%@%@",strServerUrl,strHexVal] withParameters:nil];
 }
+#pragma mark - UrlManager Delegate
+- (void)onResult:(NSDictionary *)result
+{
+    [APP_DELEGATE endHudProcess];
+//    NSLog(@"The result is...%@", result);
+    if ([[result valueForKey:@"result"] isKindOfClass:[NSString class]])
+    {
+        if ([[result valueForKey:@"commandName"] isEqualToString:@"gettoken"])
+        {
+            NSString * strIMEI = [self checkforValidString:[result valueForKey:@"IMEI"]];
+            NSString * strDeviceToken = [self checkforValidString:[result valueForKey:@"result"]];
+            NSLog(@"Device Token====>>>>>%@",strDeviceToken);
+            
+            NSString * strQuery =    [NSString stringWithFormat:@"insert into 'tbl_Device_IMEI'('bleAddress','IMEI','devicetoken') values(\"%@\",\"%@\",\"%@\")",[self checkforValidString:strSelectedBLEAddress],strIMEI,strDeviceToken];
+             [[DataBaseManager dataBaseManager] executeSw:strQuery];
+            if (![[arrIMEITokens valueForKey:@"IMEI"] containsObject:strIMEI])
+            {
+                NSDictionary * dict = [[NSDictionary alloc] initWithObjectsAndKeys:strIMEI,@"IMEI",strSelectedBLEAddress,@"bleAddress",strDeviceToken,@"devicetoken", nil];
+                [arrIMEITokens addObject:dict];
+            }
+
+            [self SendignDeviceTokenTotheDeVice:strDeviceToken];
+        }
+    }
+    else
+    {
+        NSLog(@"show error popup");
+        [self ErrorPopUP:@"Your not authorized to this device."];
+        [[BLEManager sharedManager] disconnectDevice:globalPeripheral];
+    }
+}
+- (void)onError:(NSError *)error
+{
+    [APP_DELEGATE endHudProcess];
+    NSLog(@"The error is...%@", error);
+}
+
+
 #pragma mark- UITableView Header Methods
 - (UIView *)tableView:(UITableView *)tableView viewForHeaderInSection:(NSInteger)section;   // custom view for header. will be adjusted to default or specified header height
 {
@@ -440,7 +320,6 @@
     [cell.btnSOS addTarget:self action:@selector(btnSOSClick:) forControlEvents:UIControlEventTouchUpInside];
     [cell.btnLivelocation addTarget:self action:@selector(btnLiveTrackClick:) forControlEvents:UIControlEventTouchUpInside];
     
-//    cell.btnConnect.frame = CGRectMake(DEVICE_WIDTH-150, 0, 100, 60);
     cell.btnMore.hidden = true;
     cell.imgviewMoreButton.hidden = true;
     cell.lblConnect.text = @"Connect";
@@ -495,11 +374,8 @@
 
         }
     }
-
         cell.lblDeviceName.text = [[arrayDevices  objectAtIndex:indexPath.row]valueForKey:@"name"];
         cell.lblAddress.text = [[arrayDevices  objectAtIndex:indexPath.row]valueForKey:@"bleAddress"];
-         
-    
         cell.backgroundColor = UIColor.clearColor;
         cell.selectionStyle = UITableViewCellSelectionStyleNone;
 
@@ -507,110 +383,94 @@
 }
 -(void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath
 {
-     CGRect myRect = [tableView rectForRowAtIndexPath:indexPath];
-//
-//    NSMutableArray * arrayDevices = [[NSMutableArray alloc] init];
-//    arrayDevices =[[BLEManager sharedManager] foundDevices];
-//    if ([arrayDevices count]>0)
-//    {
-//        CBPeripheral * p = [[arrayDevices objectAtIndex:indexPath.row] valueForKey:@"peripheral"];
-//        if (p.state == CBPeripheralStateConnected)
-//        {
-//            if (selectedMoreIndex == indexPath.row)
-//            {
-//                selectedMoreIndex = -1;
-//            }
-//            [APP_DELEGATE startHudProcess:@"Disconnecting..."];
-//            [[BLEManager sharedManager] disconnectDevice:p];
-//            if ([[arrGlobalDevices valueForKey:@"peripheral"] containsObject:p])
-//            {
-//                NSInteger foundIndex = [[arrGlobalDevices valueForKey:@"peripheral"] indexOfObject:p];
-//                if (foundIndex != NSNotFound)
-//                {
-//                    if (arrGlobalDevices.count > foundIndex)
-//                    {
-//                        [arrGlobalDevices removeObjectAtIndex:foundIndex];
-//                    }
-//                }
-//            }
-//        }
-//        else
-//        {
-//            [connectionTimer invalidate];
-//            connectionTimer = nil;
-//            connectionTimer = [NSTimer scheduledTimerWithTimeInterval:15 target:self selector:@selector(ConnectionTimeOutMethod) userInfo:nil repeats:NO];
-//            isConnectedtoAdd = YES;
-//            classPeripheral = p;
-//            globalPeripheral = p;
-//            [APP_DELEGATE startHudProcess:@"Connecting..."];
-//            [[BLEManager sharedManager] connectDevice:p];
-//        }
-//    }
-    selectedIndex = indexPath.row;
-}
-#pragma mark - MEScrollToTopDelegate Methods
-- (void) scrollViewDidScroll:(UIScrollView *)scrollView
-{
-    [topPullToRefreshManager tableViewScrolled];
-}
--(void)scrollViewDidEndDecelerating:(UIScrollView *)scrollView
-{
-}
-- (void)scrollViewDidEndDragging:(UIScrollView *)scrollView willDecelerate:(BOOL)decelerate
-{
-    if (scrollView.contentOffset.y >=360.0f)
-    {
-    }
-    else
-        [topPullToRefreshManager tableViewReleased];
-}
-- (void)pullToRefreshTriggered:(MNMPullToRefreshManager *)manager
-{
-    [self performSelector:@selector(stoprefresh) withObject:nil afterDelay:1.5];
-}
--(void)stoprefresh
-{
-    [self refreshBtnClick];
-    [topPullToRefreshManager tableViewReloadFinishedAnimated:NO];
-}
--(void)btnHistoyClick
-{
-    lblBadgeHistry.hidden = false;
-         if (globalBadgeCount <= 0)
-         {
-             self->lblBadgeHistry.hidden = true;
-         }
-         else
-         {
-             self->lblBadgeHistry.hidden = false;
-         }
     
-    globalHistoryVC = [[HistoryVC alloc] init];
-    [self.navigationController pushViewController:globalHistoryVC animated:true];
 }
--(NSString *)checkforValidString:(NSString *)strRequest
+#pragma mark-Cell Buttons
+-(void)btnConnectClick:(id)sender
 {
-    NSString * strValid;
-    if (![strRequest isEqual:[NSNull null]]) //NULL
+    NSLog(@"%ld", (long)[sender tag]);
+    NSMutableArray * arrayDevices = [[NSMutableArray alloc] init];
+    arrayDevices =[[BLEManager sharedManager] foundDevices];
+
+    if ([arrayDevices count]>[sender tag])
     {
-        if (strRequest != nil && strRequest != NULL && ![strRequest isEqualToString:@""])
+        CBPeripheral * p = [[arrayDevices objectAtIndex:[sender tag]] valueForKey:@"peripheral"];
+        if (p.state == CBPeripheralStateConnected)
         {
-            strValid = strRequest;
+            [APP_DELEGATE startHudProcess:@"Disconnecting..."];
+            [[BLEManager sharedManager] disconnectDevice:p];
         }
         else
         {
-            strValid = @"NA";
+            strSelectedBLEAddress = [[arrayDevices  objectAtIndex:[sender tag]]valueForKey:@"bleAddress"];
+            [connectionTimer invalidate];
+            connectionTimer = nil;
+            connectionTimer = [NSTimer scheduledTimerWithTimeInterval:15 target:self selector:@selector(ConnectionTimeOutMethod) userInfo:nil repeats:NO];
+            [connectionTimer invalidate];
+            connectionTimer = nil;
+            isConnectedtoAdd = YES;
+            classPeripheral = p;
+            globalPeripheral = p;
+            [APP_DELEGATE startHudProcess:@"Connecting..."];
+            [[BLEManager sharedManager] connectDevice:p];
         }
+    }
+}
+-(void)btnMoreClick:(id)sender
+{
+    if (selectedMoreIndex == [sender tag])
+    {
+        selectedMoreIndex = -1;
     }
     else
     {
-        strValid = @"NA";
+        selectedMoreIndex = [sender tag];
     }
-    strValid = [strValid stringByReplacingOccurrencesOfString:@"\"" withString:@""];
-    
-    return strValid;
+    [tblDeviceList reloadData];
 }
-// css add this
+-(void)btnMessageClick:(id)sender
+{
+    if (classPeripheral.state == CBPeripheralStateConnected)
+    {
+        globalChatVC  = [[ChatVC alloc] init];
+        globalChatVC.bleAdd = [[arrGlobalDevices objectAtIndex:[sender tag]] valueForKey:@"bleAddress"];
+        [self.navigationController pushViewController:globalChatVC animated:true];
+    }
+}
+-(void)btnSettingClick:(id)sender
+{
+    NSMutableArray * arrayDevices = [[NSMutableArray alloc] init];
+    arrayDevices =[[BLEManager sharedManager] foundDevices];
+
+    if ([arrayDevices count]>[sender tag])
+    {
+        CBPeripheral * p = [[arrayDevices objectAtIndex:[sender tag]] valueForKey:@"peripheral"];
+        [[BLEManager sharedManager] connectDevice:p];
+        
+        globalSettings = [[SettingVC alloc] init];
+        globalSettings.classPeripheral = p;
+        [self.navigationController pushViewController:globalSettings animated:true];
+    }
+}
+-(void)btnSOSClick:(id)sender
+{
+    SOSclassVC * sosVc = [[SOSclassVC alloc] init];
+    [self.navigationController pushViewController:sosVc animated:true];
+}
+-(void)btnGeofencelick:(id)sender
+{
+    globalHistoryVC = [[HistoryVC alloc] init];
+    [self.navigationController pushViewController:globalHistoryVC animated:true];
+}
+-(void)btnLiveTrackClick:(id)sender
+{
+    LiveTrackingVC * tVc = [[LiveTrackingVC alloc] init];
+    tVc.classPeripheral = classPeripheral;
+    [self.navigationController pushViewController:tVc animated:true];
+    [self RequestForStartLivetracking:@"01"];
+}
+
+#pragma mark : Button Click Events
 -(void)refreshBtnClick
 {
     
@@ -707,128 +567,6 @@
 -(void)btnNotificationIgnoreClick
 {
     [self TimeoutforHideNotification];
-}
-#pragma mark- AlertView
--(void)ShowGeofenceAlertWithTitle:(NSString *)strErrorMsg withTitle:(NSString *)strTitle withDict:(NSMutableDictionary *)detailDict
-{
-    if (lblBadgeHistry == nil)
-    {
-        NSLog(@"-==================> I am nil==========>");
-    }
-    
-    NSString * strBleAddress = [self checkforValidString:[detailDict valueForKey:@"bleAddress"]];
-    
-    if (![strBleAddress isEqualToString:@"NA"])
-    {
-        NSString * strBadgeCount = [self checkforValidString:[[NSUserDefaults standardUserDefaults] valueForKey:strBleAddress]];
-        int previousCount = 0;
-        if (![strBadgeCount isEqualToString:@"NA"])
-        {
-            previousCount = [strBadgeCount intValue];
-        }
-        previousCount = previousCount + 1;
-        [[NSUserDefaults standardUserDefaults] setValue:[NSString stringWithFormat:@"%d",previousCount] forKey:strBleAddress];
-        [[NSUserDefaults standardUserDefaults] synchronize];
-        [tblDeviceList reloadData];
-    }
-    globalBadgeCount = globalBadgeCount+1;
-    lblBadgeHistry.hidden = false;
-    lblBadgeHistry.text = [NSString stringWithFormat:@"%ld",(long)globalBadgeCount];
-    if (globalBadgeCount >= 100)
-    {
-        lblBadgeHistry.frame = CGRectMake(DEVICE_WIDTH-30, globalStatusHeight, 28, 20);
-    }
-    else
-    {
-        lblBadgeHistry.frame = CGRectMake(DEVICE_WIDTH-25, globalStatusHeight, 20, 20);
-    }
-    
-    [UIApplication sharedApplication].applicationIconBadgeNumber = globalBadgeCount; // biayya changed
-
-    dispatch_async(dispatch_get_main_queue(), ^{
-        UIApplication * app=[UIApplication sharedApplication];
-        if (app.applicationState == UIApplicationStateBackground)
-        {
-            NSLog(@"We are in the background Disconnect");
-            UIUserNotificationSettings *notifySettings=[[UIApplication sharedApplication] currentUserNotificationSettings];
-            if ((notifySettings.types & UIUserNotificationTypeAlert)!=0)
-            {
-//                globalBadgeCount = globalBadgeCount+1;
-
-                UILocalNotification *notification=[UILocalNotification new];
-                notification.soundName = @"alert_alarm.mp3";
-                notification.alertBody= strErrorMsg;
-                [app presentLocalNotificationNow:notification];
-            }
-        }
-    });
-
-    //To show Alert Popup
-    if ([strCurrentScreen isEqualToString:@"LiveTracking"])//Kalpesh26062021
-    {
-        [self ShowNotificationofGeofence:strTitle withMsg:strErrorMsg withData:detailDict];
-//        ShowNotificationofGeofence
-    }
-    else
-    {
-        [geofenceAlertPopup removeFromSuperview];
-        geofenceAlertPopup = [[FCAlertView alloc] init];
-        geofenceAlertPopup.colorScheme = [UIColor blackColor];
-        geofenceAlertPopup.detailsDict = detailDict;
-        [geofenceAlertPopup makeAlertTypeCaution];
-        typeof(self) __weak weakSelf = self;
-
-           [geofenceAlertPopup addButton:@"Seen in Map" withActionBlock:^
-           { // see in map action here
-               NSLog(@"This alert's Data =%@",detailDict);
-               
-               globalBadgeCount = globalBadgeCount - 1;
-               [UIApplication sharedApplication].applicationIconBadgeNumber = globalBadgeCount;
-
-               typeof(weakSelf) __strong strongSelf = weakSelf;
-               if (strongSelf != nil )
-               {
-                   if (globalBadgeCount <= 0)
-                   {
-                       strongSelf->lblBadgeHistry.hidden = true;
-                       strongSelf->lblBadgeHistry.text = [NSString stringWithFormat:@"0"];
-                   }
-                   else
-                   {
-                       strongSelf->lblBadgeHistry.hidden = false;
-                       strongSelf->lblBadgeHistry.text = [NSString stringWithFormat:@"%ld",(long)globalBadgeCount];
-                   }
-                   if (globalBadgeCount >= 100)
-                   {
-                       strongSelf->lblBadgeHistry.frame = CGRectMake(DEVICE_WIDTH-30, globalStatusHeight, 28, 20);
-                   }
-                   else
-                   {
-                       strongSelf->lblBadgeHistry.frame = CGRectMake(DEVICE_WIDTH-25, globalStatusHeight, 20, 20);
-                   }
-               }
-               if ([[detailDict valueForKey:@"Geo_Type"] isEqualToString:@"00"])
-               {
-                   RadialGeofenceVC *view1 = [[RadialGeofenceVC alloc]init];
-                   view1.isfromEdit = YES;
-                   view1.isfromHistory = NO;
-                   view1.dictGeofenceInfo = detailDict;
-                   [strongSelf.navigationController pushViewController:view1 animated:true];
-               }
-               else
-               {
-                   PolygonGeofenceVC *view1 = [[PolygonGeofenceVC alloc]init];
-                   view1.isfromEdit = YES;
-                   view1.isfromHistory = NO;
-                   view1.dictGeofenceInfo = detailDict;
-                   [strongSelf.navigationController pushViewController:view1 animated:true];
-               }
-           }];
-        geofenceAlertPopup.firstButtonCustomFont = [UIFont fontWithName:CGRegular size:textSize];
-            geofenceAlertPopup.delegate = self;
-       [geofenceAlertPopup showAlertWithTitle:strTitle withSubtitle:strErrorMsg withCustomImage:[UIImage imageNamed:@"alert-round.png"] withDoneButtonTitle:@"Ignore" andButtons:nil];
-        [geofenceAlertPopup setAlertSoundWithFileName:@"alert_alarm.mp3"];
-    }
 }
 -(void)SetupAlertViewForSetDeviceName
 {
@@ -983,6 +721,13 @@
     {
     }
 }
+-(void)GlobalBLuetoothCheck
+{
+    UIAlertController *alertController = [UIAlertController alertControllerWithTitle:@"Geofence Alert" message:@"Please turn on Bluetooth to access the App." preferredStyle:UIAlertControllerStyleAlert];
+    UIAlertAction *defaultAction = [UIAlertAction actionWithTitle:@"OK" style:UIAlertActionStyleDefault handler:^(UIAlertAction *action) {}];
+    [alertController addAction:defaultAction];
+    [self presentViewController:alertController animated:true completion:nil];
+}
 -(void)InitialBLE
 {
     [[NSNotificationCenter defaultCenter] removeObserver:self name:@"NotifiyDiscoveredDevices" object:nil];
@@ -1026,7 +771,7 @@ dispatch_async(dispatch_get_main_queue(), ^(void)
         [[BLEManager sharedManager] rescan];
         [self->tblDeviceList reloadData];
         [APP_DELEGATE endHudProcess];
-        [self TostNotification:@"Device Disconnected"];
+        [self ShowToastNotification:@"Device Disconnected"];
         
         NSArray * tmparr = [[BLEManager sharedManager]getLastConnected];
         for (int i=0; i<tmparr.count; i++)
@@ -1050,17 +795,13 @@ dispatch_async(dispatch_get_main_queue(), ^(void)
         }
     });
 }
+#pragma mark : After Connection request for IMEI from server
 -(void)AuthenticationCompleted
 {
     dispatch_async(dispatch_get_main_queue(), ^(void)
     {
-//        [APP_DELEGATE startHudProcess:@"Loading..."];
-//        [self TostNotification:@"Device Connected"];
-//        [self TestingWith100Packets];// for testing 100 packets
-        
         globalPeripheral = self->classPeripheral;
-        self-> tempSelectedPeripheral = self->classPeripheral;
-        
+        self->tempSelectedPeripheral = self->classPeripheral;
         [self RequestForIMEInumbertotheDevice];
         
         NSMutableArray * tmpArr = [[BLEManager sharedManager] foundDevices];
@@ -1074,9 +815,8 @@ dispatch_async(dispatch_get_main_queue(), ^(void)
                     NSString * strCurrentIdentifier = [NSString stringWithFormat:@"%@",self->classPeripheral.identifier];
                     NSString * strName = [[tmpArr  objectAtIndex:foudIndex]valueForKey:@"name"];
                     NSString * strAddress = [[tmpArr  objectAtIndex:foudIndex]valueForKey:@"bleAddress"];
-
                     dispatch_async(dispatch_get_main_queue(), ^(void){
-                        
+                       
                         if ([arrGlobalDeviceNames count]==0)
                         {
                             [self SetupAlertViewForSetDeviceName];
@@ -1094,38 +834,6 @@ dispatch_async(dispatch_get_main_queue(), ^(void)
         [self refreshBtnClick];
     });
 }
--(void)GlobalBLuetoothCheck
-{
-    UIAlertController *alertController = [UIAlertController alertControllerWithTitle:@"Geofence Alert" message:@"Please turn on Bluetooth to access the App." preferredStyle:UIAlertControllerStyleAlert];
-    UIAlertAction *defaultAction = [UIAlertAction actionWithTitle:@"OK" style:UIAlertActionStyleDefault handler:^(UIAlertAction *action) {}];
-    [alertController addAction:defaultAction];
-    [self presentViewController:alertController animated:true completion:nil];
-}
--(void)WritetoDevicetogetGeofenceDetail:(NSString *)strGeoID
-{
-    [[BLEService sharedInstance] WritetoDevicetogetGeofenceDetail:strGeoID];
-}
--(NSString *)getStringConvertedinUnsigned:(NSString *)strNormal
-{
-    NSString * strKey = strNormal;
-    long ketLength = [strKey length]/2;
-    NSString * strVal;
-    for (int i=0; i<ketLength; i++)
-    {
-        NSRange range73 = NSMakeRange(i*2, 2);
-        NSString * str3 = [strKey substringWithRange:range73];
-        if ([strVal length]==0)
-        {
-            strVal = [NSString stringWithFormat:@" 0x%@",str3];
-        }
-        else
-        {
-            strVal = [strVal stringByAppendingString:[NSString stringWithFormat:@" 0x%@",str3]];
-        }
-    }
-    return strVal;
-}
-#pragma mark
 -(void)ConnectionSuccessfulStatSyncGeofence;
 {
     dispatch_async(dispatch_get_main_queue(), ^(void){
@@ -1138,24 +846,149 @@ dispatch_async(dispatch_get_main_queue(), ^(void)
 {
     [APP_DELEGATE endHudProcess];
 }
+-(void)RequestForIMEInumbertotheDevice
+{
+    NSInteger intCommond = [@"225" integerValue]; // E1
+    NSData * dataOpCmd = [[NSData alloc] initWithBytes:&intCommond length:1];
+
+    NSInteger intLength = [@"0" integerValue];
+    NSData * dataLength = [[NSData alloc] initWithBytes:&intLength length:1];
+
+    NSMutableData *completeData = [dataOpCmd mutableCopy];
+    [completeData appendData:dataLength];
+    
+    [[BLEService sharedInstance] WriteNSDataforEncryptionAndthenSendtoPeripheral:completeData withPeripheral:classPeripheral];
+}
+-(void)ReceievedGeofenceDatafromBLEIMEInumber:(NSString *)strIMEI
+{
+    dispatch_async(dispatch_get_main_queue(), ^{
+    if ([[self checkforValidString:strIMEI]isEqualToString:@""])
+    {
+        // error
+        [APP_DELEGATE endHudProcess];
+        [self ErrorPopUP:@"Something went wrong. Please try again!"];
+        [[BLEManager sharedManager] disconnectDevice:globalPeripheral];
+    }
+    else
+    {
+        //    'tbl_Device_IMEI' (id integer primary key autoincrement not null,'bleAddress' VARCHAR, 'IMEI' VARCHAR,'devicetoken' VARCHAR )
+        BOOL isTokenAvailable = NO;
+        if ([[self->arrIMEITokens valueForKey:@"IMEI"] containsObject:strIMEI])
+        {
+            NSInteger foundIndex = [[self->arrIMEITokens valueForKey:@"IMEI"] indexOfObject:strIMEI];
+            if (foundIndex != NSNotFound)
+            {
+                if ([self->arrIMEITokens count] > foundIndex)
+                {
+                    NSString * strToken = [self checkforValidString:[[self->arrIMEITokens objectAtIndex:foundIndex] valueForKey:@"devicetoken"]];
+                    if (![strToken isEqualToString:@"NA"])
+                    {
+                        isTokenAvailable = YES;
+                        [self SendignDeviceTokenTotheDeVice:strToken];
+                    }
+                    else
+                    {
+                        isTokenAvailable = NO;
+                    }
+                }
+            }
+        }
+        else
+        {
+            isTokenAvailable = NO;
+        }
+        if (isTokenAvailable == NO)
+        {
+            if ([APP_DELEGATE isNetworkreachable])
+            {
+                [self GettingDeviceTokenFromURL:strIMEI];
+            }
+            else
+            {
+                [self ErrorPopUP:@"Please connect to the internet."];
+                [[BLEManager sharedManager] disconnectDevice:globalPeripheral];
+            }
+        }
+        // Success
+    }
+    });
+}
+
+#pragma mark : Write Device_Token to Device
+-(void)SendignDeviceTokenTotheDeVice:(NSString *)strDeviceToken
+{
+    strDeviceToken = [strDeviceToken stringByReplacingOccurrencesOfString:@"\"" withString:@""];
+
+    if (![[APP_DELEGATE checkforValidString:strDeviceToken] isEqualToString:@"NA"])
+    {
+        NSMutableArray * arrDeviceTokenPacket = [[NSMutableArray alloc] init];
+        NSInteger totalPackets = 0;
+        totalPackets = [self getTotalNumberofPackets:strDeviceToken];
+        [self AddPacketstoArray:arrDeviceTokenPacket withString:strDeviceToken withTotalPackets:totalPackets];
+        
+        [self WriteDeviceTokenToDevicewithPacketsArray:arrDeviceTokenPacket withToalNoofPackets:totalPackets];
+    }
+}
+-(void)WriteDeviceTokenToDevicewithPacketsArray:(NSMutableArray *)arrDevicePackets withToalNoofPackets:(NSInteger)totalPackets
+{
+    for (int i =0; i < [arrDevicePackets count]; i++)
+    {
+        NSString * strPacket = [arrDevicePackets objectAtIndex: i];
+        NSInteger intPacketLength = [strPacket length] + 1;
+
+        //1. Command
+        NSInteger commandInt = 226;
+        NSData * commandData = [[NSData alloc] initWithBytes:&commandInt length:1];
+            
+        //2. Length Data
+        NSData * lengthData = [[NSData alloc] initWithBytes:&intPacketLength length:1];
+
+        NSInteger packtInt = totalPackets - i;
+        NSData * packetNoData = [[NSData alloc] initWithBytes:&packtInt length:1];
+
+        NSData * msgData = [self dataFromHexString:[self hexFromStr:strPacket]];
+            
+        NSMutableData * completeData = [[NSMutableData alloc] initWithData:commandData];
+        [completeData appendData:lengthData];
+        [completeData appendData:packetNoData];
+        [completeData appendData:msgData];
+        NSLog(@"Tokent Sent Data=====%@",completeData);
+            
+        [[BLEService sharedInstance] WriteNSDataforEncryptionAndthenSendtoPeripheral:completeData withPeripheral:globalPeripheral];
+    }
+}
+-(void)ReceviedValidTokenFromDevice:(NSString *)strVAlidate
+{
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [APP_DELEGATE endHudProcess];
+    if ([strVAlidate isEqualToString:@"00"])
+    {
+        [self ErrorPopUP:@"Please make sure it's your device"];
+        
+        [[BLEManager sharedManager] disconnectDevice:globalPeripheral];
+    }
+    else if([strVAlidate isEqualToString:@"01"]) //  valid token
+    {
+//        [[BLEManager sharedManager] connectDevice:self->classPeripheral];//kalpeshtochek
+        // send a4ff
+    }
+    else if ([strVAlidate isEqualToString:@"02"]) //  retry after some time
+    {
+        [self ErrorPopUP:@"Decvice token not found !"];
+        [[BLEManager sharedManager] disconnectDevice:globalPeripheral];
+    }
+    });
+}
 -(void)SaveAllGeofenceListwithTimeStamp:(NSMutableArray *)arrGeoTimeStamp;
 {
-    isAnyGeofenceFoundSynced = YES;
-    
     for (int i=0 ; i<[arrGeoTimeStamp count]; i++)
     {
         [arrTempListGeofence addObject:[arrGeoTimeStamp objectAtIndex:i]];
     }
     NSLog(@"All Geofence ID & Time Stamp =%@",arrTempListGeofence);
 }
--(void)ReceievedGeofenceDatafromBLE
-{
-    if ([arrTempListGeofence count]>0)
-    {
-        [arrTempListGeofence removeObjectAtIndex:0];
-        [self StartSyncingGeofence];
-    }
-}
+
+#pragma mark : Token Verified, Got list of Geofence and now Syncing Geofence
 -(void)StartSyncingGeofence
 {
     NSLog(@"StartSyncingGeofence ==========%@",arrTempListGeofence);
@@ -1205,14 +1038,27 @@ dispatch_async(dispatch_get_main_queue(), ^(void)
         dispatch_async(dispatch_get_main_queue(), ^(void){
         [APP_DELEGATE endHudProcess];
         });
-//        if (isAnyGeofenceFoundSynced == YES)
-//        {
         NSLog(@"==========>[[BLEService sharedInstance] SendAcknowledgementofDataSyncFinished]");
             [[BLEService sharedInstance] SendAcknowledgementofDataSyncFinished];
-//        }
     }
 }
--(void)SendFirstPacketToHomeVC:(NSString *)strID withSize:(NSString *)strSize withType:(NSString *)strType  withRadius:(NSString *)strRadius withTime:(NSString *)strTimeStamp
+-(void)WritetoDevicetogetGeofenceDetail:(NSString *)strGeoID
+{
+    [[BLEService sharedInstance] WritetoDevicetogetGeofenceDetail:strGeoID];
+}
+#pragma mark : When Geofence data not avaialble for Geofence ID, Requesting for next Geofence ID
+-(void)ReceievedGeofenceDatafromBLE
+{
+    if ([arrTempListGeofence count]>0)
+    {
+        [arrTempListGeofence removeObjectAtIndex:0];
+        [self StartSyncingGeofence];
+    }
+}
+
+#pragma mark : Geofence Data Packets Receiving here...
+
+-(void)ReceivedFirstPacketofGeofence:(NSString *)strID withSize:(NSString *)strSize withType:(NSString *)strType  withRadius:(NSString *)strRadius withTime:(NSString *)strTimeStamp
 {
     NSLog(@"=First Packet ID====>%@, SIZE ==%@, TYPE==%@, RADIUS ==%@",strID, strSize, strType, strRadius);
     [globalDict setValue:strID forKey:@"geofence_ID"];
@@ -1221,23 +1067,22 @@ dispatch_async(dispatch_get_main_queue(), ^(void)
     [globalDict setValue:strRadius forKey:@"radiusOrvertices"];
     [globalDict setValue:strTimeStamp forKey:@"time_stamp"];
 }
--(void)SendSecondPacketLatLongtoHomeVC:(float)latitude withLongitude:(float)longitude
+-(void)ReceivedSecondPacketLatLong:(NSString *)latitude withLongitude:(NSString *)longitude
 {
-    NSLog(@"=Second Packet Lat====>%f Long==%f",latitude, longitude);
+    NSLog(@"=Second Packet Lat====>%@ Long==%@",latitude, longitude);
   
-    [globalDict setValue:[NSNumber numberWithFloat:latitude] forKey:@"lat"];
-    [globalDict setValue:[NSNumber numberWithFloat:longitude] forKey:@"long"];
+    [globalDict setValue:latitude forKey:@"lat"];
+    [globalDict setValue:longitude forKey:@"long"];
 }
--(void)ThirdPackettoHomeVC:(NSString *)strLength withGSMTime:(NSString *)strGsmTime withIrridiumTime:(NSString *)strIrridmTime withRuleId:(NSString *)strRuleId
+-(void)ReceivedThirdPacketofGeofenceData:(NSString *)strLength withGSMTime:(NSString *)strGsmTime withIrridiumTime:(NSString *)strIrridmTime withRuleId:(NSString *)strRuleId
 {
     NSLog(@"=Third packet No.of Rules=>%@",strRuleId);
     [globalDict setValue:strLength forKey:@"PacketLength"];
     [globalDict setValue:strRuleId forKey:@"number_of_rules"];
     [globalDict setValue:strGsmTime forKey:@"gsm_time"];
     [globalDict setValue:strIrridmTime forKey:@"irridium_time"];
-
 }
--(void)FourthPacketToHomeVC:(NSString *)strruleID withValue:(NSString *)strValue withNoOfAction:(NSString *)strNoAction
+-(void)ReceivedFourthPacketofGeofenceData:(NSString *)strruleID withValue:(NSString *)strValue withNoOfAction:(NSString *)strNoAction
 {
     NSLog(@"=Fourth Packet Rule ID=>%@  RuleValue==%@  No.of Action-==%@",strruleID, strValue, strNoAction);
     
@@ -1247,15 +1092,7 @@ dispatch_async(dispatch_get_main_queue(), ^(void)
     [dict setValue:strNoAction forKey:@"NoAction"];
     [arrRules addObject:dict];
 }
--(void)FifthPockeToHome:(NSMutableArray *)arrFithPacktData
-{
-    NSLog(@"=Fifth Packet Array=>%@",arrFithPacktData);
-    for (int i=0 ; i<[arrFithPacktData count]; i++)
-    {
-        [arrActons addObject:[arrFithPacktData objectAtIndex:i]];
-    }
-}
--(void)PolygonLatLongtoHomeLatlonArray:(NSMutableArray *)arrLatLong
+-(void)ReceivedPolygonLatLongsofGeofenceData:(NSMutableArray *)arrLatLong
 {
 //    NSLog(@"Polygon Packet Array=>%@",arrLatLong);
     for (int i=0 ; i<[arrLatLong count]; i++)
@@ -1263,37 +1100,129 @@ dispatch_async(dispatch_get_main_queue(), ^(void)
         [arrPolygon addObject:[arrLatLong objectAtIndex:i]];
     }
 }
--(void)FifthPacketoHomeBLE //
+-(void)ReceivedFifthPacketofGeofenceData //
 {
     NSLog(@"=Sixth Packet =>");
     [self InsertToDataBase];
 }
--(NSString *)getRuleNamefromRuleId:(NSString *)strRuleId
+#pragma mark : After Receiving fifth Packet Insert Geofence Data to Database
+-(void)InsertToDataBase
 {
-    NSString * strRuleName = @"NA";
-    if ([strRuleId isEqualToString:@"03"])
+    if (globalDict.count > 0)
     {
-        strRuleName = @"Breach Minimum Dwell Time";
+        NSString * FLat = [NSString stringWithFormat:@"%f", [[globalDict valueForKey:@"lat"] floatValue]];
+        NSString * FLong = [NSString stringWithFormat:@"%f", [[globalDict valueForKey:@"long"] floatValue]];
+
+        NSString * strGeoFncID = [self checkforValidString:[globalDict valueForKey:@"geofence_ID"]];
+        NSString * strGeoFncType = [self checkforValidString:[globalDict valueForKey:@"type"]];
+        NSString * strLat = [self checkforValidString:FLat]; //Latitude
+        NSString * strLong = [self checkforValidString:FLong]; //Longitude
+        NSString * strNoRules = [self checkforValidString:[globalDict valueForKey:@"number_of_rules"]];
+        NSString * strIsActive = @"NA";
+        NSString * strRadiusVertices = [self checkforValidString:[globalDict valueForKey:@"radiusOrvertices"]];
+        NSString * strGSMtime = [self checkforValidString:[globalDict valueForKey:@"GSMtime"]];
+        NSString * strIrridiumTime = [self checkforValidString:[globalDict valueForKey:@"IrridiumTime"]];
+        NSString * strTimeStamp = [self checkforValidString:[globalDict valueForKey:@"time_stamp"]];
+
+        NSString *query  = [NSString stringWithFormat:@"select * from Geofence where geofence_ID = '%@'",strGeoFncID];
+        BOOL recordExist = [[DataBaseManager dataBaseManager] recordExistOrNot:query];
+        NSString * strName = [self stringFroHex:strGeoFncID];
+
+
+        if ([strGeoFncType isEqualToString:@"01"])
+        {
+            [globalDict setValue:[NSString stringWithFormat:@"0"] forKey:@"lat"];
+            [globalDict setValue:[NSString stringWithFormat:@"0"] forKey:@"long"];
+            
+            strLat = @"0";
+            strLong = @"0";
+        }
+        
+        NSLog(@"=======================>Geofence Data===%@",globalDict);
+        if (recordExist)
+        {
+            NSString *  strUpdateQury =  [NSString stringWithFormat:@"update Geofence set name = \"%@\", geofence_ID = \"%@\", type = \"%@\", lat = \"%@\", long = \"%@\", number_of_rules = \"%@\", is_active = \"%@\", radiusOrvertices = \"%@\", gsm_time = '%@', irridium_time = '%@', time_stamp = '%@' where id =\"%@\"",strName,strGeoFncID,strGeoFncType,strLat,strLong,strNoRules,strIsActive,strRadiusVertices,strGSMtime,strIrridiumTime,strTimeStamp,[globalDict valueForKey:@"geofence_ID"]];
+            [[DataBaseManager dataBaseManager] execute:strUpdateQury];
+            if ([[arrGlobalGeofenceList valueForKey:@"geofence_ID"] containsObject:strGeoFncID])
+            {
+                NSInteger foundIndex = [[arrGlobalGeofenceList valueForKey:@"geofence_ID"] indexOfObject:strGeoFncID];
+                if (foundIndex != NSNotFound)
+                {
+                    if ([arrGlobalGeofenceList count] > foundIndex)
+                    {
+                        [arrGlobalGeofenceList replaceObjectAtIndex:foundIndex withObject:globalDict];;
+                    }
+                }
+            }
+            else
+            {
+                [arrGlobalGeofenceList addObject:globalDict];
+            }
+        }
+        else
+        {
+            NSString * strGeofenceQuery = [NSString stringWithFormat:@"insert into 'Geofence'('name','geofence_ID','type','lat','long','number_of_rules','is_active','radiusOrvertices','gsm_time','irridium_time','time_stamp') values(\"%@\",\"%@\",\"%@\",\"%@\",\"%@\",\"%@\",\"%@\",\"%@\",\"%@\",\"%@\",\"%@\")",strName,strGeoFncID,strGeoFncType,strLat,strLong,strNoRules,strIsActive,strRadiusVertices,strGSMtime,strIrridiumTime, strTimeStamp];
+            [[DataBaseManager dataBaseManager] execute:strGeofenceQuery];
+            [arrGlobalGeofenceList addObject:globalDict];
+        }
+        NSLog(@"=======================>RUles Data===%@",arrRules);
+
+        NSString * strDeleteRules = [NSString stringWithFormat:@"delete from Rules_Table where geofence_ID = '%@'",strGeoFncID];
+        [[DataBaseManager dataBaseManager] executeSw:strDeleteRules];
+        NSMutableArray * arrOnlyRules = [[NSMutableArray alloc] init];
+        if ([[arrAllSavedRules valueForKey:@"geofence_ID"] containsObject:strGeoFncID])
+        {
+            NSInteger foundGeoID = [[arrAllSavedRules valueForKey:@"geofence_ID"] indexOfObject:strGeoFncID];
+
+            if (foundGeoID != NSNotFound)
+            {
+                if ([arrAllSavedRules count]>foundGeoID)
+                {
+                    [arrAllSavedRules removeObjectAtIndex:foundGeoID];
+                }
+            }
+        }
+        for (int i = 0; i < [arrRules count]; i++)
+        {
+            NSString * strRuleID = [self checkforValidString:[[arrRules objectAtIndex:i] valueForKey:@"rule_ID"]];
+            NSString * strValue  = [self checkforValidString:[[arrRules objectAtIndex:i] valueForKey:@"rule_value"]];
+            NSString * strRuleNO = [self checkforValidString:[[arrRules objectAtIndex:i] valueForKey:@"NoAction"]];
+
+            NSString * strRulesQuery =    [NSString stringWithFormat:@"insert into 'Rules_Table'('name','geofence_ID','rule_ID','rule_value','rule_number') values(\"%@\",\"%@\",\"%@\",\"%@\",\"%@\")",strName,strGeoFncID,strRuleID,strValue,strRuleNO];
+             [[DataBaseManager dataBaseManager] executeSw:strRulesQuery];
+            NSDictionary * dct = [[NSDictionary alloc] initWithObjectsAndKeys:strGeoFncID,@"geofence_ID",strValue,@"rule_value",strRuleID,@"rule_ID", nil];
+            [arrOnlyRules addObject:dct];
+        }
+        if ([arrOnlyRules count] > 0)
+        {
+            NSDictionary * dct = [[NSDictionary alloc] initWithObjectsAndKeys:strGeoFncID,@"geofence_ID",arrOnlyRules,@"AllRules", nil];
+            [arrAllSavedRules addObject:dct];
+        }
+
+        if ([strGeoFncType isEqualToString:@"01"])
+        {
+            for (int i=0 ; i<[arrPolygon count]; i++)
+            {
+                NSString * strLat = [[arrPolygon objectAtIndex:i] valueForKey:@"lat"];
+                NSString * strLon = [[arrPolygon objectAtIndex:i] valueForKey:@"lon"];
+                NSString * strActionQuery =  [NSString stringWithFormat:@"insert into 'Polygon_Lat_Long'('geofence_ID','lat','long','Geo_timeStamp') values(\"%@\",\"%@\",\"%@\",\"%@\")",strGeoFncID,strLat,strLon,strTimeStamp];
+                [[DataBaseManager dataBaseManager] execute:strActionQuery];
+            }
+        }
+        if ([arrTempListGeofence count] > 0)
+        {
+            [arrTempListGeofence removeObjectAtIndex:0];
+        }
+        
+        globalDict = [[NSMutableDictionary alloc] init];
+        arrActons = [[NSMutableArray alloc] init];
+        arrRules = [[NSMutableArray alloc] init];
+        arrPolygon = [[NSMutableArray alloc] init];
+        [self StartSyncingGeofence];
     }
-    else if ([strRuleId isEqualToString:@"04"])
-    {
-        strRuleName = @"Breach Maximum Dwell Time";
-    }
-    else if ([strRuleId isEqualToString:@"05"])
-    {
-        strRuleName = @"Breach Minimum Speed limit";
-    }
-    else if ([strRuleId isEqualToString:@"06"])
-    {
-        strRuleName = @"Breach Maximum Speed limit";
-    }
-    else if ([strRuleId isEqualToString:@"07"])
-    {
-        strRuleName = @"Boundry Cross Violation";
-    }
-    return strRuleName;
 }
--(void)SendAlertInfoGeoID:(NSMutableDictionary *)dataDict isGeoAvailable:(BOOL)isAvail
+#pragma mark : Recieving Geofence Alert Packets here...
+-(void)ReceivedGeofenceAlert:(NSMutableDictionary *)dataDict isGeoAvailable:(BOOL)isAvail
 {
     currentAlertDict = [[NSMutableDictionary alloc] init];
     NSTimeInterval timeStamp = [[NSDate date] timeIntervalSince1970];
@@ -1339,14 +1268,13 @@ dispatch_async(dispatch_get_main_queue(), ^(void)
         }
     }
    
-    [arrAlertPacketsQueue addObject:dataDict];
     
     dispatch_async(dispatch_get_main_queue(), ^(void)
     {
-        [NSTimer scheduledTimerWithTimeInterval:0.1 target:self selector:@selector(ShowDelayedPopup:) userInfo:dataDict repeats:NO];
+        [NSTimer scheduledTimerWithTimeInterval:0.1 target:self selector:@selector(SaveAlertInfotoDatabase:) userInfo:dataDict repeats:NO];
     });
 }
--(void)ShowDelayedPopup:(NSTimer*)theTimer
+-(void)SaveAlertInfotoDatabase:(NSTimer*)theTimer
 {
     NSString * strRuleId = [[theTimer userInfo] objectForKey:@"BreachRule_ID"];
     NSString * strBrechType = [[theTimer userInfo] objectForKey:@"Breach_Type"];
@@ -1494,6 +1422,272 @@ dispatch_async(dispatch_get_main_queue(), ^(void)
         NSString * strActionQuery =  [NSString stringWithFormat:@"insert into 'Geofence_alert_Table'('geofence_ID','Breach_Type','Breach_Lat','Breach_Long','BreachRule_ID','BreachRuleValue','Geo_name','Geo_Type','date_Time','timeStamp','Rule_Name','is_Read','OriginalRuleValue', 'bleAddress','Message', 'isViewed','Geo_timeStamp','Geo_Lat','Geo_Log', 'Geo_Radius') values(\"%@\",\"%@\",\"%@\",\"%@\",\"%@\",\"%@\",\"%@\",\"%@\",\"%@\",\"%@\",\"%@\",\"%@\",\"%@\",\"%@\",\"%@\",0,\"%@\",\"%@\",\"%@\",\"%@\")",strGeoID,strBrechType,strBreachLat,strBreachLon,strRuleId,strBreachRuleValue,strGeoName,strGeoType,strBreachDateTime,strBreachTimestamp,strRuleName,strNA,strActualRuleValue,strBleAddress,strMsg,strGeoTimeStamp,strGeoLat,strGeoLog, strGeoRadius];
         [[DataBaseManager dataBaseManager] executeSw:strActionQuery];
 }
+#pragma mark- To Show Geofence Alert and Notification
+-(void)ShowGeofenceAlertWithTitle:(NSString *)strErrorMsg withTitle:(NSString *)strTitle withDict:(NSMutableDictionary *)detailDict
+{
+    NSString * strBleAddress = [self checkforValidString:[detailDict valueForKey:@"bleAddress"]];
+    
+    if (![strBleAddress isEqualToString:@"NA"])
+    {
+        NSString * strBadgeCount = [self checkforValidString:[[NSUserDefaults standardUserDefaults] valueForKey:strBleAddress]];
+        int previousCount = 0;
+        if (![strBadgeCount isEqualToString:@"NA"])
+        {
+            previousCount = [strBadgeCount intValue];
+        }
+        previousCount = previousCount + 1;
+        [[NSUserDefaults standardUserDefaults] setValue:[NSString stringWithFormat:@"%d",previousCount] forKey:strBleAddress];
+        [[NSUserDefaults standardUserDefaults] synchronize];
+        [tblDeviceList reloadData];
+    }
+    globalBadgeCount = globalBadgeCount+1;
+
+    [UIApplication sharedApplication].applicationIconBadgeNumber = globalBadgeCount; // biayya changed
+
+    dispatch_async(dispatch_get_main_queue(), ^{
+        UIApplication * app=[UIApplication sharedApplication];
+        if (app.applicationState == UIApplicationStateBackground)
+        {
+            NSLog(@"We are in the background Disconnect");
+            UIUserNotificationSettings *notifySettings=[[UIApplication sharedApplication] currentUserNotificationSettings];
+            if ((notifySettings.types & UIUserNotificationTypeAlert)!=0)
+            {
+//                globalBadgeCount = globalBadgeCount+1;
+
+                UILocalNotification *notification=[UILocalNotification new];
+                notification.soundName = @"alert_alarm.mp3";
+                notification.alertBody= strErrorMsg;
+                [app presentLocalNotificationNow:notification];
+            }
+        }
+    });
+
+    //To show Alert Popup
+    if ([strCurrentScreen isEqualToString:@"LiveTracking"])//Kalpesh26062021
+    {
+        [self ShowNotificationofGeofence:strTitle withMsg:strErrorMsg withData:detailDict];
+//        ShowNotificationofGeofence
+    }
+    else
+    {
+        [geofenceAlertPopup removeFromSuperview];
+        geofenceAlertPopup = [[FCAlertView alloc] init];
+        geofenceAlertPopup.colorScheme = [UIColor blackColor];
+        geofenceAlertPopup.detailsDict = detailDict;
+        [geofenceAlertPopup makeAlertTypeCaution];
+        typeof(self) __weak weakSelf = self;
+
+           [geofenceAlertPopup addButton:@"Seen in Map" withActionBlock:^
+           { // see in map action here
+               NSLog(@"This alert's Data =%@",detailDict);
+               
+               globalBadgeCount = globalBadgeCount - 1;
+               [UIApplication sharedApplication].applicationIconBadgeNumber = globalBadgeCount;
+
+               typeof(weakSelf) __strong strongSelf = weakSelf;
+               if ([[detailDict valueForKey:@"Geo_Type"] isEqualToString:@"00"])
+               {
+                   RadialGeofenceVC *view1 = [[RadialGeofenceVC alloc]init];
+                   view1.isfromEdit = YES;
+                   view1.isfromHistory = NO;
+                   view1.dictGeofenceInfo = detailDict;
+                   [strongSelf.navigationController pushViewController:view1 animated:true];
+               }
+               else
+               {
+                   PolygonGeofenceVC *view1 = [[PolygonGeofenceVC alloc]init];
+                   view1.isfromEdit = YES;
+                   view1.isfromHistory = NO;
+                   view1.dictGeofenceInfo = detailDict;
+                   [strongSelf.navigationController pushViewController:view1 animated:true];
+               }
+           }];
+        geofenceAlertPopup.firstButtonCustomFont = [UIFont fontWithName:CGRegular size:textSize];
+            geofenceAlertPopup.delegate = self;
+       [geofenceAlertPopup showAlertWithTitle:strTitle withSubtitle:strErrorMsg withCustomImage:[UIImage imageNamed:@"alert-round.png"] withDoneButtonTitle:@"Ignore" andButtons:nil];
+        [geofenceAlertPopup setAlertSoundWithFileName:@"alert_alarm.mp3"];
+    }
+}
+-(void)ShowNotificationofGeofence:(NSString *)strTitle withMsg:(NSString *)strMsg withData:(NSDictionary *)dataDict
+{
+    notificationDict = [[NSMutableDictionary alloc] init];
+    notificationDict = [dataDict mutableCopy];
+    
+    strMsg = [strMsg stringByReplacingOccurrencesOfString:@"\n" withString:@" "];
+    
+    [viewForNotification removeFromSuperview];
+    viewForNotification = [[UIView alloc] initWithFrame:CGRectMake(0, -140, DEVICE_WIDTH, 140)];
+    viewForNotification.backgroundColor = [UIColor colorWithRed:66.0/255.0 green:66.0/255.0 blue:69.0/255.0 alpha:1];
+    [[APP_DELEGATE window] addSubview:viewForNotification];
+    
+    UILabel * lblNotifyTitle = [[UILabel alloc] initWithFrame:CGRectMake(8, 30, DEVICE_WIDTH-16, 22)];
+    lblNotifyTitle.text = [NSString stringWithFormat:@"%@!",strTitle];
+    lblNotifyTitle.backgroundColor = [UIColor clearColor];
+    lblNotifyTitle.textColor = UIColor.whiteColor;
+    lblNotifyTitle.font = [UIFont fontWithName:CGBold size:textSize+1];
+    [viewForNotification addSubview:lblNotifyTitle];
+    
+    UILabel * lblAlertMsg = [[UILabel alloc] initWithFrame:CGRectMake(8, 47, DEVICE_WIDTH-16, 40)];
+    lblAlertMsg.text = strMsg;
+    lblAlertMsg.backgroundColor = UIColor.clearColor;
+    lblAlertMsg.textColor = UIColor.whiteColor;
+    lblAlertMsg.numberOfLines = 0;
+    lblAlertMsg.font = [UIFont fontWithName:CGRegular size:textSize-2];
+    [viewForNotification addSubview:lblAlertMsg];
+
+    if (IS_IPHONE_X)
+    {
+        lblAlertMsg.frame = CGRectMake(8, 44, DEVICE_WIDTH - 16, 22);
+        viewForNotification.frame = CGRectMake(0, -140 - 44, DEVICE_WIDTH, 140);
+    }
+    
+    CGFloat btnWidth = (viewForNotification.frame.size.width / 2 ) - 10;
+    UIButton * btnSeenInMap = [[UIButton alloc] initWithFrame:CGRectMake(5, viewForNotification.frame.size.height-50, btnWidth, 44)];
+    btnSeenInMap.backgroundColor = UIColor.clearColor;
+    [btnSeenInMap setTitle:@"See in map" forState:UIControlStateNormal];
+    [btnSeenInMap setTitleColor:UIColor.redColor forState:UIControlStateNormal];
+    [btnSeenInMap addTarget:self action:@selector(btnNotificationSeeMapClick) forControlEvents:UIControlEventTouchUpInside];
+    btnSeenInMap.layer.cornerRadius = 4;
+    btnSeenInMap.layer.borderColor = [UIColor whiteColor].CGColor;
+    btnSeenInMap.layer.borderWidth = 1;
+    [viewForNotification addSubview:btnSeenInMap];
+    
+    UIButton * btnIgnore = [[UIButton alloc] initWithFrame:CGRectMake(btnWidth + 10 + 5, viewForNotification.frame.size.height-50, btnWidth, 44)];
+    btnIgnore.backgroundColor = UIColor.redColor;
+    [btnIgnore setTitle:@"Ignore" forState:UIControlStateNormal];
+    [btnIgnore setTitleColor:UIColor.whiteColor forState:UIControlStateNormal];
+    btnIgnore.layer.cornerRadius = 4;
+    btnIgnore.layer.borderColor = [UIColor whiteColor].CGColor;
+    btnIgnore.layer.borderWidth = 1;
+    [btnIgnore addTarget:self action:@selector(btnNotificationIgnoreClick) forControlEvents:UIControlEventTouchUpInside];
+    [viewForNotification addSubview:btnIgnore];
+
+    UILabel * lblLine = [[UILabel alloc] initWithFrame:CGRectMake(0, viewForNotification.frame.size.height-1, viewForNotification.frame.size.width, 1)];
+    lblLine.backgroundColor = [UIColor blackColor];
+    [viewForNotification addSubview:lblLine];
+
+    [timerForNotification invalidate];
+    timerForNotification = nil;
+    timerForNotification = [NSTimer scheduledTimerWithTimeInterval:3 target:self selector:@selector(TimeoutforHideNotification) userInfo:nil repeats:NO];
+    
+    [UIView transitionWithView:self.view duration:0.3 options:UIViewAnimationOptionCurveEaseOut animations:^
+       {
+        viewForNotification.frame = CGRectMake(0, 0, DEVICE_WIDTH-0, 140);
+       }
+       completion:(^(BOOL finished)
+       {
+      })];
+
+}
+-(void)RequestForStartLivetracking:(NSString *)strState
+{
+    NSInteger intCommond = [@"227" integerValue]; // E3 start and stop Live Tracking
+    NSData * dataOpCmd = [[NSData alloc] initWithBytes:&intCommond length:1];
+
+    NSInteger intLength = [@"01" integerValue];
+    NSData * dataLength = [[NSData alloc] initWithBytes:&intLength length:1];
+
+    NSInteger intLengthStart = [strState integerValue];
+    NSData * dataLengthStart = [[NSData alloc] initWithBytes:&intLengthStart length:1];
+    
+    NSMutableData *completeData = [dataOpCmd mutableCopy];
+    [completeData appendData:dataLength];
+    [completeData appendData:dataLengthStart];
+
+    [[BLEService sharedInstance] WriteNSDataforEncryptionAndthenSendtoPeripheral:completeData withPeripheral:classPeripheral];
+}
+#pragma mark - MEScrollToTopDelegate Methods
+- (void) scrollViewDidScroll:(UIScrollView *)scrollView
+{
+    [topPullToRefreshManager tableViewScrolled];
+}
+-(void)scrollViewDidEndDecelerating:(UIScrollView *)scrollView
+{
+}
+- (void)scrollViewDidEndDragging:(UIScrollView *)scrollView willDecelerate:(BOOL)decelerate
+{
+    if (scrollView.contentOffset.y >=360.0f)
+    {
+    }
+    else
+        [topPullToRefreshManager tableViewReleased];
+}
+- (void)pullToRefreshTriggered:(MNMPullToRefreshManager *)manager
+{
+    [self performSelector:@selector(stoprefresh) withObject:nil afterDelay:1.5];
+}
+-(void)stoprefresh
+{
+    [self refreshBtnClick];
+    [topPullToRefreshManager tableViewReloadFinishedAnimated:NO];
+}
+-(NSString *)checkforValidString:(NSString *)strRequest
+{
+    NSString * strValid;
+    if (![strRequest isEqual:[NSNull null]]) //NULL
+    {
+        if (strRequest != nil && strRequest != NULL && ![strRequest isEqualToString:@""])
+        {
+            strValid = strRequest;
+        }
+        else
+        {
+            strValid = @"NA";
+        }
+    }
+    else
+    {
+        strValid = @"NA";
+    }
+    strValid = [strValid stringByReplacingOccurrencesOfString:@"\"" withString:@""];
+    
+    return strValid;
+}
+-(NSString *)getStringConvertedinUnsigned:(NSString *)strNormal
+{
+    NSString * strKey = strNormal;
+    long ketLength = [strKey length]/2;
+    NSString * strVal;
+    for (int i=0; i<ketLength; i++)
+    {
+        NSRange range73 = NSMakeRange(i*2, 2);
+        NSString * str3 = [strKey substringWithRange:range73];
+        if ([strVal length]==0)
+        {
+            strVal = [NSString stringWithFormat:@" 0x%@",str3];
+        }
+        else
+        {
+            strVal = [strVal stringByAppendingString:[NSString stringWithFormat:@" 0x%@",str3]];
+        }
+    }
+    return strVal;
+}
+-(NSString *)getRuleNamefromRuleId:(NSString *)strRuleId
+{
+    NSString * strRuleName = @"NA";
+    if ([strRuleId isEqualToString:@"03"])
+    {
+        strRuleName = @"Breach Minimum Dwell Time";
+    }
+    else if ([strRuleId isEqualToString:@"04"])
+    {
+        strRuleName = @"Breach Maximum Dwell Time";
+    }
+    else if ([strRuleId isEqualToString:@"05"])
+    {
+        strRuleName = @"Breach Minimum Speed limit";
+    }
+    else if ([strRuleId isEqualToString:@"06"])
+    {
+        strRuleName = @"Breach Maximum Speed limit";
+    }
+    else if ([strRuleId isEqualToString:@"07"])
+    {
+        strRuleName = @"Boundry Cross Violation";
+    }
+    return strRuleName;
+}
 -(NSString *)getHoursfromString:(NSString *)strVal
 {
     NSString * strHr = [NSString stringWithFormat:@"%@ Min",strVal]; //Hrs
@@ -1504,124 +1698,9 @@ dispatch_async(dispatch_get_main_queue(), ^(void)
     }
     return strHr;
 }
+
 #pragma mark- Insert to database
--(void)InsertToDataBase
-{
-    if (globalDict.count > 0)
-    {
-        NSString * FLat = [NSString stringWithFormat:@"%f", [[globalDict valueForKey:@"lat"] floatValue]];
-        NSString * FLong = [NSString stringWithFormat:@"%f", [[globalDict valueForKey:@"long"] floatValue]];
 
-        NSString * strGeoFncID = [self checkforValidString:[globalDict valueForKey:@"geofence_ID"]];
-        NSString * strGeoFncType = [self checkforValidString:[globalDict valueForKey:@"type"]];
-        NSString * strLat = [self checkforValidString:FLat]; //Latitude
-        NSString * strLong = [self checkforValidString:FLong]; //Longitude
-        NSString * strNoRules = [self checkforValidString:[globalDict valueForKey:@"number_of_rules"]];
-        NSString * strIsActive = @"NA";
-        NSString * strRadiusVertices = [self checkforValidString:[globalDict valueForKey:@"radiusOrvertices"]];
-        NSString * strGSMtime = [self checkforValidString:[globalDict valueForKey:@"GSMtime"]];
-        NSString * strIrridiumTime = [self checkforValidString:[globalDict valueForKey:@"IrridiumTime"]];
-        NSString * strTimeStamp = [self checkforValidString:[globalDict valueForKey:@"time_stamp"]];
-
-        NSString *query  = [NSString stringWithFormat:@"select * from Geofence where geofence_ID = '%@'",strGeoFncID];
-        BOOL recordExist = [[DataBaseManager dataBaseManager] recordExistOrNot:query];
-        NSString * strName = [self stringFroHex:strGeoFncID];
-
-
-        if ([strGeoFncType isEqualToString:@"01"])
-        {
-            [globalDict setValue:[NSString stringWithFormat:@"0"] forKey:@"lat"];
-            [globalDict setValue:[NSString stringWithFormat:@"0"] forKey:@"long"];
-            
-            strLat = @"0";
-            strLong = @"0";
-        }
-        
-        NSLog(@"=======================>Geofence Data===%@",globalDict);
-        if (recordExist)
-        {
-            NSString *  strUpdateQury =  [NSString stringWithFormat:@"update Geofence set name = \"%@\", geofence_ID = \"%@\", type = \"%@\", lat = \"%@\", long = \"%@\", number_of_rules = \"%@\", is_active = \"%@\", radiusOrvertices = \"%@\", gsm_time = '%@', irridium_time = '%@', time_stamp = '%@' where id =\"%@\"",strName,strGeoFncID,strGeoFncType,strLat,strLong,strNoRules,strIsActive,strRadiusVertices,strGSMtime,strIrridiumTime,strTimeStamp,[globalDict valueForKey:@"geofence_ID"]];
-            [[DataBaseManager dataBaseManager] execute:strUpdateQury];
-            if ([[arrGlobalGeofenceList valueForKey:@"geofence_ID"] containsObject:strGeoFncID])
-            {
-                NSInteger foundIndex = [[arrGlobalGeofenceList valueForKey:@"geofence_ID"] indexOfObject:strGeoFncID];
-                if (foundIndex != NSNotFound)
-                {
-                    if ([arrGlobalGeofenceList count] > foundIndex)
-                    {
-                        [arrGlobalGeofenceList replaceObjectAtIndex:foundIndex withObject:globalDict];;
-                    }
-                }
-            }
-            else
-            {
-                [arrGlobalGeofenceList addObject:globalDict];
-            }
-        }
-        else
-        {
-            NSString * strGeofenceQuery = [NSString stringWithFormat:@"insert into 'Geofence'('name','geofence_ID','type','lat','long','number_of_rules','is_active','radiusOrvertices','gsm_time','irridium_time','time_stamp') values(\"%@\",\"%@\",\"%@\",\"%@\",\"%@\",\"%@\",\"%@\",\"%@\",\"%@\",\"%@\",\"%@\")",strName,strGeoFncID,strGeoFncType,strLat,strLong,strNoRules,strIsActive,strRadiusVertices,strGSMtime,strIrridiumTime, strTimeStamp];
-            [[DataBaseManager dataBaseManager] execute:strGeofenceQuery];
-            [arrGlobalGeofenceList addObject:globalDict];
-        }
-        NSLog(@"=======================>RUles Data===%@",arrRules);
-
-        NSString * strDeleteRules = [NSString stringWithFormat:@"delete from Rules_Table where geofence_ID = '%@'",strGeoFncID];
-        [[DataBaseManager dataBaseManager] executeSw:strDeleteRules];
-        NSMutableArray * arrOnlyRules = [[NSMutableArray alloc] init];
-        if ([[arrAllSavedRules valueForKey:@"geofence_ID"] containsObject:strGeoFncID])
-        {
-            NSInteger foundGeoID = [[arrAllSavedRules valueForKey:@"geofence_ID"] indexOfObject:strGeoFncID];
-
-            if (foundGeoID != NSNotFound)
-            {
-                if ([arrAllSavedRules count]>foundGeoID)
-                {
-                    [arrAllSavedRules removeObjectAtIndex:foundGeoID];
-                }
-            }
-        }
-        for (int i = 0; i < [arrRules count]; i++)
-        {
-            NSString * strRuleID = [self checkforValidString:[[arrRules objectAtIndex:i] valueForKey:@"rule_ID"]];
-            NSString * strValue  = [self checkforValidString:[[arrRules objectAtIndex:i] valueForKey:@"rule_value"]];
-            NSString * strRuleNO = [self checkforValidString:[[arrRules objectAtIndex:i] valueForKey:@"NoAction"]];
-
-            NSString * strRulesQuery =    [NSString stringWithFormat:@"insert into 'Rules_Table'('name','geofence_ID','rule_ID','rule_value','rule_number') values(\"%@\",\"%@\",\"%@\",\"%@\",\"%@\")",strName,strGeoFncID,strRuleID,strValue,strRuleNO];
-             [[DataBaseManager dataBaseManager] executeSw:strRulesQuery];
-            NSDictionary * dct = [[NSDictionary alloc] initWithObjectsAndKeys:strGeoFncID,@"geofence_ID",strValue,@"rule_value",strRuleID,@"rule_ID", nil];
-            [arrOnlyRules addObject:dct];
-        }
-        if ([arrOnlyRules count] > 0)
-        {
-            NSDictionary * dct = [[NSDictionary alloc] initWithObjectsAndKeys:strGeoFncID,@"geofence_ID",arrOnlyRules,@"AllRules", nil];
-            [arrAllSavedRules addObject:dct];
-        }
-
-        if ([strGeoFncType isEqualToString:@"01"])
-        {
-            /*NSString * strDeletePolygon = [NSString stringWithFormat:@"delete from Polygon_Lat_Long where geofence_ID = '%@'",strGeoFncID];
-            [[DataBaseManager dataBaseManager] executeSw:strDeletePolygon];*/
-
-            for (int i=0 ; i<[arrPolygon count]; i++)
-            {
-                NSString * strLat = [[arrPolygon objectAtIndex:i] valueForKey:@"lat"];
-                NSString * strLon = [[arrPolygon objectAtIndex:i] valueForKey:@"lon"];
-                NSString * strActionQuery =  [NSString stringWithFormat:@"insert into 'Polygon_Lat_Long'('geofence_ID','lat','long','Geo_timeStamp') values(\"%@\",\"%@\",\"%@\",\"%@\")",strGeoFncID,strLat,strLon,strTimeStamp];
-                [[DataBaseManager dataBaseManager] execute:strActionQuery];
-            }
-        }
-        if ([arrTempListGeofence count] > 0)
-        {
-            [arrTempListGeofence removeObjectAtIndex:0];
-        }
-        globalDict = [[NSMutableDictionary alloc] init];
-        arrActons = [[NSMutableArray alloc] init];
-        arrRules = [[NSMutableArray alloc] init];
-        arrPolygon = [[NSMutableArray alloc] init];
-        [self StartSyncingGeofence];
-    }
-}
 -(NSString*)stringFroHex:(NSString *)hexStr
 {
     unsigned long long startlong;
@@ -1631,26 +1710,7 @@ dispatch_async(dispatch_get_main_queue(), ^(void)
     NSNumber * startNumber = [[NSNumber alloc] initWithDouble:unixStart];
     return [startNumber stringValue];
 }
--(void)InsertToDeviceTable
-{
-//    NSString * strName = customField.text;
-//    NSString * bleAddress = [arrayDevices valueForKey:@"bleAddress"];
-//    NSString * strBLEDeviceData = [NSString stringWithFormat:@"insert into 'Geofence'('name','BLE_Address',) values(\"%@\",\"%@\")",strName,bleAddress];
-//    [[DataBaseManager dataBaseManager] execute:strBLEDeviceData];
-}
--(void)AlertViewFCTypeSuccess:(NSString *)strPopup
-{
-    FCAlertView *alert = [[FCAlertView alloc] init];
-    alert.colorScheme = [UIColor blackColor];
-    [alert makeAlertTypeSuccess];
-    [alert showAlertInView:self
-                 withTitle:@"Boundry Cross Violation!"
-              withSubtitle:strPopup
-           withCustomImage:[UIImage imageNamed:@"logo.png"]
-       withDoneButtonTitle:nil
-                andButtons:nil];
-}
--(void)TostNotification:(NSString *)StrToast
+-(void)ShowToastNotification:(NSString *)StrToast
     {
         MBProgressHUD *hud = [MBProgressHUD showHUDAddedTo:self.navigationController.view animated:YES];
         // Configure for text only and offset down
@@ -1661,242 +1721,6 @@ dispatch_async(dispatch_get_main_queue(), ^(void)
         hud.tag = 9999;
         hud.removeFromSuperViewOnHide = YES;
         [hud hide:YES afterDelay:0.9];
-}
--(void)btnMoreClick:(id)sender
-{
-    if (selectedMoreIndex == [sender tag])
-    {
-        selectedMoreIndex = -1;
-    }
-    else
-    {
-        selectedMoreIndex = [sender tag];
-    }
-    [tblDeviceList reloadData];
-}
-
--(void)GetTimeFromSettingVc:(NSString *)strTime
-{
-    NSLog(@"Selected time ====>%@",strTime);
-}
--(void)btnConnectClick:(id)sender
-{
-    NSLog(@"%ld", (long)[sender tag]);
-    NSMutableArray * arrayDevices = [[NSMutableArray alloc] init];
-    arrayDevices =[[BLEManager sharedManager] foundDevices];
-
-    if ([arrayDevices count]>0)
-    {
-        CBPeripheral * p = [[arrayDevices objectAtIndex:[sender tag]] valueForKey:@"peripheral"];
-        if (p.state == CBPeripheralStateConnected)
-        {
-            [APP_DELEGATE startHudProcess:@"Disconnecting..."];
-            [[BLEManager sharedManager] disconnectDevice:p];
-        }
-        else
-        {
-            [connectionTimer invalidate];
-            connectionTimer = nil;
-            connectionTimer = [NSTimer scheduledTimerWithTimeInterval:15 target:self selector:@selector(ConnectionTimeOutMethod) userInfo:nil repeats:NO];
-            [connectionTimer invalidate];
-            connectionTimer = nil;
-            isConnectedtoAdd = YES;
-            classPeripheral = p;
-            globalPeripheral = p;
-            [APP_DELEGATE startHudProcess:@"Connecting..."];
-            [[BLEManager sharedManager] connectDevice:p];
-            selectedIndex = [sender tag];
-        }
-    }
-}
-#pragma mark-Cell Buttons
--(void)btnMessageClick:(id)sender
-{
-    if (classPeripheral.state == CBPeripheralStateConnected)
-    {
-   
-        globalChatVC  = [[ChatVC alloc] init];
-        globalChatVC.bleAdd = [[arrGlobalDevices objectAtIndex:[sender tag]] valueForKey:@"bleAddress"];
-        [self.navigationController pushViewController:globalChatVC animated:true];
-
-    }
-    else
-    {
-//        [self ErrorPopUP:@"Please CONNECT device to send Message"];
-    }
-}
--(void)btnSettingClick:(id)sender
-{
-    NSMutableArray * arrayDevices = [[NSMutableArray alloc] init];
-    arrayDevices =[[BLEManager sharedManager] foundDevices];
-
-    if ([arrayDevices count]>0)
-    {
-        CBPeripheral * p = [[arrayDevices objectAtIndex:[sender tag]] valueForKey:@"peripheral"];
-        [[BLEManager sharedManager] connectDevice:p];
-        
-        globalSettings = [[SettingVC alloc] init];
-        globalSettings.classPeripheral = p;
-        [self.navigationController pushViewController:globalSettings animated:true];
-    }
-}
--(void)btnSOSClick:(id)sender
-{
-    SOSclassVC * sosVc = [[SOSclassVC alloc] init];
-    [self.navigationController pushViewController:sosVc animated:true];
-}
--(void)btnGeofencelick:(id)sender
-{
-    lblBadgeHistry.hidden = false;
-         if (globalBadgeCount <= 0)
-         {
-             self->lblBadgeHistry.hidden = true;
-         }
-         else
-         {
-             self->lblBadgeHistry.hidden = false;
-         }
-    
-    globalHistoryVC = [[HistoryVC alloc] init];
-    [self.navigationController pushViewController:globalHistoryVC animated:true];
-    
-}
--(void)btnEditClick:(id)sender
-{
-    
-}
--(void)btnLiveTrackClick:(id)sender
-{
-    LiveTrackingVC * tVc = [[LiveTrackingVC alloc] init];
-    tVc.classPeripheral = classPeripheral;
-    [self.navigationController pushViewController:tVc animated:true];
-    [self RequestForStartLivetracking:@"01"];
-
-}
--(void)TestingWith100Packets
-{
-    for (int i = 0; i<100; i++)
-    {
-        NSInteger intopCode = [@"164" integerValue];
-        NSData * dataCommand = [[NSData alloc] initWithBytes:&intopCode length:1];
-
-        NSInteger intlength= i ;
-        NSData * dataOpcode = [[NSData alloc] initWithBytes:&intlength length:1];
-        
-        NSMutableData *completeData = [dataCommand mutableCopy];
-        [completeData appendData:dataOpcode];
-        [completeData appendData:dataOpcode];
-        
-        [[BLEService sharedInstance] WriteNSDataforEncryptionAndthenSendtoPeripheral:completeData withPeripheral:classPeripheral];
-        NSLog(@"100==Packets =====>>>>%@",completeData); 
-    }
-}
-#pragma mark-  Send And  Receivec IMEI number
--(void)RequestForIMEInumbertotheDevice
-{
-    NSInteger intCommond = [@"225" integerValue]; // E1
-    NSData * dataOpCmd = [[NSData alloc] initWithBytes:&intCommond length:1];
-
-    NSInteger intLength = [@"0" integerValue];
-    NSData * dataLength = [[NSData alloc] initWithBytes:&intLength length:1];
-
-    NSMutableData *completeData = [dataOpCmd mutableCopy];
-    [completeData appendData:dataLength];
-    
-    [[BLEService sharedInstance] WriteNSDataforEncryptionAndthenSendtoPeripheral:completeData withPeripheral:classPeripheral];
-}
--(void)ReceievedGeofenceDatafromBLEIMEInumber:(NSString *)strIMEI
-{
-    dispatch_async(dispatch_get_main_queue(), ^{
-    if ([[self checkforValidString:strIMEI]isEqualToString:@""])
-    {
-        // error
-    }
-    else
-    {
-        // Success
-        if ([APP_DELEGATE isNetworkreachable])
-        {
-            [self GettingDeviceTokenFromURL:strIMEI];
-        }
-        else
-        {
-            [self ErrorPopUP:@"Please connect to the internet."];
-            [[BLEManager sharedManager] disconnectDevice:globalPeripheral];
-        }
-    }
-    });
-}
--(void)ReceviedValidTokenFromDevice:(NSString *)strVAlidate
-{
-    dispatch_async(dispatch_get_main_queue(), ^{
-        [APP_DELEGATE endHudProcess];
-    if ([strVAlidate isEqualToString:@"00"])
-    {
-        [self ErrorPopUP:@"Please make sure it's your device"];
-        
-        [[BLEManager sharedManager] disconnectDevice:globalPeripheral];
-    }
-    else if([strVAlidate isEqualToString:@"01"]) //  valid token
-    {
-        [[BLEManager sharedManager] connectDevice:self->classPeripheral];
-        // send a4ff
-    }
-    else if ([strVAlidate isEqualToString:@"02"]) //  retry after some time
-    {
-        [self ErrorPopUP:@"Decvice token not found !"];
-        [[BLEManager sharedManager] disconnectDevice:globalPeripheral];
-    }
-    });
-}
-#pragma mark - UrlManager Delegate
-- (void)onResult:(NSDictionary *)result
-{
-    [APP_DELEGATE endHudProcess];
-//    NSLog(@"The result is...%@", result);
-    
-    if ([[result valueForKey:@"result"] isKindOfClass:[NSString class]])
-    {
-        if ([[result valueForKey:@"commandName"] isEqualToString:@"gettoken"])
-        {
-            NSString * StrData = [result valueForKey:@"result"];
-            NSLog(@"Device Token====>>>>>%@",StrData);
-            [self SendignDeviceTokenTotheDeVice:StrData];
-        }
-    }
-    else
-    {
-        NSLog(@"show error popup");
-        [self ErrorPopUP:@"Your not authorized to this device."];
-        [[BLEManager sharedManager] disconnectDevice:globalPeripheral];
-    }
-}
-- (void)onError:(NSError *)error
-{
-    [APP_DELEGATE endHudProcess];
-    NSLog(@"The error is...%@", error);
-}
--(void)SendignDeviceTokenTotheDeVice:(NSString *)strDeviceToken
-{
-    strDeviceToken = [strDeviceToken stringByReplacingOccurrencesOfString:@"\"" withString:@""];
-
-    if (![[APP_DELEGATE checkforValidString:strDeviceToken] isEqualToString:@"NA"])
-    {
-        NSMutableArray * arrDeviceTokenPacket = [[NSMutableArray alloc] init];
-        NSInteger totalPackets = 0;
-        totalPackets = [self getTotalNumberofPackets:strDeviceToken];
-        [self AddPacketstoArray:arrDeviceTokenPacket withString:strDeviceToken withTotalPackets:totalPackets];
-        
-        if ([APP_DELEGATE isNetworkreachable])
-        {
-            [self WriteDeviceTokenToDevicewithPacketsArray:arrDeviceTokenPacket withToalNoofPackets:totalPackets];
-        }
-        else
-        {
-            [self ErrorPopUP:@"Please connect to the internet."];
-            [[BLEManager sharedManager] disconnectDevice:globalPeripheral];
-        }
-    }
 }
 -(void)AddPacketstoArray:(NSMutableArray *)arrayPackets withString:(NSString *)strDeviceToken withTotalPackets:(NSInteger )totalPackets
 {
@@ -1919,57 +1743,6 @@ dispatch_async(dispatch_get_main_queue(), ^(void)
             }
         }
     }
-}
--(void)WriteDeviceTokenToDevicewithPacketsArray:(NSMutableArray *)arrDevicePackets withToalNoofPackets:(NSInteger)totalPackets
-{
-    for (int i =0; i < [arrDevicePackets count]; i++)
-    {
-//        NSInteger reverseCount = [arrDevicePackets count] - (i + 1);
-//
-//        if ([arrDevicePackets count] >= reverseCount)
-//        {
-            NSString * strPacket = [arrDevicePackets objectAtIndex: i];
-            NSInteger intPacketLength = [strPacket length] + 1;
-
-            //1. Command
-            NSInteger commandInt = 226;
-            NSData * commandData = [[NSData alloc] initWithBytes:&commandInt length:1];
-            
-            //2. Length Data
-            NSData * lengthData = [[NSData alloc] initWithBytes:&intPacketLength length:1];
-
-            NSInteger packtInt = totalPackets - i;
-            NSData * packetNoData = [[NSData alloc] initWithBytes:&packtInt length:1];
-
-            NSData * msgData = [self dataFromHexString:[self hexFromStr:strPacket]];
-            
-            NSMutableData * completeData = [[NSMutableData alloc] initWithData:commandData];
-            [completeData appendData:lengthData];
-            [completeData appendData:packetNoData];
-            [completeData appendData:msgData];
-            NSLog(@"Tokent Sent Data=====%@",completeData);
-            
-            [[BLEService sharedInstance] WriteNSDataforEncryptionAndthenSendtoPeripheral:completeData withPeripheral:globalPeripheral];
-//        }
-    }
-}
-
--(void)RequestForStartLivetracking:(NSString *)strState
-{
-    NSInteger intCommond = [@"227" integerValue]; // E3 start and stop Live Tracking
-    NSData * dataOpCmd = [[NSData alloc] initWithBytes:&intCommond length:1];
-
-    NSInteger intLength = [@"01" integerValue];
-    NSData * dataLength = [[NSData alloc] initWithBytes:&intLength length:1];
-
-    NSInteger intLengthStart = [strState integerValue];
-    NSData * dataLengthStart = [[NSData alloc] initWithBytes:&intLengthStart length:1];
-    
-    NSMutableData *completeData = [dataOpCmd mutableCopy];
-    [completeData appendData:dataLength];
-    [completeData appendData:dataLengthStart];
-
-    [[BLEService sharedInstance] WriteNSDataforEncryptionAndthenSendtoPeripheral:completeData withPeripheral:classPeripheral];
 }
 -(NSInteger)getTotalNumberofPackets:(NSString *)strText
 {
@@ -2020,5 +1793,35 @@ dispatch_async(dispatch_get_main_queue(), ^(void)
        {
         [viewForNotification removeFromSuperview];
       })];
+}
+-(NSString*)hexFromStr:(NSString*)str
+{
+    NSData* nsData = [str dataUsingEncoding:NSUTF8StringEncoding];
+    const char* data = [nsData bytes];
+    NSUInteger len = nsData.length;
+    NSMutableString* hex = [NSMutableString string];
+    for(int i = 0; i < len; ++i)
+        [hex appendFormat:@"%02X", data[i]];
+    return hex;
+}
+
+
+-(void)TestingWith100Packets
+{
+    for (int i = 0; i<100; i++)
+    {
+        NSInteger intopCode = [@"164" integerValue];
+        NSData * dataCommand = [[NSData alloc] initWithBytes:&intopCode length:1];
+
+        NSInteger intlength= i ;
+        NSData * dataOpcode = [[NSData alloc] initWithBytes:&intlength length:1];
+        
+        NSMutableData *completeData = [dataCommand mutableCopy];
+        [completeData appendData:dataOpcode];
+        [completeData appendData:dataOpcode];
+        
+        [[BLEService sharedInstance] WriteNSDataforEncryptionAndthenSendtoPeripheral:completeData withPeripheral:classPeripheral];
+        NSLog(@"100==Packets =====>>>>%@",completeData);
+    }
 }
 @end

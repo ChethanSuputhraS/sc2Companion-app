@@ -208,7 +208,7 @@
     NSMutableArray * chatDetailArr = [[NSMutableArray alloc]init];
     arrGlobalChatHistory = [[NSMutableArray alloc] init];
     
-    NSString * strMessage = [NSString stringWithFormat:@"select * from NewChat where from_name = 'me' or to_name = 'Other' and bleAdress = '%@'",bleAdd];
+    NSString * strMessage = [NSString stringWithFormat:@"select * from NewChat where from_name = 'me' or to_name = 'Other' and bleAddress = '%@'",bleAdd];
     [[DataBaseManager dataBaseManager] execute:strMessage resultsArray:chatDetailArr];
     
     if ([chatDetailArr count]>0)
@@ -528,7 +528,7 @@
     NSString * strStatus = @"sent";
     NSString * strIsGSM = [NSString stringWithFormat:@"%ld",isSentVia];
 
-    NSString * strInsertQuery =  [NSString stringWithFormat:@"insert into 'NewChat' ('from_name','to_name','msg_txt','time','status','sequence','identifier','timeStamp','isGSM','bleAdress') values(\"%@\",\"%@\",\"%@\",\"%@\",\"%@\",\"%@\",\"%@\",\"%@\",\"%@\",\"%@\")",strFromName,strToName,strMSG,strDateAndTime,strStatus,strSequenceNo,strIdentifier,strTimeStamp,strIsGSM,bleAdd];
+    NSString * strInsertQuery =  [NSString stringWithFormat:@"insert into 'NewChat' ('from_name','to_name','msg_txt','time','status','sequence','identifier','timeStamp','isGSM','bleAddress') values(\"%@\",\"%@\",\"%@\",\"%@\",\"%@\",\"%@\",\"%@\",\"%@\",\"%@\",\"%@\")",strFromName,strToName,strMSG,strDateAndTime,strStatus,strSequenceNo,strIdentifier,strTimeStamp,strIsGSM,bleAdd];
     [[DataBaseManager dataBaseManager] executeSw:strInsertQuery];
     
 }

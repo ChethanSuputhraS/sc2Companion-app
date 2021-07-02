@@ -631,7 +631,8 @@
             NSMutableDictionary *result = [[NSMutableDictionary alloc] init];
             [result setObject:responseString forKey:@"result"];
             [result setObject:_weak.commandName forKey:@"commandName"];
-            
+            [result setObject:_strIMEI forKey:@"IMEI"];
+
             if (delegate)
                 [_weak.delegate onResult:result];
             return;;

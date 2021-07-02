@@ -18,6 +18,7 @@
     NSString * strScreenMode;
     MKCircle *_radialCircle;
     double latestLat,latestLong;
+    NSTimer * timerForGPSFix;
     
     CustomAnnotation * annotationPin;
     CustomAnnotationView* custannotationView;
@@ -50,7 +51,15 @@
     [self setNavigationViewFrames];
     [self setContentViewFrames];
     [[BLEService sharedInstance] setDelegate:self];
+    
+    
+    [timerForGPSFix invalidate];
+    timerForGPSFix = nil;
+    timerForGPSFix = [NSTimer scheduledTimerWithTimeInterval:20 target:self selector:@selector(timerFortimerForGPSFix) userInfo:nil repeats:YES];
+    
     [APP_DELEGATE startHudProcess:@"Waiting for GPS Fix..."];
+
+
     [super viewDidLoad];
 
     // Do any additional setup after loading the view.
@@ -149,7 +158,7 @@
         }
     }
 //    CLLocationCoordinate2D sourceCoords = CLLocationCoordinate2DMake(latestLat, latestLong);
-//    
+//
 //    MKPlacemark *placemark  = [[MKPlacemark alloc] initWithCoordinate:sourceCoords addressDictionary:nil];
 //    [mapView removeAnnotation:annotation1];
 //    annotation1 = [[MKPointAnnotation alloc] init];
@@ -200,6 +209,9 @@
 #pragma mark - Map View Delegates
 -(void)mapView:(MKMapView *)mv didAddAnnotationViews:(NSArray *)views
 {
+    [timerForGPSFix invalidate];
+    timerForGPSFix = nil;
+    
     if([views count]>0)
     {
         MKAnnotationView *annotationView = [views objectAtIndex:0];
@@ -291,6 +303,9 @@
 #pragma mark - All Button Clicks
 -(void)btnBackClick
 {
+    [timerForGPSFix invalidate];
+    timerForGPSFix = nil;
+    
     [self.navigationController popViewControllerAnimated:true];
     [self RequestForStartLivetracking:@"00"];
 }
@@ -358,5 +373,14 @@
     [DateFormatter setTimeZone:[NSTimeZone timeZoneWithName:@"UTC"]];
     NSString * currentDateAndTime = [NSString stringWithFormat:@"%@",[DateFormatter stringFromDate:[NSDate date]]];
     return currentDateAndTime;
+}
+-(void)timerFortimerForGPSFix
+{
+    [timerForGPSFix invalidate];
+    timerForGPSFix = nil;
+    
+    [APP_DELEGATE endHudProcess];
+    [self TostNotification:@"Something went wrong..."];
+
 }
 @end

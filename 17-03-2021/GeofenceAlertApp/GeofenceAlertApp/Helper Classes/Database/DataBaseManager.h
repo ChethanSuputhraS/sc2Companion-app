@@ -42,7 +42,7 @@
 -(BOOL)Create_Actions_Table;
 -(BOOL)Create_ActionInfo_Table;
 -(BOOL)Create_RuleInfo_Table;
--(BOOL)createNewChatTable;
+-(BOOL)CreateNewChatTable;
 -(BOOL)CrateMessageTable;
 -(BOOL)CrateTableForDeviceBLEAdress;
 -(BOOL)CreateDeviceConfigurationTable;
@@ -66,8 +66,7 @@
 -(void)addServerOwnerSignscolumnstoInspection;
 -(BOOL)recordExistOrNot:(NSString *)query;
 -(BOOL)Create_Geofence_Alert_Table;
--(void)Add_sequence_to_NewChat;
--(void)Add_MacAddress_to_NewChat;
+-(BOOL)CreateTableforDeviceIMEI;
 
 @end
 

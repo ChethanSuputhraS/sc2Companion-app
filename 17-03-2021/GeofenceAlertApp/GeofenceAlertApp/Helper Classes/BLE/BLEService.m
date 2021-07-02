@@ -315,7 +315,7 @@ static BLEService    *sharedInstance    = nil;
                          {
 //                           NSLog(@"Its not A40000");
                          }
-                         else
+                         else if([[valueStr substringWithRange:NSMakeRange(0, 10)] isEqualToString:@"a400000000"])
                          {
                              [globalHomeVC StartSyncingGeofence];
                          }
@@ -410,7 +410,7 @@ static BLEService    *sharedInstance    = nil;
                                  NSString * strRadVetices = [self stringFroHex:[valueStr substringWithRange:NSMakeRange(16, 8)]];
                                  NSString * strTimeStamp = [valueStr substringWithRange:NSMakeRange(24, 8)];
 
-                                 [globalHomeVC SendFirstPacketToHomeVC:strID withSize:strSize withType:strType withRadius:strRadVetices withTime:strTimeStamp];
+                                 [globalHomeVC ReceivedFirstPacketofGeofence:strID withSize:strSize withType:strType withRadius:strRadVetices withTime:strTimeStamp];
                                  if ([strType isEqualToString:@"00"])
                                  {
                                      self->isRadialTypeGeo = YES;
@@ -430,19 +430,22 @@ static BLEService    *sharedInstance    = nil;
                                  float latFloat =  ConverttoFloatfromHexadecimal(strLat);
                                  float longFloat = ConverttoFloatfromHexadecimal(strLong);
                                  
+                                 NSString * strFinalLat = [NSString stringWithFormat:@"%f",latFloat];
+                                 NSString * strFinalLong = [NSString stringWithFormat:@"%f",longFloat];
+
                                  NSLog(@"Second Packet BLE Service=====>%@  lat=%@",valueStr,strLat);
                                  NSLog(@"ISRADIALONOT=====>%hhd",self->isRadialTypeGeo);
 
                                  if (self->isRadialTypeGeo == YES)//Radial
                                  {
-                                     [globalHomeVC SendSecondPacketLatLongtoHomeVC:latFloat withLongitude:longFloat];
+                                     [globalHomeVC ReceivedSecondPacketLatLong:strFinalLat withLongitude:strFinalLong];
                                  }
                                  else //Polygon
                                  {
                                      latFloat = 0;
                                      longFloat = 0;
                                      
-                                     [globalHomeVC SendSecondPacketLatLongtoHomeVC:latFloat withLongitude:longFloat];
+                                     [globalHomeVC ReceivedSecondPacketLatLong:strFinalLat withLongitude:strFinalLong];
 
                                      if([valueStr length] > 22)
                                      {
@@ -457,7 +460,7 @@ static BLEService    *sharedInstance    = nil;
                                              [arrLatLon addObject:dict1];
                                              
                                              NSLog(@"BLE Service A202 LASTTTTTTTTTTTT=======%@",arrLatLon);
-                                             [globalHomeVC PolygonLatLongtoHomeLatlonArray:arrLatLon];
+                                             [globalHomeVC ReceivedPolygonLatLongsofGeofenceData:arrLatLon];
                                          }
                                      }
 
@@ -473,7 +476,7 @@ static BLEService    *sharedInstance    = nil;
                                  NSString * strIrridiumTime = [self stringFroHex:[valueStr substringWithRange:NSMakeRange(14, 8)]];
                                  NSString * strRules = [valueStr substringWithRange:NSMakeRange(22, 2)];
 
-                                 [globalHomeVC ThirdPackettoHomeVC:strLegth withGSMTime:strGSMTime withIrridiumTime:strIrridiumTime withRuleId:strRules];
+                                 [globalHomeVC ReceivedThirdPacketofGeofenceData:strLegth withGSMTime:strGSMTime withIrridiumTime:strIrridiumTime withRuleId:strRules];
                              }
                          }
                          else if ([strOpcode isEqualToString:@"a204"]) // fourth packet
@@ -483,7 +486,7 @@ static BLEService    *sharedInstance    = nil;
                                  NSString * strRlueID = [valueStr substringWithRange:NSMakeRange(6, 2)];
                                  NSString * strValue = [self stringFroHex:[valueStr substringWithRange:NSMakeRange(8, 8)]];
                                  NSString * strNoAction = @"NA";
-                                 [globalHomeVC FourthPacketToHomeVC:strRlueID withValue:strValue withNoOfAction:strNoAction];
+                                 [globalHomeVC ReceivedFourthPacketofGeofenceData:strRlueID withValue:strValue withNoOfAction:strNoAction];
                              }
                          }
                          else if ([strOpcode isEqualToString:@"a205"]) // fifth packet ---> Now fifth is end packate, 5th ignored
@@ -492,7 +495,7 @@ static BLEService    *sharedInstance    = nil;
                              {
                                  if ([[valueStr substringWithRange:NSMakeRange(4, 2)] isEqualToString:@"01"])
                                  {
-                                     [globalHomeVC FifthPacketoHomeBLE];
+                                     [globalHomeVC ReceivedFifthPacketofGeofenceData];
                                  }
                              }
                          }
@@ -555,7 +558,7 @@ static BLEService    *sharedInstance    = nil;
                                      }
                                      else
                                      {
-                                         [globalHomeVC SendAlertInfoGeoID:dictData isGeoAvailable:recordExist];
+                                         [globalHomeVC ReceivedGeofenceAlert:dictData isGeoAvailable:recordExist];
                                      }
                                      NSLog(@"========A5 Second Packet Data=========%@",dictData);
                                  }

@@ -9,33 +9,41 @@
 #import <UIKit/UIKit.h>
 #import "MNMPullToRefreshManager.h"
 #import "BLEManager.h"
+#import "FCAlertView.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
 @interface HomeVC : UIViewController
 {
+    UILabel *lblNoDevice,*lblError ,* lblScanning ;
+    MNMPullToRefreshManager * topPullToRefreshManager;
+    FCAlertView * geofenceAlertPopup;
+    UIView * viewBg,*viewAlert;
     UITableView * tblDeviceList;
-      UILabel *lblNoDevice,*lblError ,* lblScanning,*lblBadgeHistry;
-    NSMutableDictionary * globalDict;
-     MNMPullToRefreshManager * topPullToRefreshManager;
-    UIView * viewBg,*viewAlert; 
-    UIButton* btn1,*btn2;
+    UIButton * btn1, *btn2;
+    UITextField *customField;
+    NSString * strSelectedBLEAddress;
+    NSMutableDictionary * globalDict, * notificationDict, * currentAlertDict;
+    NSMutableArray * arrActons, * arrPolygon, * arrRules, * arrAllSavedRules, * arrTempListGeofence, * arrIMEITokens;
+    
+    NSTimer * connectionTimer, * advertiseTimer,* timerForNotification;;
+    CBPeripheral * tempSelectedPeripheral, * classPeripheral;
+    CBCentralManager*centralManager;
+    NSInteger selectedMoreIndex;
 }
 
 
--(void)SendFirstPacketToHomeVC:(NSString *)strID withSize:(NSString *)strSize withType:(NSString *)strType  withRadius:(NSString *)strRadius withTime:(NSString *)strTimeStamp;
--(void)SendSecondPacketLatLongtoHomeVC:(float)latitude withLongitude:(float)longitude;
+-(void)ReceivedFirstPacketofGeofence:(NSString *)strID withSize:(NSString *)strSize withType:(NSString *)strType  withRadius:(NSString *)strRadius withTime:(NSString *)strTimeStamp;
+-(void)ReceivedSecondPacketLatLong:(NSString *)latitude withLongitude:(NSString *)longitude;
 
--(void)ThirdPackettoHomeVC:(NSString *)strLength withGSMTime:(NSString *)strGsmTime withIrridiumTime:(NSString *)strIrridmTime withRuleId:(NSString *)strRuleId;
--(void)FourthPacketToHomeVC:(NSString *)strruleID withValue:(NSString *)strValue withNoOfAction:(NSString *)strNoAction;
--(void)FifthPockeToHome:(NSMutableArray *)arrFithPacktData;
--(void)FifthPacketoHomeBLE;
--(void)PolygonLatLongtoHomeLatlonArray:(NSMutableArray *)arrLatLong;
--(void)SendAlertInfoGeoID:(NSMutableDictionary *)datDict isGeoAvailable:(BOOL)isAvail ;
+-(void)ReceivedThirdPacketofGeofenceData:(NSString *)strLength withGSMTime:(NSString *)strGsmTime withIrridiumTime:(NSString *)strIrridmTime withRuleId:(NSString *)strRuleId;
+-(void)ReceivedFourthPacketofGeofenceData:(NSString *)strruleID withValue:(NSString *)strValue withNoOfAction:(NSString *)strNoAction;
+-(void)ReceivedFifthPacketofGeofenceData;
+-(void)ReceivedPolygonLatLongsofGeofenceData:(NSMutableArray *)arrLatLong;
+-(void)ReceivedGeofenceAlert:(NSMutableDictionary *)datDict isGeoAvailable:(BOOL)isAvail ;
 -(void)SaveAllGeofenceListwithTimeStamp:(NSMutableArray *)arrGeoTimeStamp;
 -(void)StartSyncingGeofence;
 -(void)ReceievedGeofenceDatafromBLE;
--(void)GetTimeFromSettingVc:(NSString *)strTime;
 -(void)ConnectionSuccessfulStatSyncGeofence;
 -(void)AuthenticationCompleted;
 -(void)ReceievedGeofenceDatafromBLEIMEInumber:(NSString *)strIMEI;

@@ -199,6 +199,9 @@
     _mapView.delegate = self;
 
     _mapView.showsBuildings = NO;
+    _mapView.rotateEnabled = NO;
+    _mapView.pitchEnabled = NO;
+    _mapView.showsBuildings = NO;
     [self.view addSubview:_mapView];
     
     CLLocation  * currentLocation= [[CLLocation alloc] initWithLatitude:breachLat longitude:breachLong];

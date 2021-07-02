@@ -48,7 +48,6 @@
 #pragma mark - Set UI frames
 -(void)setContentViewFrames
 {
-    
     scrlContent = [[UIScrollView alloc] initWithFrame:CGRectMake(0, 0, DEVICE_WIDTH, DEVICE_HEIGHT)];
     scrlContent.showsVerticalScrollIndicator = NO;
     [self.view addSubview:scrlContent];
@@ -187,44 +186,6 @@
     [btnForgotPassword addTarget:self action:@selector(btnForgotPasswordClicked) forControlEvents:UIControlEventTouchUpInside];
     [btnForgotPassword.titleLabel setFont:[UIFont fontWithName:CGBold size:txtSizse]];
     [viewPopUp addSubview:btnForgotPassword];
-    
-   /* UILabel * loginLbl =[[UILabel alloc] initWithFrame:CGRectMake(0, DEVICE_HEIGHT-55, DEVICE_WIDTH, 35)];
-    loginLbl.font=[UIFont fontWithName:CGRegular size:txtSizse];
-    loginLbl.textAlignment=NSTextAlignmentCenter;
-    loginLbl.textColor=[UIColor whiteColor];
-    [scrlContent addSubview:loginLbl];
-    
-    NSMutableAttributedString *hintText = [[NSMutableAttributedString alloc] initWithString:@"Don't have an account? Sign Up here"];
-    UIFontDescriptor *fontDescriptor = [UIFontDescriptor fontDescriptorWithName:CGRegular size:txtSizse];
-    UIFontDescriptor *fontDescriptor1 = [UIFontDescriptor fontDescriptorWithName:CGBold size:txtSizse];
-    UIFontDescriptor *symbolicFontDescriptor = [fontDescriptor fontDescriptorWithSymbolicTraits:UIFontDescriptorTraitTightLeading];
-    
-    UIFontDescriptor *symbolicFontDescriptor1 = [fontDescriptor1 fontDescriptorWithSymbolicTraits:UIFontDescriptorTraitBold];
-    
-    UIFont *fontWithDescriptor = [UIFont fontWithDescriptor:symbolicFontDescriptor size:txtSizse];
-    UIFont *fontWithDescriptor1 = [UIFont fontWithDescriptor:symbolicFontDescriptor1 size:txtSizse];
-    
-    //Red and large
-    [hintText setAttributes:@{NSFontAttributeName:fontWithDescriptor, NSForegroundColorAttributeName:[UIColor whiteColor]} range:NSMakeRange(0, 24)];
-    
-    //Rest of text -- just futura
-    [hintText setAttributes:@{NSFontAttributeName:fontWithDescriptor1, NSForegroundColorAttributeName:[UIColor whiteColor]} range:NSMakeRange(23, hintText.length - 23-5)];
-    
-    loginLbl.textColor=[UIColor whiteColor];
-    [loginLbl setAttributedText:hintText];
-    
-    UIButton * btnSignUp = [UIButton buttonWithType:UIButtonTypeCustom];
-    btnSignUp.frame = CGRectMake(0, DEVICE_HEIGHT-50, DEVICE_WIDTH, 35);
-    [btnSignUp addTarget:self action:@selector(btnSignupClick) forControlEvents:UIControlEventTouchUpInside];
-    [scrlContent addSubview:btnSignUp];
-    
-    if(IS_IPHONE_X)
-    {
-    loginLbl.frame =CGRectMake(0, DEVICE_HEIGHT-40-55, DEVICE_WIDTH, 35);
-    btnSignUp.frame = CGRectMake(0, DEVICE_HEIGHT-40-50, DEVICE_WIDTH, 35);
-    lblName.frame = CGRectMake(15, 40, DEVICE_WIDTH-30, 30);
-    }
-    */
     
     if (CURRENT_USER_EMAIL != [NSNull null])
     {
@@ -544,38 +505,6 @@
     NSLog(@"AlertCancleClicked");
     [self hideMorePopUpView:YES];
 }
--(void)AlertOKClicked:(id)sender
-{
-    [txtForgotpasswordEmail resignFirstResponder];
-    
-//    if ([APP_DELEGATE validateEmail:txtForgotpasswordEmail.text])
-//    {
-//        lblerror.text=@"";
-//        lblerror.hidden=YES;
-//        [txtForgotpasswordEmail resignFirstResponder];
-//
-//        if ([APP_DELEGATE isNetworkreachable])
-//        {
-//            [self forgotPasswordWebService];
-//        }
-//        else
-//        {
-//            URBAlertView *alertView = [[URBAlertView alloc] initWithTitle:ALERT_TITLE message:@"There is no internet connection. Please connect to internet first then try again later." cancelButtonTitle:OK_BTN otherButtonTitles: nil, nil];
-//            [alertView setMessageFont:[UIFont fontWithName:CGRegular size:12]];
-//            [alertView setHandlerBlock:^(NSInteger buttonIndex, URBAlertView *alertView) {
-//                [alertView hideWithCompletionBlock:^{
-//
-//                }];
-//            }];
-//              [alertView showWithAnimation:Alert_Animation_Type];
-//        if (IS_IPHONE_X) {[alertView showWithAnimation:URBAlertAnimationDefault];}
-//        }
-//    }
-//    else
-//    {   lblerror.text=@"Invalid email";
-//        lblerror.hidden=NO;
-//    }
-}
 -(void)cancelBtnClicked:(id)sender
 {
     [self hideMorePopUpView:YES];
@@ -585,58 +514,10 @@
     NSLog(@"Tapped");
 }
 #pragma mark - Web Service Call
--(void)loginViaEmailWebService
+-(void)VerifyUserWithServer
 {
     [APP_DELEGATE endHudProcess];
     [APP_DELEGATE startHudProcess:@"Logging..."];
-    
-    [btnLogin setEnabled:NO];
-    [activityIndicator startAnimating];
-    NSString *websrviceName=@"login";
-    
-    NSMutableDictionary * dict = [[NSMutableDictionary alloc]init];
-    [dict setValue:txtEmail.text forKey:@"email"];
-    [dict setValue:txtPassword.text forKey:@"password"];
-    
-    NSString *deviceToken = deviceTokenStr;
-    if (deviceToken == nil || deviceToken == NULL)
-    {
-        [dict setValue:@"123456789" forKey:@"device_token"];
-    }
-    else
-    {
-        [dict setValue:deviceToken forKey:@"device_token"];
-    }
-    [dict setValue:@"ios" forKey:@"device_type"];
-    
-    
-    URLManager *manager = [[URLManager alloc] init];
-    manager.commandName = @"login";
-    manager.delegate = self;
-    NSString *strServerUrl = @"http://succorfish.in/mobile/";
-    [manager postUrlCall:[NSString stringWithFormat:@"%@%@",strServerUrl,websrviceName] withParameters:dict];
-}
--(void)forgotPasswordWebService
-{
-    [self AlertCancleClicked:nil];
-
-    [APP_DELEGATE endHudProcess];
-    [APP_DELEGATE startHudProcess:@"Sending Mail..."];
-
-    NSString *websrviceName=@"forgotpassword";
-    NSMutableDictionary * dict = [[NSMutableDictionary alloc]init];
-    [dict setValue:txtForgotpasswordEmail.text forKey:@"email"];
-
-    URLManager *manager = [[URLManager alloc] init];
-    manager.commandName = @"forgotpassword";
-    manager.delegate = self;
-    NSString *strServerUrl = @"http://succorfish.in/mobile/";
-    [manager postUrlCall:[NSString stringWithFormat:@"%@%@",strServerUrl,websrviceName] withParameters:dict];
-}
--(void)VerifyUserWithServer
-{
-        [APP_DELEGATE endHudProcess];
-        [APP_DELEGATE startHudProcess:@"Logging..."];
  
     dispatch_async(dispatch_get_main_queue(), ^(void){
         {
@@ -721,94 +602,6 @@
 - (void)didReceiveMemoryWarning {
     [super didReceiveMemoryWarning];
     // Dispose of any resources that can be recreated.
-}
-#pragma mark - UrlManager Delegate
-- (void)onResult:(NSDictionary *)result
-{
-    [APP_DELEGATE endHudProcess];
-
-    NSLog(@"The result is...%@", result);
-    
-    [btnLogin setEnabled:YES];
-    [activityIndicator stopAnimating];
-    
-    if ([[result valueForKey:@"commandName"] isEqualToString:@"login"])
-    {
-        if ([[[result valueForKey:@"result"] valueForKey:@"response"] isEqualToString:@"true"])
-        {
-            [[NSUserDefaults standardUserDefaults] setObject:[[result valueForKey:@"result"] valueForKey:@"auth_token"] forKey:@"auth_token"];
-            [[NSUserDefaults standardUserDefaults] setValue:txtEmail.text forKey:@"CURRENT_USER_EMAIL"];
-            [[NSUserDefaults standardUserDefaults] setValue:txtPassword.text forKey:@"CURRENT_USER_PASS"];
-            [[NSUserDefaults standardUserDefaults] setObject:@"YES" forKey:@"IS_LOGGEDIN"];
-            
-            NSMutableDictionary * tmpDict = [[NSMutableDictionary alloc] init];
-            tmpDict = [[[result valueForKey:@"result"] valueForKey:@"data"] mutableCopy];
-            [tmpDict setObject:txtPassword.text forKey:@"localPassword"];
-            [[NSUserDefaults standardUserDefaults] setObject:@"YES" forKey:@"IS_LOGGEDIN"];
-
-            [[NSUserDefaults standardUserDefaults] setValue:[tmpDict valueForKey:@"name"] forKey:@"CURRENT_USER_NAME"];
-            
-            [[NSUserDefaults standardUserDefaults] synchronize];
-            
-            URBAlertView *alertView = [[URBAlertView alloc] initWithTitle:ALERT_TITLE message:@"Logged in Successfully." cancelButtonTitle:OK_BTN otherButtonTitles: nil, nil];
-            
-            [alertView setMessageFont:[UIFont fontWithName:CGRegular size:14]];
-            [alertView setHandlerBlock:^(NSInteger buttonIndex, URBAlertView *alertView) {
-                [alertView hideWithCompletionBlock:^{
-                    
-//                    [APP_DELEGATE MoveToHomeVCAfterLogin];
-                }];
-            }];
-            [alertView showWithAnimation:URBAlertAnimationTopToBottom];
-    if (IS_IPHONE_X){[alertView showWithAnimation:URBAlertAnimationDefault];}
-        }
-        else
-        {
-            URBAlertView * alert =[[URBAlertView alloc] initWithTitle:ALERT_TITLE message:[[result valueForKey:@"result"]valueForKey:@"message"] cancelButtonTitle:OK_BTN otherButtonTitles:nil, nil];
-            [alert showWithAnimation:URBAlertAnimationTopToBottom];
-        }
-    }
-    else if ([[result valueForKey:@"commandName"] isEqualToString:@"forgotpassword"])
-    {
-        if ([[[result valueForKey:@"result"] valueForKey:@"response"] isEqualToString:@"true"])
-        {
-            
-            [btnLogin setEnabled:YES];
-            [btnOk setTitle:OK_BTN forState:UIControlStateNormal];
-            [btncancel setEnabled:YES];
-            [btncancel setTitle:ALERT_CANCEL forState:UIControlStateNormal];
-            [ForgotpasswordIndicator stopAnimating];
-            
-//            [self AlertCancleClicked:nil];
-            
-            URBAlertView * alert =[[URBAlertView alloc] initWithTitle:ALERT_TITLE message:[[result valueForKey:@"result"]valueForKey:@"message"] cancelButtonTitle:OK_BTN otherButtonTitles:nil, nil];
-            [alert setHandlerBlock:^(NSInteger buttonIndex, URBAlertView *alertView) {
-                [alertView hideWithCompletionBlock:^{
-                }];
-            }];
-            
-            [alert showWithAnimation:URBAlertAnimationTopToBottom];
-        }
-        else
-        {
-            
-            [btnLogin setEnabled:YES];
-            [btnOk setTitle:OK_BTN forState:UIControlStateNormal];
-            [btncancel setEnabled:YES];
-            [btncancel setTitle:ALERT_CANCEL forState:UIControlStateNormal];
-            [ForgotpasswordIndicator stopAnimating];
-            
-            
-            URBAlertView * alert =[[URBAlertView alloc] initWithTitle:ALERT_TITLE message:[[result valueForKey:@"result"]valueForKey:@"message"] cancelButtonTitle:OK_BTN otherButtonTitles:nil, nil];
-            [alert showWithAnimation:URBAlertAnimationTopToBottom];
-        }
-        
-    }
-}
-- (void)onError:(NSError *)error
-{
-    [APP_DELEGATE endHudProcess];
-    NSLog(@"The error is...%@", error);
 }
 #pragma mark - Hide Keyboard
 -(void)hideKeyboard

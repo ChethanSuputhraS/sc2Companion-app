@@ -49,6 +49,8 @@ typedef void(^URLManagerCallBack)(NSDictionary *result, NSError *error, NSString
 //to know from which web service call
 @property (nonatomic, retain) NSString *commandName;
 
+@property (nonatomic, retain) NSString *strIMEI;
+
 //to know response
 @property (nonatomic, assign) BOOL isString;
 

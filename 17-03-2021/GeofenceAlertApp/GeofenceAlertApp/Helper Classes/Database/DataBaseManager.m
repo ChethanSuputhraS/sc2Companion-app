@@ -314,12 +314,12 @@ static DataBaseManager * dataBaseManager = nil;
     }
     return ret;
 }
--(BOOL)createNewChatTable
+-(BOOL)CreateNewChatTable
 {
     int rc;
     // SQL to create new database
     NSArray* queries = [NSArray arrayWithObjects:
-                        @"create table 'NewChat' (id integer primary key autoincrement not null,'from_name' varchar(255),'to_name' varchar(255),'msg_txt' varchar(255),'time' varchar(255),'status' varchar(255),'sequence' varchar(255),'identifier' varchar(255),'timeStamp' real,'isGSM' VARCHAR ,'bleAdress' VARCHAR)",nil];
+                        @"create table 'NewChat' (id integer primary key autoincrement not null,'from_name' varchar(255),'to_name' varchar(255),'msg_txt' varchar(255),'time' varchar(255),'status' varchar(255),'sequence' varchar(255),'identifier' varchar(255),'timeStamp' real,'isGSM' VARCHAR ,'bleAddress' VARCHAR)",nil];
     if(queries != nil)
     {
         for (NSString* sql in queries)
@@ -515,39 +515,32 @@ static DataBaseManager * dataBaseManager = nil;
     }
     return ret;
 }
--(void)Add_sequence_to_NewChat
+
+
+-(BOOL)CreateTableforDeviceIMEI
 {
-    sqlite3_stmt *createStmt = nil;
-    
-    NSString *query = [NSString stringWithFormat:@"ALTER TABLE NewChat ADD COLUMN sequence TEXT"];
-    
-    if (sqlite3_prepare_v2(_database, [query UTF8String], -1, &createStmt, NULL) == SQLITE_OK)
+    int rc;
+    // SQL to create new database
+    NSArray* queries = [NSArray arrayWithObjects:
+                        @"create table 'tbl_Device_IMEI' (id integer primary key autoincrement not null,'bleAddress' VARCHAR, 'IMEI' VARCHAR,'devicetoken' VARCHAR )",nil];
+    if(queries != nil)
     {
-        sqlite3_exec(_database, [query UTF8String], NULL, NULL, NULL);
+        for (NSString* sql in queries)
+        {
+            sqlite3_stmt *stmt;
+            rc = sqlite3_prepare_v2(_database, [sql UTF8String], -1, &stmt, NULL);
+            ret = (rc == SQLITE_OK);
+            //            //NSLog(@" create %@",sql);
+            if (ret)
+            {
+                rc = sqlite3_step(stmt);
+                ret = (rc == SQLITE_DONE);
+                sqlite3_finalize(stmt); // free statement
+                //sqlite3_reset(stmt);
+            }
+        }
     }
-    else
-    {
-        NSLog(@"The Session table already exist in NewChat");
-    }
-    
-    sqlite3_finalize(createStmt);
-}
--(void)Add_MacAddress_to_NewChat
-{
-    sqlite3_stmt *createStmt = nil;
-    
-    NSString *query = [NSString stringWithFormat:@"ALTER TABLE NewChat ADD COLUMN bleAdress TEXT"];
-    
-    if (sqlite3_prepare_v2(_database, [query UTF8String], -1, &createStmt, NULL) == SQLITE_OK)
-    {
-        sqlite3_exec(_database, [query UTF8String], NULL, NULL, NULL);
-    }
-    else
-    {
-        NSLog(@"The Session table already exist in NewChat");
-    }
-    
-    sqlite3_finalize(createStmt);
+    return ret;
 }
 #pragma mark - Insert Query 
 /*
