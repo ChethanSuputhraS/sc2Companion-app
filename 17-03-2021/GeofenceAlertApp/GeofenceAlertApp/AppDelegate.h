@@ -23,7 +23,9 @@
 #import "IndustrySpeConfigVC.h"
 #import "WifiSetupVC.h"
 #import "RemotNavigMapVC.h"
-
+#import "LiveTrackingVC.h"
+#import "RadialGeofenceVC.h"
+#import "PolygonGeofenceVC.h"
 
 HomeVC * globalHomeVC;
 HistoryVC * globalHistoryVC;
@@ -36,7 +38,9 @@ DeviceConfigurVC *globalDeviceConfig;
 IndustrySpeConfigVC * globalIndustVC;
 WifiSetupVC * globalWiFiVC;
 RemotNovigMapVC * globalRemoteNaviMapView;
-
+LiveTrackingVC * globalLiveTrackingVC;
+RadialGeofenceVC * globalRadialGeofenceVC;
+PolygonGeofenceVC * globalPolygonGeofenceVC;
 
 double globalLatitude, globalLongitude;
 double deviceLatitude, deviceLongitude;

@@ -19,33 +19,7 @@
 @protocol BLEServiceDelegate <NSObject>
 
 @optional
-/*!
- *  @method activeDevice:
- *
- *  @param device	The device providing this update of communication status.
- *
- *  @discussion			This method is invoked when the @link name @/link of <i>device</i> changes.
- */
--(void)activeDevice:(CBPeripheral*)device;
 -(void)ReceviedLatLongFromDevice:(NSMutableDictionary *)dict;
-/*!
- *  @method updateSignalImage:forDevice:
- *
- *  @param device	The device providing this update.
- *
- *  @discussion			This method returns the result of a @link readDeviceRSSI: @/link call.
- */
--(void)updateSignalImage:(int )RSSI forDevice:(CBPeripheral*)device;
-
-@required
-/*!
- *  @method batterySignalValueUpdated:withBattLevel:
- *
- *  @param device	The device providing this update.
- *
- *  @discussion			This method returns the result of a @link readDeviceBattery: @/link call.
- */
--(void)batterySignalValueUpdated:(CBPeripheral*)device withBattLevel:(NSString*)batLevel;
 
 @end
 

@@ -18,7 +18,7 @@
 @property(nonatomic,strong)UILabel * lblBack;
 @property(nonatomic,strong)UIButton * btnMore;
 @property(nonatomic,strong)UIButton * btnConnect,*btnmessage,*btnmap,*btnLivelocation,*btnMore1,*btnGeofence,*btnSetting,*btnSOS;
-@property(nonatomic,strong)UIImageView * imgviewMoreButton;
+@property(nonatomic,strong)UIImageView * imgviewMoreButton,*imageViewBattery;
 @property(nonatomic,strong)UIView * optionView,*settingView;
 
 

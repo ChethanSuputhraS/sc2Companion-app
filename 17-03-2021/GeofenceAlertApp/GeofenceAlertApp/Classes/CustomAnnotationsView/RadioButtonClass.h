@@ -26,6 +26,8 @@ NS_ASSUME_NONNULL_BEGIN
 -(NSInteger)getSelectedIndex;
 -(void)setButtonFrame:(CGRect)frame withNumberofItems:(NSArray *)arrItemsfromView withSelectedIndex:(NSInteger)selectedIndex;
 -(void)SetButtonSelectedwithIndex:(int)selectedIndex withObject:(RadioButtonClass *)radioObject;
+-(void)UpdateButtonsforSIMConfiguration:(int)selectedIndex withObject:(RadioButtonClass *)radioObject;
+-(void)UpdateButtonsforIndustryConfiguration:(int)selectedIndex withObject:(RadioButtonClass *)radioObject;
 
 @end
 

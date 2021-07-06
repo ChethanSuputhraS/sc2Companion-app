@@ -142,7 +142,7 @@
     [viewHeader addSubview:lblTitle];
         
     UIButton * btnLogout = [UIButton buttonWithType:UIButtonTypeCustom];
-    [btnLogout setFrame:CGRectMake(10, globalStatusHeight-10, 60, 60)];
+    [btnLogout setFrame:CGRectMake(0, globalStatusHeight-10, 60, 60)];
     btnLogout.backgroundColor = UIColor.clearColor;
     [btnLogout setImage:[UIImage imageNamed:@"logout.png"] forState:UIControlStateNormal];
     [btnLogout addTarget:self action:@selector(btnLogoutClick) forControlEvents:UIControlEventTouchUpInside];
@@ -165,6 +165,10 @@
     tblDeviceList.separatorStyle = UITableViewCellSeparatorStyleNone;
     tblDeviceList.separatorColor = [UIColor darkGrayColor];
     [self.view addSubview:tblDeviceList];
+    
+    UITapGestureRecognizer * tapGesture = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(tableTapGestureRecognize)];
+    tapGesture.numberOfTapsRequired = 1;
+    [tblDeviceList addGestureRecognizer:tapGesture ];
     
     topPullToRefreshManager = [[MNMPullToRefreshManager alloc] initWithPullToRefreshViewHeight:60.0f tableView:tblDeviceList withClient:self];
     [topPullToRefreshManager setPullToRefreshViewVisible:YES];
@@ -210,11 +214,11 @@
     {
         if ([[result valueForKey:@"commandName"] isEqualToString:@"gettoken"])
         {
-            NSString * strIMEI = [self checkforValidString:[result valueForKey:@"IMEI"]];
-            NSString * strDeviceToken = [self checkforValidString:[result valueForKey:@"result"]];
+            NSString * strIMEI = [self isStringValid:[result valueForKey:@"IMEI"]];
+            NSString * strDeviceToken = [self isStringValid:[result valueForKey:@"result"]];
             NSLog(@"Device Token====>>>>>%@",strDeviceToken);
             
-            NSString * strQuery =    [NSString stringWithFormat:@"insert into 'tbl_Device_IMEI'('bleAddress','IMEI','devicetoken') values(\"%@\",\"%@\",\"%@\")",[self checkforValidString:strSelectedBLEAddress],strIMEI,strDeviceToken];
+            NSString * strQuery =    [NSString stringWithFormat:@"insert into 'tbl_Device_IMEI'('bleAddress','IMEI','devicetoken') values(\"%@\",\"%@\",\"%@\")",[self isStringValid:strSelectedBLEAddress],strIMEI,strDeviceToken];
              [[DataBaseManager dataBaseManager] executeSw:strQuery];
             if (![[arrIMEITokens valueForKey:@"IMEI"] containsObject:strIMEI])
             {
@@ -344,8 +348,7 @@
     
     CBPeripheral * p = [[arrayDevices objectAtIndex:indexPath.row] valueForKey:@"peripheral"];
     
-    
-    NSString * strBadgeCount = [self checkforValidString:[[NSUserDefaults standardUserDefaults] valueForKey:[[[arrayDevices  objectAtIndex:indexPath.row]valueForKey:@"bleAddress"] uppercaseString]]];
+    NSString * strBadgeCount = [self isStringValid:[[NSUserDefaults standardUserDefaults] valueForKey:[[[arrayDevices  objectAtIndex:indexPath.row]valueForKey:@"bleAddress"] uppercaseString]]];
     
     int intBadgeCount = [strBadgeCount intValue];
     
@@ -370,8 +373,8 @@
         }
         else
         {
+            isMoreClicked = NO;
             cell.settingView.hidden = true;
-
         }
     }
         cell.lblDeviceName.text = [[arrayDevices  objectAtIndex:indexPath.row]valueForKey:@"name"];
@@ -464,16 +467,18 @@
 }
 -(void)btnLiveTrackClick:(id)sender
 {
-    LiveTrackingVC * tVc = [[LiveTrackingVC alloc] init];
-    tVc.classPeripheral = classPeripheral;
-    [self.navigationController pushViewController:tVc animated:true];
     [self RequestForStartLivetracking:@"01"];
+    if (globalLiveTrackingVC == nil)
+    {
+        globalLiveTrackingVC = [[LiveTrackingVC alloc] init];
+    }
+    globalLiveTrackingVC.classPeripheral = classPeripheral;
+    [self.navigationController pushViewController:globalLiveTrackingVC animated:true];
 }
 
 #pragma mark : Button Click Events
 -(void)refreshBtnClick
 {
-    
     [[[BLEManager sharedManager] foundDevices] removeAllObjects];
     [[BLEManager sharedManager] rescan];
     [tblDeviceList reloadData];
@@ -517,6 +522,7 @@
 }
 -(void)btnLogoutClick
 {
+
     FCAlertView *alert = [[FCAlertView alloc] init];
     alert.colorScheme = [UIColor blackColor];
     [alert makeAlertTypeCaution];
@@ -546,7 +552,6 @@
     globalBadgeCount = globalBadgeCount - 1;
     [UIApplication sharedApplication].applicationIconBadgeNumber = globalBadgeCount;
 
-    
     if ([[notificationDict valueForKey:@"Geo_Type"] isEqualToString:@"00"])
     {
         RadialGeofenceVC *view1 = [[RadialGeofenceVC alloc]init];
@@ -599,7 +604,7 @@
     
     if (alertView.tag == 123)
     {
-        if([[self checkforValidString:customField.text] isEqualToString:@"NA"])
+        if([[self isStringValid:customField.text] isEqualToString:@"NA"])
         {
             [self setDefaultDeviceName:[NSString stringWithFormat:@"SC2 Device %lu",arrGlobalDeviceNames.count+1]];
         }
@@ -766,7 +771,10 @@ dispatch_async(dispatch_get_main_queue(), ^(void)
 
 -(void)DeviceDidDisConnectNotification:(NSNotification*)notification//Disconnect periperal
 {
-    dispatch_async(dispatch_get_main_queue(), ^(void){
+    dispatch_async(dispatch_get_main_queue(), ^(void)
+    {
+        self->selectedMoreIndex = -1;
+    
         [[[BLEManager sharedManager] foundDevices] removeAllObjects];
         [[BLEManager sharedManager] rescan];
         [self->tblDeviceList reloadData];
@@ -862,7 +870,7 @@ dispatch_async(dispatch_get_main_queue(), ^(void)
 -(void)ReceievedGeofenceDatafromBLEIMEInumber:(NSString *)strIMEI
 {
     dispatch_async(dispatch_get_main_queue(), ^{
-    if ([[self checkforValidString:strIMEI]isEqualToString:@""])
+    if ([[self isStringValid:strIMEI]isEqualToString:@""])
     {
         // error
         [APP_DELEGATE endHudProcess];
@@ -880,7 +888,7 @@ dispatch_async(dispatch_get_main_queue(), ^(void)
             {
                 if ([self->arrIMEITokens count] > foundIndex)
                 {
-                    NSString * strToken = [self checkforValidString:[[self->arrIMEITokens objectAtIndex:foundIndex] valueForKey:@"devicetoken"]];
+                    NSString * strToken = [self isStringValid:[[self->arrIMEITokens objectAtIndex:foundIndex] valueForKey:@"devicetoken"]];
                     if (![strToken isEqualToString:@"NA"])
                     {
                         isTokenAvailable = YES;
@@ -913,13 +921,27 @@ dispatch_async(dispatch_get_main_queue(), ^(void)
     }
     });
 }
+#pragma mark - Write for Battery
+-(void)RequestforBatteryPercentage
+{
+    NSInteger intCommand = [@"228" integerValue];
+    NSData * dataCommand = [[NSData alloc] initWithBytes:&intCommand length:1];
 
+
+    NSInteger intLength = 0;// 13 previously
+    NSData * dataLength = [[NSData alloc] initWithBytes:&intLength length:1];
+        
+    NSMutableData *completeData = [dataCommand mutableCopy];
+    [completeData appendData:dataLength];
+
+    [[BLEService sharedInstance] WriteNSDataforEncryptionAndthenSendtoPeripheral:completeData withPeripheral:classPeripheral];
+}
 #pragma mark : Write Device_Token to Device
 -(void)SendignDeviceTokenTotheDeVice:(NSString *)strDeviceToken
 {
     strDeviceToken = [strDeviceToken stringByReplacingOccurrencesOfString:@"\"" withString:@""];
 
-    if (![[APP_DELEGATE checkforValidString:strDeviceToken] isEqualToString:@"NA"])
+    if (![[self isStringValid:strDeviceToken] isEqualToString:@"NA"])
     {
         NSMutableArray * arrDeviceTokenPacket = [[NSMutableArray alloc] init];
         NSInteger totalPackets = 0;
@@ -969,8 +991,7 @@ dispatch_async(dispatch_get_main_queue(), ^(void)
     }
     else if([strVAlidate isEqualToString:@"01"]) //  valid token
     {
-//        [[BLEManager sharedManager] connectDevice:self->classPeripheral];//kalpeshtochek
-        // send a4ff
+        
     }
     else if ([strVAlidate isEqualToString:@"02"]) //  retry after some time
     {
@@ -1017,6 +1038,13 @@ dispatch_async(dispatch_get_main_queue(), ^(void)
                         if (foundTimeIndex != NSNotFound)
                         {
                             isDataVali = YES;
+                        }
+                        if ([[[arrGlobalGeofenceList objectAtIndex:foundIndex] valueForKey:@"type"] isEqualToString:@"00"])
+                        {
+                            if ([[self isStringValid:[[arrGlobalGeofenceList objectAtIndex:foundIndex] valueForKey:@"lat"]]  isEqualToString:@"NA"])
+                            {
+                                isDataVali = NO;
+                            }
                         }
                     }
                 }
@@ -1103,6 +1131,12 @@ dispatch_async(dispatch_get_main_queue(), ^(void)
 -(void)ReceivedFifthPacketofGeofenceData //
 {
     NSLog(@"=Sixth Packet =>");
+    
+//    [timerForbattryRequest invalidate]; // css add this 
+//    timerForbattryRequest = nil;
+//    timerForbattryRequest = [NSTimer scheduledTimerWithTimeInterval:10 target:self selector:@selector(BatteryRepeateTimer) userInfo:nil repeats:YES];
+//    [self RequestforBatteryPercentage];
+    
     [self InsertToDataBase];
 }
 #pragma mark : After Receiving fifth Packet Insert Geofence Data to Database
@@ -1110,24 +1144,20 @@ dispatch_async(dispatch_get_main_queue(), ^(void)
 {
     if (globalDict.count > 0)
     {
-        NSString * FLat = [NSString stringWithFormat:@"%f", [[globalDict valueForKey:@"lat"] floatValue]];
-        NSString * FLong = [NSString stringWithFormat:@"%f", [[globalDict valueForKey:@"long"] floatValue]];
-
-        NSString * strGeoFncID = [self checkforValidString:[globalDict valueForKey:@"geofence_ID"]];
-        NSString * strGeoFncType = [self checkforValidString:[globalDict valueForKey:@"type"]];
-        NSString * strLat = [self checkforValidString:FLat]; //Latitude
-        NSString * strLong = [self checkforValidString:FLong]; //Longitude
-        NSString * strNoRules = [self checkforValidString:[globalDict valueForKey:@"number_of_rules"]];
+        NSString * strGeoFncID = [self isStringValid:[globalDict valueForKey:@"geofence_ID"]];
+        NSString * strGeoFncType = [self isStringValid:[globalDict valueForKey:@"type"]];
+        NSString * strLat = [self isStringValid:[globalDict valueForKey:@"lat"]]; //Latitude
+        NSString * strLong = [self isStringValid:[globalDict valueForKey:@"long"]]; //Longitude
+        NSString * strNoRules = [self isStringValid:[globalDict valueForKey:@"number_of_rules"]];
         NSString * strIsActive = @"NA";
-        NSString * strRadiusVertices = [self checkforValidString:[globalDict valueForKey:@"radiusOrvertices"]];
-        NSString * strGSMtime = [self checkforValidString:[globalDict valueForKey:@"GSMtime"]];
-        NSString * strIrridiumTime = [self checkforValidString:[globalDict valueForKey:@"IrridiumTime"]];
-        NSString * strTimeStamp = [self checkforValidString:[globalDict valueForKey:@"time_stamp"]];
+        NSString * strRadiusVertices = [self isStringValid:[globalDict valueForKey:@"radiusOrvertices"]];
+        NSString * strGSMtime = [self isStringValid:[globalDict valueForKey:@"GSMtime"]];
+        NSString * strIrridiumTime = [self isStringValid:[globalDict valueForKey:@"IrridiumTime"]];
+        NSString * strTimeStamp = [self isStringValid:[globalDict valueForKey:@"time_stamp"]];
 
         NSString *query  = [NSString stringWithFormat:@"select * from Geofence where geofence_ID = '%@'",strGeoFncID];
         BOOL recordExist = [[DataBaseManager dataBaseManager] recordExistOrNot:query];
         NSString * strName = [self stringFroHex:strGeoFncID];
-
 
         if ([strGeoFncType isEqualToString:@"01"])
         {
@@ -1184,9 +1214,9 @@ dispatch_async(dispatch_get_main_queue(), ^(void)
         }
         for (int i = 0; i < [arrRules count]; i++)
         {
-            NSString * strRuleID = [self checkforValidString:[[arrRules objectAtIndex:i] valueForKey:@"rule_ID"]];
-            NSString * strValue  = [self checkforValidString:[[arrRules objectAtIndex:i] valueForKey:@"rule_value"]];
-            NSString * strRuleNO = [self checkforValidString:[[arrRules objectAtIndex:i] valueForKey:@"NoAction"]];
+            NSString * strRuleID = [self isStringValid:[[arrRules objectAtIndex:i] valueForKey:@"rule_ID"]];
+            NSString * strValue  = [self isStringValid:[[arrRules objectAtIndex:i] valueForKey:@"rule_value"]];
+            NSString * strRuleNO = [self isStringValid:[[arrRules objectAtIndex:i] valueForKey:@"NoAction"]];
 
             NSString * strRulesQuery =    [NSString stringWithFormat:@"insert into 'Rules_Table'('name','geofence_ID','rule_ID','rule_value','rule_number') values(\"%@\",\"%@\",\"%@\",\"%@\",\"%@\")",strName,strGeoFncID,strRuleID,strValue,strRuleNO];
              [[DataBaseManager dataBaseManager] executeSw:strRulesQuery];
@@ -1251,24 +1281,23 @@ dispatch_async(dispatch_get_main_queue(), ^(void)
                 NSString * strAddress = [[arrGlobalDevices  objectAtIndex:foudIndex]valueForKey:@"bleAddress"];
                 if ([[arrGlobalDeviceNames valueForKey:@"BLE_Address"] containsObject:strAddress])
                 {
-                    NSInteger foundIndex = [[arrGlobalDeviceNames valueForKey:@"BLE_Address"] indexOfObject:strAddress];
-                    if (foundIndex != NSNotFound)
+                    NSInteger foundIndex1 = [[arrGlobalDeviceNames valueForKey:@"BLE_Address"] indexOfObject:strAddress];
+                    if (foundIndex1 != NSNotFound)
                     {
-                        if ([arrGlobalDeviceNames count] > foundIndex)
+                        if ([arrGlobalDeviceNames count] > foundIndex1)
                         {
-                            strName = [[arrGlobalDeviceNames objectAtIndex:foundIndex] valueForKey:@"name"];
+                            strName = [[arrGlobalDeviceNames objectAtIndex:foundIndex1] valueForKey:@"name"];
                         }
                     }
                 }
-                    [dataDict setObject:strCurrentIdentifier forKey:@"identifier"];
-                    [dataDict setObject:globalPeripheral forKey:@"peripheral"]; // classPeripheral
-                    [dataDict setObject:strName forKey:@"device_name"];
-                    [dataDict setObject:strAddress forKey:@"bleAddress"];
+                [dataDict setObject:strCurrentIdentifier forKey:@"identifier"];
+                [dataDict setObject:globalPeripheral forKey:@"peripheral"]; // classPeripheral
+                [dataDict setObject:strName forKey:@"device_name"];
+                [dataDict setObject:strAddress forKey:@"bleAddress"];
             }
         }
     }
    
-    
     dispatch_async(dispatch_get_main_queue(), ^(void)
     {
         [NSTimer scheduledTimerWithTimeInterval:0.1 target:self selector:@selector(SaveAlertInfotoDatabase:) userInfo:dataDict repeats:NO];
@@ -1276,20 +1305,19 @@ dispatch_async(dispatch_get_main_queue(), ^(void)
 }
 -(void)SaveAlertInfotoDatabase:(NSTimer*)theTimer
 {
-    NSString * strRuleId = [[theTimer userInfo] objectForKey:@"BreachRule_ID"];
-    NSString * strBrechType = [[theTimer userInfo] objectForKey:@"Breach_Type"];
-    NSString * strGeoID = [[theTimer userInfo] objectForKey:@"geofence_ID"];
-    NSString * strBreachRuleValue = [[theTimer userInfo] objectForKey:@"BreachRuleValue"] ;
-    NSString * strBreachLat = [[theTimer userInfo] objectForKey:@"Breach_Lat"] ;
-    NSString * strBreachLon = [[theTimer userInfo] objectForKey:@"Breach_Long"] ;
-    NSString * strBreachDateTime = [[theTimer userInfo] objectForKey:@"date_Time"] ;
-    NSString * strBreachTimestamp = [[theTimer userInfo] objectForKey:@"timeStamp"] ;
-    NSString * strBleAddress = [[[theTimer userInfo] objectForKey:@"bleAddress"] uppercaseString];
+    NSString * strRuleId = [self isStringValid:[[theTimer userInfo] objectForKey:@"BreachRule_ID"]];
+    NSString * strBrechType = [self isStringValid:[[theTimer userInfo] objectForKey:@"Breach_Type"]];
+    NSString * strGeoID = [self isStringValid:[[theTimer userInfo] objectForKey:@"geofence_ID"]];
+    NSString * strBreachRuleValue = [self isStringValid:[[theTimer userInfo] objectForKey:@"BreachRuleValue"]] ;
+    NSString * strBreachLat = [self isStringValid:[[theTimer userInfo] objectForKey:@"Breach_Lat"]] ;
+    NSString * strBreachLon = [self isStringValid:[[theTimer userInfo] objectForKey:@"Breach_Long"]] ;
+    NSString * strBreachDateTime = [self isStringValid:[[theTimer userInfo] objectForKey:@"date_Time"]] ;
+    NSString * strBreachTimestamp = [self isStringValid:[[theTimer userInfo] objectForKey:@"timeStamp"]] ;
+    NSString * strBleAddress = [self isStringValid:[[[theTimer userInfo] objectForKey:@"bleAddress"] uppercaseString]];
     NSString * strActualRuleValue = @"NA";
     NSString * strMsg = @"NA";
     NSString * strGeoType = @"NA";
     NSString * strGeoName = @"NA";
-    //css add this
     NSString * strGeoTimeStamp = @"NA";
     NSString * strGeoLat = @"NA";
     NSString * strGeoLog = @"NA";
@@ -1306,12 +1334,12 @@ dispatch_async(dispatch_get_main_queue(), ^(void)
             if ([arrGlobalGeofenceList count] > foundIndex)
             {
                 isGotData = YES;
-                strGeoType = [self checkforValidString:[[arrGlobalGeofenceList objectAtIndex:foundIndex] valueForKey:@"type"]];
-                strGeoName = [self checkforValidString:[[arrGlobalGeofenceList objectAtIndex:foundIndex] valueForKey:@"geofence_ID"]];
-                strGeoTimeStamp = [self checkforValidString:[[arrGlobalGeofenceList objectAtIndex:foundIndex] valueForKey:@"time_stamp"]];
-                strGeoLat = [self checkforValidString:[[arrGlobalGeofenceList objectAtIndex:foundIndex] valueForKey:@"lat"]];
-                strGeoLog = [self checkforValidString:[[arrGlobalGeofenceList objectAtIndex:foundIndex] valueForKey:@"long"]];
-                strGeoRadius = [self checkforValidString:[[arrGlobalGeofenceList objectAtIndex:foundIndex] valueForKey:@"radiusOrvertices"]];
+                strGeoType = [self isStringValid:[[arrGlobalGeofenceList objectAtIndex:foundIndex] valueForKey:@"type"]];
+                strGeoName = [self isStringValid:[[arrGlobalGeofenceList objectAtIndex:foundIndex] valueForKey:@"geofence_ID"]];
+                strGeoTimeStamp = [self isStringValid:[[arrGlobalGeofenceList objectAtIndex:foundIndex] valueForKey:@"time_stamp"]];
+                strGeoLat = [self isStringValid:[[arrGlobalGeofenceList objectAtIndex:foundIndex] valueForKey:@"lat"]];
+                strGeoLog = [self isStringValid:[[arrGlobalGeofenceList objectAtIndex:foundIndex] valueForKey:@"long"]];
+                strGeoRadius = [self isStringValid:[[arrGlobalGeofenceList objectAtIndex:foundIndex] valueForKey:@"radiusOrvertices"]];
             }
         }
     }
@@ -1326,9 +1354,9 @@ dispatch_async(dispatch_get_main_queue(), ^(void)
             strGeoName = [[arr objectAtIndex:0] valueForKey:@"name"];
         }
     }
-    
-    currentAlertDict = [[theTimer userInfo] mutableCopy];
     NSString* strRuleName = [self getRuleNamefromRuleId:strRuleId];
+
+    currentAlertDict = [[theTimer userInfo] mutableCopy];
     [currentAlertDict setObject:strRuleName forKey:@"Rule_Name"];
     [currentAlertDict setObject:strGeoType forKey:@"Geo_Type"];
     [currentAlertDict setObject:strGeoTimeStamp forKey:@"Geo_timeStamp"];
@@ -1337,9 +1365,9 @@ dispatch_async(dispatch_get_main_queue(), ^(void)
     [currentAlertDict setObject:strGeoRadius forKey:@"Geo_Radius"];
     [currentAlertDict setObject:strBleAddress forKey:@"bleAddress"];
 
-    if (![[self checkforValidString:strGeoName] isEqualToString:@"NA"])
+    if (![[self isStringValid:strGeoName] isEqualToString:@"NA"])
     {
-        strGeoName = [self checkforValidString:[self stringFroHex:strGeoID]];;
+        strGeoName = [self isStringValid:[self stringFroHex:strGeoID]];;
     }
 
     if ([strRuleId isEqual:@"07"])
@@ -1425,11 +1453,11 @@ dispatch_async(dispatch_get_main_queue(), ^(void)
 #pragma mark- To Show Geofence Alert and Notification
 -(void)ShowGeofenceAlertWithTitle:(NSString *)strErrorMsg withTitle:(NSString *)strTitle withDict:(NSMutableDictionary *)detailDict
 {
-    NSString * strBleAddress = [self checkforValidString:[detailDict valueForKey:@"bleAddress"]];
+    NSString * strBleAddress = [self isStringValid:[detailDict valueForKey:@"bleAddress"]];
     
     if (![strBleAddress isEqualToString:@"NA"])
     {
-        NSString * strBadgeCount = [self checkforValidString:[[NSUserDefaults standardUserDefaults] valueForKey:strBleAddress]];
+        NSString * strBadgeCount = [self isStringValid:[[NSUserDefaults standardUserDefaults] valueForKey:strBleAddress]];
         int previousCount = 0;
         if (![strBadgeCount isEqualToString:@"NA"])
         {
@@ -1466,7 +1494,6 @@ dispatch_async(dispatch_get_main_queue(), ^(void)
     if ([strCurrentScreen isEqualToString:@"LiveTracking"])//Kalpesh26062021
     {
         [self ShowNotificationofGeofence:strTitle withMsg:strErrorMsg withData:detailDict];
-//        ShowNotificationofGeofence
     }
     else
     {
@@ -1596,6 +1623,27 @@ dispatch_async(dispatch_get_main_queue(), ^(void)
 
     [[BLEService sharedInstance] WriteNSDataforEncryptionAndthenSendtoPeripheral:completeData withPeripheral:classPeripheral];
 }
+-(void)touchesBegan:(NSSet<UITouch *> *)touches withEvent:(UIEvent *)event
+{
+}
+#pragma mark UIGestureRecognizerDelegate methods
+-(void)tableTapGestureRecognize
+{
+    selectedMoreIndex = -1;
+    [tblDeviceList reloadData];
+
+}
+- (BOOL)gestureRecognizer:(UIGestureRecognizer *)gestureRecognizer shouldReceiveTouch:(UITouch *)touch
+{
+  if ([touch.view isDescendantOfView:tblDeviceList]) {
+            
+    // Don't let selections of auto-complete entries fire the
+    // gesture recognizer
+    return NO;
+  }
+
+  return YES;
+}
 #pragma mark - MEScrollToTopDelegate Methods
 - (void) scrollViewDidScroll:(UIScrollView *)scrollView
 {
@@ -1621,7 +1669,7 @@ dispatch_async(dispatch_get_main_queue(), ^(void)
     [self refreshBtnClick];
     [topPullToRefreshManager tableViewReloadFinishedAnimated:NO];
 }
--(NSString *)checkforValidString:(NSString *)strRequest
+-(NSString *)isStringValid:(NSString *)strRequest
 {
     NSString * strValid;
     if (![strRequest isEqual:[NSNull null]]) //NULL
@@ -1711,16 +1759,16 @@ dispatch_async(dispatch_get_main_queue(), ^(void)
     return [startNumber stringValue];
 }
 -(void)ShowToastNotification:(NSString *)StrToast
-    {
-        MBProgressHUD *hud = [MBProgressHUD showHUDAddedTo:self.navigationController.view animated:YES];
-        // Configure for text only and offset down
-        hud.mode = MBProgressHUDModeText;
-        hud.labelText = StrToast;
-        hud.margin = 10.f;
-        hud.yOffset = 150.f;
-        hud.tag = 9999;
-        hud.removeFromSuperViewOnHide = YES;
-        [hud hide:YES afterDelay:0.9];
+{
+    MBProgressHUD *hud = [MBProgressHUD showHUDAddedTo:self.navigationController.view animated:YES];
+    // Configure for text only and offset down
+    hud.mode = MBProgressHUDModeText;
+    hud.labelText = StrToast;
+    hud.margin = 10.f;
+    hud.yOffset = 150.f;
+    hud.tag = 9999;
+    hud.removeFromSuperViewOnHide = YES;
+    [hud hide:YES afterDelay:0.9];
 }
 -(void)AddPacketstoArray:(NSMutableArray *)arrayPackets withString:(NSString *)strDeviceToken withTotalPackets:(NSInteger )totalPackets
 {
@@ -1804,7 +1852,12 @@ dispatch_async(dispatch_get_main_queue(), ^(void)
         [hex appendFormat:@"%02X", data[i]];
     return hex;
 }
-
+-(void)BatteryRepeateTimer
+{
+//    [timerForbattryRequest invalidate];
+//    timerForbattryRequest = nil;
+    [self RequestforBatteryPercentage]; //  battery parcentage
+}
 
 -(void)TestingWith100Packets
 {

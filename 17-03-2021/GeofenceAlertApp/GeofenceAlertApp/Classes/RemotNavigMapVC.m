@@ -174,38 +174,7 @@
     mapView.showsUserLocation = false;
     mapView.mapType = MKMapTypeStandard;
     [self.view addSubview:mapView];
-    
-    BOOL isDeviceLocationAvail = NO;
-//    double latestLat = 0;
-//    double latestLong = 0;
-//
-//    if ([dictLatlong count] > 0 )
-//    {
-//        latestLat = [[dictLatlong valueForKey:@"lat"] doubleValue];
-//        latestLong = [[dictLatlong valueForKey:@"lng"] doubleValue];
-//    }
-//
-//    CLLocationCoordinate2D sourceCoords = CLLocationCoordinate2DMake(latestLat, latestLong);
-//
-//    MKPlacemark *placemark  = [[MKPlacemark alloc] initWithCoordinate:sourceCoords addressDictionary:nil];
-//    [mapView removeAnnotation:annotation1];
-//    annotation1 = [[MKPointAnnotation alloc] init];
-//    annotation1.coordinate = sourceCoords;
-//    annotation1.title = @"Device Location";
-//    [mapView addAnnotation:annotation1];
-//    [mapView addAnnotation:placemark];
-    
-    if (isDeviceLocationAvail)
-    {
-       /* CLLocationCoordinate2D deviceCords = CLLocationCoordinate2DMake(9.9252, 78.1198);
-        MKPlacemark *placemark2  = [[MKPlacemark alloc] initWithCoordinate:deviceCords addressDictionary:nil];
-        annotation2 = [[MKPointAnnotation alloc] init];
-        annotation2.coordinate = deviceCords;
-        annotation2.title = @"Device Location";
-        [mapView addAnnotation:annotation2];
-        [mapView addAnnotation:placemark2];*/
 
-    }
 }
 #pragma mark - Map View Delegates
 -(void)mapView:(MKMapView *)mv didAddAnnotationViews:(NSArray *)views
@@ -226,16 +195,6 @@
         }
     }
 }
-//- (void)mapView:(MKMapView *)mapView didAddAnnotationViews:(NSArray *)views
-//{
-//    MKAnnotationView *annotationView = [views objectAtIndex:0];
-//    id <MKAnnotation> mp = [annotationView annotation];
-//    MKCoordinateRegion region = MKCoordinateRegionMakeWithDistance
-//    ([mp coordinate], 100, 100);
-//    [mapView setRegion:region animated:YES];
-//    [mapView selectAnnotation:mp animated:YES];
-//
-//}
 - (MKOverlayRenderer *)mapView:(MKMapView *)mapView rendererForOverlay:(id<MKOverlay>)overlay
 {
     UIColor * overlayColor = [UIColor blackColor];
@@ -276,7 +235,7 @@
     custannotationView.subtitle1 = [NSString stringWithFormat:@"Device Name : %@",strDeviceName];
     custannotationView.subtitle2 = @"" ;
     custannotationView.subtitle3 = [NSString stringWithFormat:@"Device Type : %@",strDeviceType];
-     custannotationView.subtitle4 = [NSString stringWithFormat:@"Updated by : %@",[self getCurrentTime]];
+    custannotationView.subtitle4 = [NSString stringWithFormat:@"Updated by : %@",[self getCurrentTime]];
     
     [self TostNotification:@"Locaton updated."];
     
@@ -301,7 +260,7 @@
 {
     NSLog(@"RESULT====>>>>>%@",result);
     [APP_DELEGATE endHudProcess];
-//    if ([[result valueForKey:@"result"] isKindOfClass:[NSString class]]) //[[result valueForKey:@"result"] valueForKey:@"deviceId"]
+    if ([[result valueForKey:@"result"] isKindOfClass:[NSDictionary class]]) //[[result valueForKey:@"result"] valueForKey:@"deviceId"]
     {
         if ([[result valueForKey:@"commandName"] isEqualToString:@"GetLatLong"])
         {
@@ -321,14 +280,9 @@
             [mapView addAnnotation:annotation1];
             [mapView addAnnotation:placemark];
             
-            
             NSLog(@"Lat ====>>>>%f long===>>>><<%f ",latestLat,latestLong);
             [mapView reloadInputViews];
-//            self.mapView.showAnnotations(self.mapView.annotations, animated: true)
             [mapView showAnnotations:mapView.annotations animated:YES];
-
-            
-           
         }
     }
 }
@@ -349,16 +303,14 @@
     [APP_DELEGATE endHudProcess];
 }
 -(void)TostNotification:(NSString *)StrToast
-    {
-        MBProgressHUD * hud = [MBProgressHUD showHUDAddedTo:self.navigationController.view animated:YES];
-
-        // Configure for text only and offset down
-        hud.mode = MBProgressHUDModeText;
-        hud.labelText = StrToast;
-        hud.margin = 10.f;
-        hud.yOffset = 150.f;
-        hud.removeFromSuperViewOnHide = YES;
-        [hud hide:YES afterDelay:0.9];
+{
+    MBProgressHUD * hud = [MBProgressHUD showHUDAddedTo:self.navigationController.view animated:YES];
+    hud.mode = MBProgressHUDModeText;
+    hud.labelText = StrToast;
+    hud.margin = 10.f;
+    hud.yOffset = 150.f;
+    hud.removeFromSuperViewOnHide = YES;
+    [hud hide:YES afterDelay:0.9];
 }
 -(NSString *)getCurrentTime
 {

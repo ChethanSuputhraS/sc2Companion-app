@@ -18,6 +18,9 @@
     NSString *strTextFieldEnterd;
     NSMutableArray * arrRadioBtns;
     NSTimer * timerConfig;
+    bool isValueChanged;
+    
+    NSMutableArray * arraySetDeviceConfigvalue;
 }
 @end
 
@@ -41,18 +44,59 @@
     [self.view addSubview:imgLogo];
 
     [self setNavigationViewFrames];
-    
+    arraySetDeviceConfigvalue = [[NSMutableArray alloc] init];
+    [self SetDefaultValuesforChanged];
+
     if (classPeripheral.state == CBPeripheralStateConnected)
     {
         [timerConfig invalidate];
-        timerConfig = [NSTimer scheduledTimerWithTimeInterval:3 target:self selector:@selector(timeOutforFetchConfig) userInfo:nil repeats:NO];
+        timerConfig = [NSTimer scheduledTimerWithTimeInterval:5 target:self selector:@selector(timeOutforFetchConfig) userInfo:nil repeats:NO];
         [APP_DELEGATE startHudProcess:@"Fetching Configuration..."];
+        
+        
+        
         [self GetDeviceConfiguration:@"1"];
     }
     [super viewDidLoad];
     // Do any additional setup after loading the view.
 }
+-(void)SetDefaultValuesforChanged
+{
+    NSArray *   arrFirst = [NSArray arrayWithObjects:@"GSM_Interval", @"GSM_timeout", @"GPS_Interval",@"GPS_timeout",@"Satellite_Interval",@"Satellite_Timeout",@"Cheapest_Mode_Multi", nil];
 
+    for (int i = 0 ; i < [arrFirst count]; i++)
+    {
+        NSString * strText = @"NA";
+        UILabel * lbltemp = [self.view viewWithTag:i + 200];
+        lbltemp.text = strText;
+        if ([[strText lowercaseString] isEqualToString:@"ffff"] || [[strText lowercaseString] isEqualToString:@"65535"])//65535
+        {
+            lbltemp.text = @"";
+        }
+        if ([arrFirst count] > i)
+        {
+            NSMutableDictionary * tempDict = [[NSMutableDictionary alloc] init];
+            [tempDict setValue:[arrFirst objectAtIndex:i] forKeyPath:@"title"];
+            [tempDict setValue:lbltemp.text forKeyPath:@"value"];
+            [tempDict setValue:@"0" forKeyPath:@"isChanaged"];
+            [self->arraySetDeviceConfigvalue addObject:tempDict];
+        }
+    }
+
+    NSArray * arrSecond = [NSArray arrayWithObjects:@"chepest_mode",@"ultrapower_mode",@"usb_mode",@"iridium_on",@"iridium_events_on",@"instant_tamper", @"waypoint_on", nil];
+
+    for (int i = 0 ; i < [arrSecond count]; i++)
+    {
+        if ([arrSecond count] > i)
+        {
+            NSMutableDictionary * tempDict = [[NSMutableDictionary alloc] init];
+            [tempDict setValue:[arrSecond objectAtIndex:i] forKeyPath:@"title"];
+            [tempDict setValue:@"255" forKeyPath:@"value"];
+            [tempDict setValue:@"0" forKeyPath:@"isChanaged"];
+            [self->arraySetDeviceConfigvalue addObject:tempDict];
+        }
+    }
+}
 #pragma mark - Set Frames
 -(void)setNavigationViewFrames
 {
@@ -61,6 +105,7 @@
     {
         yy = 44;
     }
+    
     scrlContent = [[UIScrollView alloc] initWithFrame:CGRectMake(0, yy + 44, DEVICE_WIDTH, DEVICE_HEIGHT - yy - 44)];
     scrlContent.showsVerticalScrollIndicator = NO;
     scrlContent.scrollEnabled = true;
@@ -160,7 +205,7 @@
             yt = yt + 45 + 55;
         }
     }
-    NSArray * arrItems = [NSArray arrayWithObjects:@"on", @"off",@"unchanged", nil];
+    NSArray * arrItems = [NSArray arrayWithObjects:@"On", @"Off",@"Unchanged", nil];
     NSArray * arrHeadding = [NSArray arrayWithObjects:@"Cheapest mode",@"Ultra low power mode", @"USB download mode",@"Iridium always on",@"Iridium events on",@"Instant tamper",@"Waypoint on movement", nil];
     NSArray * arrDatabaseKye = [NSArray arrayWithObjects:@"chepest_mode",@"ultrapower_mode",@"usb_mode",@"iridium_on",@"iridium_events_on",@"instant_tamper", @"waypoint_on", nil];
 
@@ -249,7 +294,6 @@
     customField.placeholder = lbltemp.text;
     customField.keyboardType = UIKeyboardTypeNumberPad;
     
-    
     if (![[self checkforValidString:lbltemp.text] isEqualToString:@"NA"])
     {
         if ([lbltemp.text rangeOfString:@"Enter"].location == NSNotFound )
@@ -284,18 +328,37 @@
 }
 - (void)FCAlertDoneButtonClicked:(FCAlertView *)alertView;
 {
+    if (alertView.tag == 777)
+    {
+        [self.navigationController popViewControllerAnimated:YES];
+    }
     if (![[self checkforValidString:alertView.strTextfieldText] isEqualToString:@"NA"])
     {
-        if (alertView.tag >= 9000)
-        {
-            NSInteger currentTag = alertView.tag - 9000;
-            UILabel * lbltemp = [self.view viewWithTag:currentTag + 100];
-            lbltemp.text = alertView.strTextfieldText;
-        }
-        else
+//        if (alertView.tag >= 9000)
+//        {
+//            NSInteger currentTag = alertView.tag - 9000;
+//            UILabel * lbltemp = [self.view viewWithTag:currentTag + 100];
+//            lbltemp.text = alertView.strTextfieldText;
+//        }
+//        else
         {
             UILabel * lbltemp = [self.view viewWithTag:alertView.tag + 100];
             lbltemp.text = alertView.strTextfieldText;
+            
+            NSInteger arrIndex = alertView.tag - 100;
+            if (arrIndex >= 0 && arraySetDeviceConfigvalue.count > arrIndex)
+            {
+                NSString * strPreviousValue = [self checkforValidString:[[arraySetDeviceConfigvalue objectAtIndex:arrIndex] valueForKey:@"value"]];
+                NSString * strCurrentValue = [self checkforValidString:alertView.strTextfieldText];
+                if (![strPreviousValue isEqualToString:strCurrentValue])
+                {
+                    [[arraySetDeviceConfigvalue objectAtIndex:arrIndex] setValue:@"1" forKey:@"isChanaged"];
+                }
+                else
+                {
+                    [[arraySetDeviceConfigvalue objectAtIndex:arrIndex] setValue:@"0" forKey:@"isChanaged"];
+                }
+            }
         }
     }
     NSLog(@"Alertview Texfield Done===%@",alertView.strTextfieldText);
@@ -366,106 +429,137 @@
             strValue = @"255";
         }
         [[arrRadioBtns objectAtIndex:currentIndex] setValue:strValue forKey:@"selection"];
+        
+        NSInteger arrIndex = 7 + currentIndex;
+        if (arrIndex >= 0 && arraySetDeviceConfigvalue.count > arrIndex)
+        {
+            NSString * strPreviousValue = [self checkforValidString:[[arraySetDeviceConfigvalue objectAtIndex:arrIndex] valueForKey:@"value"]];
+            NSString * strCurrentValue = [self checkforValidString:strValue];
+            if (![strPreviousValue isEqualToString:strCurrentValue])
+            {
+                [[arraySetDeviceConfigvalue objectAtIndex:arrIndex] setValue:@"1" forKey:@"isChanaged"];
+            }
+            else
+            {
+                [[arraySetDeviceConfigvalue objectAtIndex:arrIndex] setValue:@"0" forKey:@"isChanaged"];
+            }
+        }
     }
 }
 #pragma mark - Database Method
 -(void)InsertingtoDatabaseOnlyRadioButtons:(NSMutableArray *)arrayData
 {
-    if (classPeripheral.state == CBPeripheralStateConnected)
+    BOOL isValueChanged = NO;
+    for (int i =0; i < [arraySetDeviceConfigvalue count]; i++)
     {
-         NSString * strcheapMode = @"NA";
-         NSString * strultraLowMode = @"NA";
-         NSString * strUSBMode = @"NA";
-         NSString * strIridiumAlwaysON = @"NA";
-         NSString * strIridiumEventON = @"NA";
-         NSString * strinstantTamper = @"NA";
-         NSString * strwaypointON = @"NA";
-         NSString * strDeivceConfigQuery = @"NA";
-         
-         NSString * strGsm_interval = @"NA";
-         NSString * strGsm_timeout = @"NA";
-         NSString * strGps_interval = @"NA";
-         NSString * strGps_timeout = @"NA";
-         NSString * strSatelite_interval = @"NA";
-         NSString * strSatelite_timeout = @"NA";
-         NSString * strCheapest_Multiplier = @"NA";
-         
-         for (int i = 0; i< [arrayData count]; i++)       //7 Textfields & 7 Radio Buttons
-         {
-             UILabel * tmpLabel = [self.view viewWithTag:200 + i];
-             NSLog(@"=========>>>>>%d      ==%@",[self isAllDigits:tmpLabel.text], tmpLabel.text);
-             NSString * strText = @"65535";// == ffff //
-             
-             if ([self isAllDigits:tmpLabel.text] == YES)
-             {
-                 strText = tmpLabel.text;
-             }
-             if ([[[arrayData objectAtIndex:i] valueForKey:@"index"] isEqual:@"0"])
-             {
-                 strcheapMode = [[arrayData objectAtIndex:i] valueForKey:@"selection"];
-                 strGsm_interval = strText;
-             }
-             else if ([[[arrayData objectAtIndex:i] valueForKey:@"index"] isEqual:@"1"])
-             {
-                 strultraLowMode = [[arrayData objectAtIndex:i] valueForKey:@"selection"];
-                 strGsm_timeout = strText;
-             }
-             else if ([[[arrayData objectAtIndex:i] valueForKey:@"index"] isEqual:@"2"])
-             {
-                 strUSBMode = [[arrayData objectAtIndex:i] valueForKey:@"selection"];
-                 strGps_interval = strText;
-             }
-             else if ([[[arrayData objectAtIndex:i] valueForKey:@"index"] isEqual:@"3"])
-             {
-                 strIridiumAlwaysON = [[arrayData objectAtIndex:i] valueForKey:@"selection"];
-                 strGps_timeout = strText;
-             }
-             else if ([[[arrayData objectAtIndex:i] valueForKey:@"index"] isEqual:@"4"])
-             {
-                 strIridiumEventON = [[arrayData objectAtIndex:i] valueForKey:@"selection"];
-                 strSatelite_interval = strText;
-             }
-             else if ([[[arrayData objectAtIndex:i] valueForKey:@"index"] isEqual:@"5"])
-             {
-                 strinstantTamper = [[arrayData objectAtIndex:i] valueForKey:@"selection"];
-                 strSatelite_timeout = strText;
-             }
-             else if ([[[arrayData objectAtIndex:i] valueForKey:@"index"] isEqual:@"6"])
-             {
-                 strwaypointON = [[arrayData objectAtIndex:i] valueForKey:@"selection"];
-                 strCheapest_Multiplier = strText;
-             }
-         }
+        if ([[[arraySetDeviceConfigvalue objectAtIndex:i] valueForKey:@"isChanaged"] isEqualToString:@"1"])
+        {
+            isValueChanged = YES;
+        }
+    }
+    if (isValueChanged == YES)
+    {
+        NSLog(@"Valye Has Changed.....");
+        if (classPeripheral.state == CBPeripheralStateConnected)
+        {
+             NSString * strcheapMode = @"NA";
+             NSString * strultraLowMode = @"NA";
+             NSString * strUSBMode = @"NA";
+             NSString * strIridiumAlwaysON = @"NA";
+             NSString * strIridiumEventON = @"NA";
+             NSString * strinstantTamper = @"NA";
+             NSString * strwaypointON = @"NA";
+             NSString * strDeivceConfigQuery = @"NA";
 
-         NSArray * arrFirstOpcode = [NSArray arrayWithObjects:strGsm_interval, strGsm_timeout, strGps_interval, strGps_timeout, strSatelite_interval, strSatelite_timeout, strCheapest_Multiplier, nil];
-         
-         NSArray * arrSecondOpcode = [NSArray arrayWithObjects:strcheapMode, strultraLowMode, strUSBMode, strIridiumAlwaysON, strIridiumEventON, strinstantTamper, strwaypointON, nil];
+             NSString * strGsm_interval = @"NA";
+             NSString * strGsm_timeout = @"NA";
+             NSString * strGps_interval = @"NA";
+             NSString * strGps_timeout = @"NA";
+             NSString * strSatelite_interval = @"NA";
+             NSString * strSatelite_timeout = @"NA";
+             NSString * strCheapest_Multiplier = @"NA";
 
-        
-         NSMutableArray *  tmpArray = [[NSMutableArray alloc] init];
-          NSString * sqlquery = [NSString stringWithFormat:@"select * from tbl_DeviceConfig"];
-          [[DataBaseManager dataBaseManager] execute:sqlquery resultsArray:tmpArray];
-         
-         if (tmpArray.count > 0)
-         {
-             strDeivceConfigQuery =  [NSString stringWithFormat:@"update tbl_DeviceConfig set chepest_mode = \"%@\",ultrapower_mode = \"%@\",usb_mode = \"%@\",iridium_on = \"%@\",iridium_events_on = \"%@\", instant_tamper = \"%@\", waypoint_on = \"%@\", gsm_interval = \"%@\",gsm_timeout = \"%@\", gps_interval = \"%@\", gps_timeout = \"%@\", satellite_interval = \"%@\", satellite_timeout = \"%@\", cheapest_multiplier = \"%@\"",strcheapMode,strultraLowMode,strUSBMode,strIridiumAlwaysON,strIridiumEventON,strinstantTamper,strwaypointON,strGsm_interval,strGsm_timeout,strGps_interval,strGps_timeout,strSatelite_interval, strSatelite_timeout,strCheapest_Multiplier];
-             [[DataBaseManager dataBaseManager] executeSw:strDeivceConfigQuery];
-         }
-         else
-         {
-             strDeivceConfigQuery =  [NSString stringWithFormat:@"insert into 'tbl_DeviceConfig'('chepest_mode','ultrapower_mode','usb_mode','iridium_on','iridium_events_on','instant_tamper', 'waypoint_on','gsm_interval','gsm_timeout','gps_interval','gps_timeout','satellite_interval','satellite_timeout', 'cheapest_multiplier') values(\"%@\",\"%@\",\"%@\",\"%@\",\"%@\",\"%@\",\"%@\",\"%@\",\"%@\",\"%@\",\"%@\",\"%@\",\"%@\",\"%@\")",strcheapMode,strultraLowMode,strUSBMode,strIridiumAlwaysON,strIridiumEventON,strinstantTamper,strwaypointON,strGsm_interval,strGsm_timeout,strGps_interval,strGps_timeout,strSatelite_interval, strSatelite_timeout,strCheapest_Multiplier];
-             [[DataBaseManager dataBaseManager] executeSw:strDeivceConfigQuery];
-         }
-         
-         NSLog(@"Data Saving Query=====%@",strDeivceConfigQuery);
+             for (int i = 0; i< [arrayData count]; i++)       // 7 Textfields & 7 Radio Buttons
+             {
+                 UILabel * tmpLabel = [self.view viewWithTag:200 + i];
+                 NSLog(@"=========>>>>>%d      ==%@",[self isAllDigits:tmpLabel.text], tmpLabel.text);
+                 NSString * strText = @"65535";// == ffff //
 
-        [self WriteDeviceConfigurationtoDevice:@"1" withDataArray:arrFirstOpcode];
+                 if ([self isAllDigits:tmpLabel.text] == YES)
+                 {
+                     strText = tmpLabel.text;
+                 }
+                 if ([[[arrayData objectAtIndex:i] valueForKey:@"index"] isEqual:@"0"])
+                 {
+                     strcheapMode = [[arrayData objectAtIndex:i] valueForKey:@"selection"];
+                     strGsm_interval = strText;
+                 }
+                 else if ([[[arrayData objectAtIndex:i] valueForKey:@"index"] isEqual:@"1"])
+                 {
+                     strultraLowMode = [[arrayData objectAtIndex:i] valueForKey:@"selection"];
+                     strGsm_timeout = strText;
+                 }
+                 else if ([[[arrayData objectAtIndex:i] valueForKey:@"index"] isEqual:@"2"])
+                 {
+                     strUSBMode = [[arrayData objectAtIndex:i] valueForKey:@"selection"];
+                     strGps_interval = strText;
+                 }
+                 else if ([[[arrayData objectAtIndex:i] valueForKey:@"index"] isEqual:@"3"])
+                 {
+                     strIridiumAlwaysON = [[arrayData objectAtIndex:i] valueForKey:@"selection"];
+                     strGps_timeout = strText;
+                 }
+                 else if ([[[arrayData objectAtIndex:i] valueForKey:@"index"] isEqual:@"4"])
+                 {
+                     strIridiumEventON = [[arrayData objectAtIndex:i] valueForKey:@"selection"];
+                     strSatelite_interval = strText;
+                 }
+                 else if ([[[arrayData objectAtIndex:i] valueForKey:@"index"] isEqual:@"5"])
+                 {
+                     strinstantTamper = [[arrayData objectAtIndex:i] valueForKey:@"selection"];
+                     strSatelite_timeout = strText;
+                 }
+                 else if ([[[arrayData objectAtIndex:i] valueForKey:@"index"] isEqual:@"6"])
+                 {
+                     strwaypointON = [[arrayData objectAtIndex:i] valueForKey:@"selection"];
+                     strCheapest_Multiplier = strText;
+                 }
+             }
 
-        [self performSelector:@selector(WriteSecondOpcodeAfterDelay:) withObject:arrSecondOpcode afterDelay:0];
+             NSArray * arrFirstOpcode = [NSArray arrayWithObjects:strGsm_interval, strGsm_timeout, strGps_interval, strGps_timeout, strSatelite_interval, strSatelite_timeout, strCheapest_Multiplier, nil];
+
+             NSArray * arrSecondOpcode = [NSArray arrayWithObjects:strcheapMode, strultraLowMode, strUSBMode, strIridiumAlwaysON, strIridiumEventON, strinstantTamper, strwaypointON, nil];
+
+             NSMutableArray *  tmpArray = [[NSMutableArray alloc] init];
+              NSString * sqlquery = [NSString stringWithFormat:@"select * from tbl_DeviceConfig"];
+              [[DataBaseManager dataBaseManager] execute:sqlquery resultsArray:tmpArray];
+
+             if (tmpArray.count > 0)
+             {
+                 strDeivceConfigQuery =  [NSString stringWithFormat:@"update tbl_DeviceConfig set chepest_mode = \"%@\",ultrapower_mode = \"%@\",usb_mode = \"%@\",iridium_on = \"%@\",iridium_events_on = \"%@\", instant_tamper = \"%@\", waypoint_on = \"%@\", gsm_interval = \"%@\",gsm_timeout = \"%@\", gps_interval = \"%@\", gps_timeout = \"%@\", satellite_interval = \"%@\", satellite_timeout = \"%@\", cheapest_multiplier = \"%@\"",strcheapMode,strultraLowMode,strUSBMode,strIridiumAlwaysON,strIridiumEventON,strinstantTamper,strwaypointON,strGsm_interval,strGsm_timeout,strGps_interval,strGps_timeout,strSatelite_interval, strSatelite_timeout,strCheapest_Multiplier];
+                 [[DataBaseManager dataBaseManager] executeSw:strDeivceConfigQuery];
+             }
+             else
+             {
+                 strDeivceConfigQuery =  [NSString stringWithFormat:@"insert into 'tbl_DeviceConfig'('chepest_mode','ultrapower_mode','usb_mode','iridium_on','iridium_events_on','instant_tamper', 'waypoint_on','gsm_interval','gsm_timeout','gps_interval','gps_timeout','satellite_interval','satellite_timeout', 'cheapest_multiplier') values(\"%@\",\"%@\",\"%@\",\"%@\",\"%@\",\"%@\",\"%@\",\"%@\",\"%@\",\"%@\",\"%@\",\"%@\",\"%@\",\"%@\")",strcheapMode,strultraLowMode,strUSBMode,strIridiumAlwaysON,strIridiumEventON,strinstantTamper,strwaypointON,strGsm_interval,strGsm_timeout,strGps_interval,strGps_timeout,strSatelite_interval, strSatelite_timeout,strCheapest_Multiplier];
+                 [[DataBaseManager dataBaseManager] executeSw:strDeivceConfigQuery];
+             }
+
+             NSLog(@"Data Saving Query=====%@",strDeivceConfigQuery);
+            [self WriteDeviceConfigurationtoDevice:@"1" withDataArray:arrFirstOpcode];
+            [self performSelector:@selector(WriteSecondOpcodeAfterDelay:) withObject:arrSecondOpcode afterDelay:0];
+        }
+        else
+        {
+            [self showErrorMessage:@"Device Disconnected. Please connect first."];
+        }
     }
     else
     {
-        [self showErrorMessage:@"Device Disconnected. Please connect first."];
+        NSLog(@"Value Has Not Changed.....");
+
+        [APP_DELEGATE endHudProcess];
+        [self.navigationController popViewControllerAnimated:YES];
     }
 }
 
@@ -481,7 +575,18 @@
         [APP_DELEGATE endHudProcess];
         if ([strResponse isEqualToString:@"0101"])
         {
-            [self showTypeSuccessMessage:@"Device configuration svaed"];
+            FCAlertView *alert = [[FCAlertView alloc] init];
+            alert.colorScheme = [UIColor blackColor];
+            alert.delegate = self;
+            alert.tag = 777;
+            [alert makeAlertTypeSuccess];
+            [alert showAlertInView:self
+                         withTitle:@"SC2 Companion App"
+                      withSubtitle:@"Device had been configured successfully. Device will restart after 3 minutes. Please connect after some time. "
+                   withCustomImage:[UIImage imageNamed:@"logo.png"]
+               withDoneButtonTitle:nil
+                        andButtons:nil];
+//            [self showTypeSuccessMessage:@"Device configuration svaed"];
         }
         else
         {
@@ -563,6 +668,8 @@
     dispatch_async(dispatch_get_main_queue(), ^{
     if ([strType isEqualToString:@"01"])
     {
+        NSArray *   arrFirst = [NSArray arrayWithObjects:@"GSM_Interval", @"GSM_timeout", @"GPS_Interval",@"GPS_timeout",@"Satellite_Interval",@"Satellite_Timeout",@"Cheapest_Mode_Multi", nil];
+
         for (int i = 0 ; i < [arrData count]; i++)
         {
             NSString * strText = [arrData objectAtIndex:i];
@@ -572,11 +679,25 @@
             {
                 lbltemp.text = @"";
             }
+            if ([arrFirst count] > i)
+            {
+                NSMutableDictionary * tempDict = [[NSMutableDictionary alloc] init];
+                [tempDict setValue:[arrFirst objectAtIndex:i] forKeyPath:@"title"];
+                [tempDict setValue:lbltemp.text forKeyPath:@"value"];
+                [tempDict setValue:@"0" forKeyPath:@"isChanaged"];
+                [self->arraySetDeviceConfigvalue replaceObjectAtIndex:i withObject:tempDict];
+//                [self->arraySetDeviceConfigvalue addObject:tempDict];
+            }
         }
+        
+        NSLog(@"Device configuration  arrayyy =====%@",self->arraySetDeviceConfigvalue);
+        
         [self GetDeviceConfiguration:@"2"];
     }
     else if ([strType isEqualToString:@"02"])
     {
+        NSArray * arrSecond = [NSArray arrayWithObjects:@"chepest_mode",@"ultrapower_mode",@"usb_mode",@"iridium_on",@"iridium_events_on",@"instant_tamper", @"waypoint_on", nil];
+
         for (int i = 0 ; i < [arrData count]; i++)
         {
             UIView * tmpView = [self.view viewWithTag:9999 +i];
@@ -601,13 +722,27 @@
                     }
                 }
             }
+            if ([arrSecond count] > i)
+            {
+                NSMutableDictionary * tempDict = [[NSMutableDictionary alloc] init];
+                [tempDict setValue:[arrSecond objectAtIndex:i] forKeyPath:@"title"];
+                [tempDict setValue:[arrData objectAtIndex:i] forKeyPath:@"value"];
+                [tempDict setValue:@"0" forKeyPath:@"isChanaged"];
+                [self->arraySetDeviceConfigvalue replaceObjectAtIndex:i withObject:tempDict];
+                
+                if ([self->arrRadioBtns count] > i)
+                {
+                    [[self->arrRadioBtns objectAtIndex:i] setValue:[arrData objectAtIndex:i] forKey:@"selection"];
+                }
+//                [self->arraySetDeviceConfigvalue addObject:tempDict];
+            }
         }
-        [timerConfig invalidate];
-        timerConfig = nil;
+        [self->timerConfig invalidate];
+        self->timerConfig = nil;
+        [APP_DELEGATE endHudProcess];
     }
-});
+  });
 }
-
 -(void)TestingMethod
 {
     NSString * valueStr = @"C1080200FFFF000000FF";
@@ -661,7 +796,6 @@
                         [globalDeviceConfig setDeviceConfigurationValuetoUI:arrData withType:@"02"];
                     }
                 }
-                
             }
         }
     }
@@ -677,9 +811,20 @@
 }
 -(void)timeOutforFetchConfig
 {
+    [timerConfig invalidate];
+    timerConfig = nil;
     [APP_DELEGATE endHudProcess];
 }
 
 @end
 
 
+/*
+ 0,
+ 255,
+ 255,
+ 0,
+ 1,
+ 0,
+ 255
+ **/

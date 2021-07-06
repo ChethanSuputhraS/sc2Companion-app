@@ -18,6 +18,11 @@ NS_ASSUME_NONNULL_BEGIN
 -(void)RecevieTheSelectedURAT:(NSString *)strSelectedURAT withIndexPath:(NSInteger)indexP;
 @property(nonatomic, strong) CBPeripheral * classPeripheral;
 -(void)ReceviedSuccesResponseFromDevice:(NSString *)strResponse;
+-(void)ReceivedFirstPacketfromDevice:(NSArray *)arrFirstPacket;
+-(void)ReceivedAPNSPacketfromDevice:(NSDictionary *)arrFirstPacket;
+-(void)ReceivedUsernamePacketfromDevice:(NSDictionary *)arrFirstPacket;
+-(void)ReceivedPasswordPacketfromDevice:(NSDictionary *)arrFirstPacket;
+-(void)ReceivedEndPacketfromDevice;
 
 @end
 

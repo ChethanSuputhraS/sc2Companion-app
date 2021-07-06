@@ -127,42 +127,41 @@
 }
 -(UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath
 {
-
     static NSString *cellReuseIdentifier = @"cellIdentifier";
-        SettingCell *cell = [tableView dequeueReusableCellWithIdentifier:cellReuseIdentifier];
-        if (cell == nil)
-        {
-            cell = [[SettingCell alloc]initWithStyle:UITableViewCellStyleDefault reuseIdentifier:cellReuseIdentifier];
-        }
+    SettingCell *cell = [tableView dequeueReusableCellWithIdentifier:cellReuseIdentifier];
+    if (cell == nil)
+    {
+        cell = [[SettingCell alloc]initWithStyle:UITableViewCellStyleDefault reuseIdentifier:cellReuseIdentifier];
+    }
 
     [cell.swReconnect addTarget:self action:@selector(SwitchVlueChange:) forControlEvents:UIControlEventValueChanged];
     
     if (tableView == tblSetting)
     {
         if (indexPath.row == 0)
-          {
-                  cell.lblForSetting.text = @"Set buzzer time interval";
-                  cell.lblSetValue.text = [[NSUserDefaults standardUserDefaults] valueForKey:@"SetTimeInterval"];
-          }
-          else if (indexPath.row == 1)
-          {
-              cell.imgArrow.hidden = true;
-              cell.swReconnect.hidden = false;
-              cell.lblForSetting.text = @"Re-connect Device Enable";
+        {
+            cell.lblForSetting.text = @"Set buzzer time interval";
+            cell.lblSetValue.text = [[NSUserDefaults standardUserDefaults] valueForKey:@"SetTimeInterval"];
+        }
+        else if (indexPath.row == 1)
+        {
+            cell.imgArrow.hidden = true;
+            cell.swReconnect.hidden = false;
+            cell.lblForSetting.text = @"Re-connect Device Enable";
               
-              if ([[NSUserDefaults standardUserDefaults] boolForKey:@"BLEAutoconnect"] == true)//Kalpesh26062021
-              {
-                  [cell.swReconnect setOn:YES animated:YES];
-              }
-              else
-              {
-                  [cell.swReconnect setOn:NO animated:YES];
-              }
-          }
-          else if (indexPath.row == 2)
-          {
-               cell.lblForSetting.text = @"Set Device configuration";
-          }
+            if ([[NSUserDefaults standardUserDefaults] boolForKey:@"BLEAutoconnect"] == true)//Kalpesh26062021
+            {
+                [cell.swReconnect setOn:YES animated:YES];
+            }
+            else
+            {
+                [cell.swReconnect setOn:NO animated:YES];
+            }
+        }
+        else if (indexPath.row == 2)
+        {
+            cell.lblForSetting.text = @"Set Device configuration";
+        }
         else if (indexPath.row == 3)
         {
              cell.lblForSetting.text = @"Set SIM configuration";

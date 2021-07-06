@@ -25,12 +25,9 @@
     double breachLat, breachLong;
     NSMutableArray * arrTotal;
 
-    
     CustomAnnotation * annotationPin;
     CustomAnnotationView* custannotationView;
     NSString * strScreenMode;
-
-
 }
 @property (nonatomic, strong) CanvasView *canvasView;
 @property (nonatomic, strong) NSMutableArray *coordinates;
@@ -401,7 +398,6 @@
     {
         [self.navigationController popToRootViewControllerAnimated:YES];
     }
-
 }
 -(void)getDistances
 {

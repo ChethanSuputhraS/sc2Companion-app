@@ -16,6 +16,7 @@ NS_ASSUME_NONNULL_BEGIN
 }
 @property (nonatomic, strong) CBPeripheral * classPeripheral;
 -(void)ReceviedSuccesResponseFromDevice:(NSString *)strResponse;
+-(void)SetIndustrySpecificionValuetoUI:(NSArray *)arrData;
 
 @end
 

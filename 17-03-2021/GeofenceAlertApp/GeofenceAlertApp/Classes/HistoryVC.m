@@ -60,7 +60,7 @@
     
     UILabel * lblTitle = [[UILabel alloc] initWithFrame:CGRectMake(0, globalStatusHeight, DEVICE_WIDTH, yy)];
     [lblTitle setBackgroundColor:[UIColor clearColor]];
-    [lblTitle setText:@"Geofence"];
+    [lblTitle setText:@"Geofence Breaches"];
     [lblTitle setTextAlignment:NSTextAlignmentCenter];
     [lblTitle setFont:[UIFont fontWithName:CGRegular size:textSize+2]];
     [lblTitle setTextColor:[UIColor whiteColor]];

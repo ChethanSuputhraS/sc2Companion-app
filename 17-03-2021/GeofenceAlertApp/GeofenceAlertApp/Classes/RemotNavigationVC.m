@@ -46,8 +46,6 @@
     {
         [self showErrorsMessage:@"Please connect to internet."];
     }
-
- 
     [APP_DELEGATE showTabBar:self.tabBarController];
     [super viewWillAppear:YES];
 }
@@ -92,12 +90,11 @@
      btnBack.contentHorizontalAlignment = UIControlContentHorizontalAlignmentLeft;
 //     [viewHeader addSubview:btnBack];
     
-    UIButton * btnSaveCh = [UIButton buttonWithType:UIButtonTypeCustom];
-    [btnSaveCh setFrame:CGRectMake((DEVICE_WIDTH-70), 15, 60, 44)];
-    [btnSaveCh setTitle:@"Save" forState:UIControlStateNormal];
-    [btnSaveCh setTitleColor:UIColor.whiteColor forState:UIControlStateNormal];
-//    [btnSaveCh addTarget:self action:@selector(btnSaveChClick) forControlEvents:UIControlEventTouchUpInside];
-//    [viewHeader addSubview:btnSaveCh];
+    UIButton * btnRefresh = [UIButton buttonWithType:UIButtonTypeCustom];
+    [btnRefresh setFrame:CGRectMake(DEVICE_WIDTH-60, globalStatusHeight-10, 60, 60)];
+    [btnRefresh setImage:[UIImage imageNamed:@"reload.png"] forState:UIControlStateNormal];
+    [btnRefresh addTarget:self action:@selector(btnRefreshClick) forControlEvents:UIControlEventTouchUpInside];
+    [viewHeader addSubview:btnRefresh];
 
     
     searchBarIMEi = [[SSSearchBar alloc] initWithFrame:CGRectMake(0, yy+globalStatusHeight, DEVICE_WIDTH, 50)];
@@ -123,10 +120,8 @@
     [lblNoDevice setFont:[UIFont fontWithName:CGRegular size:textSize+2]];
     [lblNoDevice setTextColor:[UIColor whiteColor]];
     lblNoDevice.text = @"No Devices Found.";
-//    [self.view addSubview:lblNoDevice];
-    
-
-    
+    lblNoDevice.hidden = YES;
+    [self.view addSubview:lblNoDevice];
 }
 -(void)GetIMEInumbersForRemotetrackingVC
 {
@@ -139,6 +134,11 @@
     manager.delegate = self;
     NSString *strServerUrl = @"https://ws.succorfish.net/basic/v2/asset/search?view=BASIC"; // IMEI for remote tracking
     [manager postUrlCall:strServerUrl withParameters:dict];
+}
+-(void)btnRefreshClick
+{
+    [APP_DELEGATE startHudProcess:@"Getting devices..."];
+    [self GetIMEInumbersForRemotetrackingVC];
 }
 
 #pragma mark- UITableView Methods
@@ -206,10 +206,7 @@
         }
         else
         {
-            if (globalRemoteNaviMapView == nil)
-            {
-                globalRemoteNaviMapView= [[RemotNovigMapVC alloc] init];
-            }
+            globalRemoteNaviMapView= [[RemotNovigMapVC alloc] init];
             isMapNavigated = YES;
             globalRemoteNaviMapView.strDEviceID = [[arryDeviceList objectAtIndex:indexPath.row] valueForKey:@"deviceId"];
             globalRemoteNaviMapView.strDeviceName = [[arryDeviceList objectAtIndex:indexPath.row] valueForKey:@"name"];
@@ -270,17 +267,22 @@
 - (void)onResult:(NSDictionary *)result
 {
     [APP_DELEGATE endHudProcess];
-//    if ([[result valueForKey:@"result"] isKindOfClass:[NSString class]])
+    if ([[result valueForKey:@"result"] isKindOfClass:[NSArray class]])
     {
         if ([[result valueForKey:@"commandName"] isEqualToString:@"RemoteTrack"])
         {
+            lblNoDevice.hidden = YES;
+            tblDeviceList.hidden = NO;
+
             arryDeviceList = [result valueForKey:@"result"];
             
             [tblDeviceList reloadData];
         }
     }
-//    else
+    else
     {
+        lblNoDevice.hidden = NO;
+        tblDeviceList.hidden = YES;
 //        NSLog(@"show error popup");
     }
 }

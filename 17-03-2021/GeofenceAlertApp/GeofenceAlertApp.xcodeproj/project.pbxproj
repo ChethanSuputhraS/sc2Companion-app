@@ -279,6 +279,9 @@
 		FA2B2327268DF496006C02CB /* cell_bg@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = FA2B2324268DF496006C02CB /* cell_bg@2x.png */; };
 		FA50A4E524CEB4CA00FFDB1E /* alert_alarm.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = FA50A4E424CEB4CA00FFDB1E /* alert_alarm.mp3 */; };
 		FA790E7824CD34F7005D4EF7 /* RadialGeofenceVC.m in Sources */ = {isa = PBXBuildFile; fileRef = FA790E7724CD34F7005D4EF7 /* RadialGeofenceVC.m */; };
+		FA7A19BE26946AA100DE2F00 /* battery@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = FA7A19BB26946AA100DE2F00 /* battery@2x.png */; };
+		FA7A19BF26946AA100DE2F00 /* battery@3x.png in Resources */ = {isa = PBXBuildFile; fileRef = FA7A19BC26946AA100DE2F00 /* battery@3x.png */; };
+		FA7A19C026946AA100DE2F00 /* battery.png in Resources */ = {isa = PBXBuildFile; fileRef = FA7A19BD26946AA100DE2F00 /* battery.png */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -631,6 +634,9 @@
 		FA50A4E424CEB4CA00FFDB1E /* alert_alarm.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = alert_alarm.mp3; sourceTree = "<group>"; };
 		FA790E7624CD34F7005D4EF7 /* RadialGeofenceVC.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = RadialGeofenceVC.h; sourceTree = "<group>"; };
 		FA790E7724CD34F7005D4EF7 /* RadialGeofenceVC.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = RadialGeofenceVC.m; sourceTree = "<group>"; };
+		FA7A19BB26946AA100DE2F00 /* battery@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "battery@2x.png"; sourceTree = "<group>"; };
+		FA7A19BC26946AA100DE2F00 /* battery@3x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "battery@3x.png"; sourceTree = "<group>"; };
+		FA7A19BD26946AA100DE2F00 /* battery.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = battery.png; sourceTree = "<group>"; };
 		FA897CC3251C60D1008F8E0E /* Header.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Header.h; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -869,6 +875,9 @@
 		97F89D1722B0F337006BFC40 /* Icons */ = {
 			isa = PBXGroup;
 			children = (
+				FA7A19BD26946AA100DE2F00 /* battery.png */,
+				FA7A19BB26946AA100DE2F00 /* battery@2x.png */,
+				FA7A19BC26946AA100DE2F00 /* battery@3x.png */,
 				FA2B2322268DF496006C02CB /* cell_bg.png */,
 				FA2B2324268DF496006C02CB /* cell_bg@2x.png */,
 				FA2B2323268DF496006C02CB /* cell_bg@3x.png */,
@@ -1477,6 +1486,7 @@
 				CF6622DB25020C7300799C07 /* BTN@2x.png in Resources */,
 				FA2B2327268DF496006C02CB /* cell_bg@2x.png in Resources */,
 				9710763722A9206400921B02 /* CBBOld.TTF in Resources */,
+				FA7A19BF26946AA100DE2F00 /* battery@3x.png in Resources */,
 				CF6622AD24FFBA7100799C07 /* messsage_icon@2x.png in Resources */,
 				CF6622B524FFBA7100799C07 /* active_messsage_icon.png in Resources */,
 				97F89D3122B0FC0B006BFC40 /* ble@3x.png in Resources */,
@@ -1515,6 +1525,7 @@
 				0432C98E2597394100FBECA1 /* map-marker.png in Resources */,
 				97FE731D22BCED5F003430D6 /* Icon-App-40x40@1x.png in Resources */,
 				CF6622B024FFBA7100799C07 /* device@2x.png in Resources */,
+				FA7A19C026946AA100DE2F00 /* battery.png in Resources */,
 				97FE732F22BCED5F003430D6 /* Icon-App-57x57@2x.png in Resources */,
 				97FE731A22BCED5F003430D6 /* Icon-App-29x29@1x.png in Resources */,
 				0432CA062599B34B00FBECA1 /* sos.png in Resources */,
@@ -1548,6 +1559,7 @@
 				0432CA052599B34B00FBECA1 /* sos@3x.png in Resources */,
 				97FE731822BCED5F003430D6 /* Icon-App-57x57@1x.png in Resources */,
 				044FE14225A5865B004527EC /* logout@3x.png in Resources */,
+				FA7A19BE26946AA100DE2F00 /* battery@2x.png in Resources */,
 				97FE733A22BCED5F003430D6 /* Splash5.png in Resources */,
 				97FE733522BCED5F003430D6 /* Splash6@2x.png in Resources */,
 				CFFBF37F252F2B0F000E208D /* checkEmpty.png in Resources */,
@@ -1829,7 +1841,7 @@
 				ASSETCATALOG_COMPILER_LAUNCHIMAGE_NAME = LaunchImage;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				CODE_SIGN_STYLE = Manual;
-				CURRENT_PROJECT_VERSION = 1.0.3;
+				CURRENT_PROJECT_VERSION = 1.0.7;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				DEVELOPMENT_TEAM = R4VZDFK7M8;
 				GCC_NO_COMMON_BLOCKS = NO;
@@ -1858,7 +1870,7 @@
 				ASSETCATALOG_COMPILER_LAUNCHIMAGE_NAME = LaunchImage;
 				CODE_SIGN_IDENTITY = "iPhone Distribution";
 				CODE_SIGN_STYLE = Manual;
-				CURRENT_PROJECT_VERSION = 1.0.3;
+				CURRENT_PROJECT_VERSION = 1.0.7;
 				DEVELOPMENT_TEAM = 6W7JS49CTH;
 				GCC_NO_COMMON_BLOCKS = NO;
 				GCC_PREFIX_HEADER = PrefixHeader.pch;

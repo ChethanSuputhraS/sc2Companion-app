@@ -16,6 +16,8 @@ NS_ASSUME_NONNULL_BEGIN
 }
 @property(nonatomic, strong) CBPeripheral * classPeripheral;
 -(void)ReceviedSuccesResponseFromDevice:(NSString *)strResponse;
+-(void)ReceivedStartPacketfromDevice:(NSArray *)arrData;
+-(void)ReceivedAddressPacketfromDevice:(NSDictionary *)dictPackets isLastPacket:(BOOL)isLastPacket;
 
 @end
 

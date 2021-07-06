@@ -9,7 +9,7 @@
 #import "HomeCell.h"
 
 @implementation HomeCell
-@synthesize lblDeviceName,lblConnect,lblAddress,lblBack,btnMore,btnConnect,imgviewMoreButton,optionView,btnmap,btnmessage,btnLivelocation,btnMore1,lblline2,lblline3,btnGeofence,btnSetting,settingView,btnSOS,lbllineSetting,lblBadgeCount;
+@synthesize lblDeviceName,lblConnect,lblAddress,lblBack,btnMore,btnConnect,imgviewMoreButton,optionView,btnmap,btnmessage,btnLivelocation,btnMore1,lblline2,lblline3,btnGeofence,btnSetting,settingView,btnSOS,lbllineSetting,lblBadgeCount,imageViewBattery;
 - (void)awakeFromNib {
     [super awakeFromNib];
     // Initialization code
@@ -59,6 +59,12 @@
         [lblConnect setTextAlignment:NSTextAlignmentRight];
         [self.contentView addSubview:lblConnect];
 
+        imageViewBattery = [[UIImageView alloc] initWithImage:[UIImage imageNamed:@"battery.png"]];
+        [imageViewBattery setFrame:CGRectMake(DEVICE_WIDTH-30, 0, 20, 15)];
+        [imageViewBattery setContentMode:UIViewContentModeScaleAspectFit];
+//        [imageViewBattery setAutoresizingMask:UIViewAutoresizingFlexibleHeight | UIViewAutoresizingFlexibleWidth];
+        imageViewBattery.hidden = true;
+        [self.contentView addSubview:imageViewBattery];
         btnConnect = [[UIButton alloc] initWithFrame:CGRectMake(DEVICE_WIDTH/2, 5, DEVICE_WIDTH/2-10, 50)];
 //        [btnConnect setTitle:@"Coonect" forState:UIControlStateNormal];
         [btnConnect setBackgroundColor:UIColor.clearColor];

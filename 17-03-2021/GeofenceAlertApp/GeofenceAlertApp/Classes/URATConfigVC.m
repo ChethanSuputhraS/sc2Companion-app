@@ -21,18 +21,36 @@
 @end
 
 @implementation URATConfigVC
+@synthesize strUARTSelected;
 
 - (void)viewDidLoad
 {
-            arrAPNList =[[NSMutableArray alloc]initWithObjects:@"1. LTE Cat M1",@"2. LTE Cat NB1",@"3. GPRS / eGPRS",@"4. GPRS / eGPRS & LTE Cat NB1",@"5. GPRS / eGPRS & LTE Cat M1",@"6. LTE Cat NB1 & LTE Cat M1",@"7. LTE Cat NB1 & GPRS / eGPRS",@"8. LTE Cat M1 & LTE Cat NB1",@"9. LTE Cat M1 & GPRS / eGPRS",@"10. GPRS / eGPRS & LTE Cat NB1 & LTE Cat M1",@"11. GPRS / eGPRS & LTE Cat M1 & LTE Cat NB1",@"12. LTE Cat NB1 & GPRS / eGPRS & LTE Cat M1",@"13. LTE Cat NB1 & LTE Cat M1 & GPRS / eGPRS",@"14. LTE Cat M1 & LTE Cat NB1 & GPRS / eGPRS",@"15. LTE Cat M1 & GPRS / eGPRS & LTE Cat NB1", nil];
-    
+    arrAPNList =[[NSMutableArray alloc]initWithObjects:@"LTE Cat M1",@"LTE Cat NB1",@"GPRS / eGPRS",@"GPRS / eGPRS & LTE Cat NB1",@"GPRS / eGPRS & LTE Cat M1",@"LTE Cat NB1 & LTE Cat M1",@"LTE Cat NB1 & GPRS / eGPRS",@"LTE Cat M1 & LTE Cat NB1",@"LTE Cat M1 & GPRS / eGPRS",@"GPRS / eGPRS & LTE Cat NB1 & LTE Cat M1",@"GPRS / eGPRS & LTE Cat M1 & LTE Cat NB1",@"LTE Cat NB1 & GPRS / eGPRS & LTE Cat M1",@"LTE Cat NB1 & LTE Cat M1 & GPRS / eGPRS",@"LTE Cat M1 & LTE Cat NB1 & GPRS / eGPRS",@"LTE Cat M1 & GPRS / eGPRS & LTE Cat NB1", nil];
     
     arrSelectedValue = [[NSMutableArray alloc] init];
     NSString * sqlquery = [NSString stringWithFormat:@"select * from tbl_SIMConfig"];
     [[DataBaseManager dataBaseManager] execute:sqlquery resultsArray:arrSelectedValue];
   
-
     [self setNavigationViewFrames];
+    
+    if ([strUARTSelected isEqualToString:@"NA"])
+    {
+        selectedCell = -1;
+    }
+    else
+    {
+        if ([arrAPNList containsObject:strUARTSelected])
+        {
+            NSInteger foundIndex = [arrAPNList indexOfObject:strUARTSelected];
+            if (foundIndex != NSNotFound)
+            {
+                if ([arrAPNList count] > foundIndex)
+                {
+                    selectedCell = foundIndex;
+                }
+            }
+        }
+    }
     [super viewDidLoad];
     // Do any additional setup after loading the view.
 }
@@ -104,25 +122,24 @@
 -(UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath
 {
     static NSString *cellReuseIdentifier = @"cellIdentifier";
-        SettingCell *cell = [tableView dequeueReusableCellWithIdentifier:cellReuseIdentifier];
-        if (cell == nil)
-        {
-            cell = [[SettingCell alloc]initWithStyle:UITableViewCellStyleDefault reuseIdentifier:cellReuseIdentifier];
-        }
+    SettingCell *cell = [tableView dequeueReusableCellWithIdentifier:cellReuseIdentifier];
+    if (cell == nil)
+    {
+        cell = [[SettingCell alloc]initWithStyle:UITableViewCellStyleDefault reuseIdentifier:cellReuseIdentifier];
+    }
     [cell.lblForSetting setFont:[UIFont fontWithName:CGRegular size:textSize-2]];
-    cell.lblForSetting.text = [arrAPNList objectAtIndex:indexPath.row];
+    cell.lblForSetting.text = [NSString stringWithFormat:@"%ld. %@",indexPath.row+1, [arrAPNList objectAtIndex:indexPath.row]];
     cell.imgArrow.hidden = true;
-    
-  
+
     if (selectedCell == indexPath.row)
-         {
-             cell.accessoryType = UITableViewCellAccessoryCheckmark;
-             cell.tintColor = UIColor.whiteColor;
-         }
-         else
-         {
-          cell.accessoryType = UITableViewCellAccessoryNone;
-         }
+    {
+        cell.accessoryType = UITableViewCellAccessoryCheckmark;
+        cell.tintColor = UIColor.whiteColor;
+    }
+    else
+    {
+        cell.accessoryType = UITableViewCellAccessoryNone;
+    }
 
     cell.backgroundColor = UIColor.clearColor;
     cell.selectionStyle = UITableViewCellSelectionStyleNone;

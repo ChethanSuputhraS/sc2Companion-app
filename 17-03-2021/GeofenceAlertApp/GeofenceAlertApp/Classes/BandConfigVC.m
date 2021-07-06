@@ -9,28 +9,25 @@
 #import "BandConfigVC.h"
 #import "CollectionCustomCell.h"
 
-
 @interface BandConfigVC ()<UICollectionViewDelegateFlowLayout,UICollectionViewDataSource>
 {
     UICollectionView *_collectionView;
     NSMutableArray * arrayBand;
     NSInteger * selectedIndex;
-    NSMutableArray * arrSelected;
-    NSMutableDictionary * selectedDict;
+    NSMutableArray * arrSelectedBand;
     BOOL isBandSelect;
     
 }
 @end
 
 @implementation BandConfigVC
-
+@synthesize strBandValue;
 - (void)viewDidLoad
 {
-    
-    selectedDict = [[NSMutableDictionary alloc] init];
-    arrSelected = [[NSMutableArray alloc] init];
+    arrSelectedBand = [[NSMutableArray alloc] init];
     
     [self setNavigationViewFrames];
+    
     [super viewDidLoad];
     // Do any additional setup after loading the view.
 }
@@ -69,7 +66,6 @@
      btnBack.contentHorizontalAlignment = UIControlContentHorizontalAlignmentLeft;
      [viewHeader addSubview:btnBack];
     
-    
     UIButton * btnSaveCh = [UIButton buttonWithType:UIButtonTypeCustom];
     [btnSaveCh setFrame:CGRectMake((DEVICE_WIDTH-70), 15, 60, 44)];
 //    [btnSaveCh setBackgroundImage:[UIImage imageNamed:@"BTN.png"] forState:UIControlStateNormal];
@@ -79,29 +75,70 @@
     [viewHeader addSubview:btnSaveCh];
 
     UICollectionViewFlowLayout *layout=[[UICollectionViewFlowLayout alloc] init];
-        _collectionView=[[UICollectionView alloc] initWithFrame:CGRectMake(5, 70, DEVICE_WIDTH-10, DEVICE_HEIGHT-64) collectionViewLayout:layout];
+    _collectionView=[[UICollectionView alloc] initWithFrame:CGRectMake(5, 70, DEVICE_WIDTH-10, DEVICE_HEIGHT-64) collectionViewLayout:layout];
     _collectionView.clipsToBounds = true;
-     [_collectionView setDataSource:self];
-     [_collectionView setDelegate:self];
-
-     [_collectionView registerClass:[CollectionCustomCell class] forCellWithReuseIdentifier:@"cellIdentifier"];
-     [_collectionView setBackgroundColor:[UIColor clearColor]];
-    
+    [_collectionView setDataSource:self];
+    [_collectionView setDelegate:self];
+    [_collectionView registerClass:[CollectionCustomCell class] forCellWithReuseIdentifier:@"cellIdentifier"];
+    [_collectionView setBackgroundColor:[UIColor clearColor]];
     
      arrayBand = [[NSMutableArray alloc] init];
 
-    for (int i =0 ; i < 28; i++)
+    if (![[APP_DELEGATE checkforValidString:strBandValue] isEqualToString:@"NA"])
     {
-        NSMutableDictionary* dictBAndData = [[NSMutableDictionary alloc] init];
-         
-        NSString * strIndex = [NSString stringWithFormat:@"%d",i+1];
-        NSString * strName = [NSString stringWithFormat:@"B%d",i+1];
-        
-        [dictBAndData setObject:strIndex forKey:@"index"];
-        [dictBAndData setObject:strName forKey:@"name"];
-        [dictBAndData setObject:@"NO" forKey:@"isSelected"];
-        [arrayBand addObject:dictBAndData];
+        NSInteger bandIntvalue = [strBandValue integerValue];
+        NSData * dataBandConfig = [[NSData alloc] initWithBytes:&bandIntvalue length:4];
+        NSMutableData *pillowData = [dataBandConfig mutableCopy];
 
+        uint32_t *bytes = pillowData.mutableBytes;
+        *bytes = CFSwapInt32(*bytes);
+        NSLog(@"%@", pillowData);
+        
+        NSString * strHexBandValue = [NSString stringWithFormat:@"%@",pillowData];
+
+        strHexBandValue = [strHexBandValue stringByReplacingOccurrencesOfString:@" " withString:@""];
+        strHexBandValue = [strHexBandValue stringByReplacingOccurrencesOfString:@"<" withString:@""];
+        strHexBandValue = [strHexBandValue stringByReplacingOccurrencesOfString:@">" withString:@""];
+
+        NSString * strBinary = [self GetBinaryfromHex:strHexBandValue];
+        if ([strBinary length] >0)
+        {
+            for (int i =1 ; i < 29; i++)
+            {
+                NSMutableDictionary* dictBAndData = [[NSMutableDictionary alloc] init];
+                 
+                NSString * strIndex = [NSString stringWithFormat:@"%d",i];
+                NSString * strName = [NSString stringWithFormat:@"B%d",i];
+                
+                [dictBAndData setObject:strIndex forKey:@"index"];
+                [dictBAndData setObject:strName forKey:@"name"];
+                [dictBAndData setObject:@"NO" forKey:@"isSelected"];
+                if (strBinary.length > i)
+                {
+                    if ([[strBinary substringWithRange:NSMakeRange(strBinary.length - i - 1, 1)] isEqualToString:@"1"])
+                    {
+                        [dictBAndData setObject:@"YES" forKey:@"isSelected"];
+                        [arrSelectedBand addObject:strName];
+                    }
+                }
+                [arrayBand addObject:dictBAndData];
+            }
+        }
+    }
+    else
+    {
+        for (int i =0 ; i < 28; i++)
+        {
+            NSMutableDictionary* dictBAndData = [[NSMutableDictionary alloc] init];
+             
+            NSString * strIndex = [NSString stringWithFormat:@"%d",i+1];
+            NSString * strName = [NSString stringWithFormat:@"B%d",i+1];
+            
+            [dictBAndData setObject:strIndex forKey:@"index"];
+            [dictBAndData setObject:strName forKey:@"name"];
+            [dictBAndData setObject:@"NO" forKey:@"isSelected"];
+            [arrayBand addObject:dictBAndData];
+        }
     }
     [self.view addSubview:_collectionView];
 }
@@ -120,18 +157,17 @@
         {
             [tmpBandArry addObject:[arrayBand objectAtIndex:i]];
             // send the Value to the ble Service
-            totalCount = pow(2,i) + totalCount;
+            totalCount = pow(2,i+1) + totalCount;
         }
     }
-    [_delegate SentBandConfiguration:totalCount];
     if (tmpBandArry.count == 0)
     {
         [self showErrorMessage:@"Please select the bands"];
     }
     else
     {
-        [self showSuccesMessage:@"Band configuration saved"];
-        [self InsertTodatabaseBandTbl:tmpBandArry];
+        [_delegate SentBandConfiguration:totalCount withArray:[tmpBandArry valueForKey:@"name"]];
+        [self.navigationController popViewControllerAnimated:YES];
     }
 }
 #pragma mark - Collection Methods
@@ -175,13 +211,39 @@
 {
     NSLog(@"selected index=%ld", (long)indexPath.item);
     
-    if ([[[arrayBand objectAtIndex:indexPath.item] valueForKey:@"isSelected"] isEqualToString:@"NO"])
+    
+    if ([arrSelectedBand containsObject:[[arrayBand objectAtIndex:indexPath.item] valueForKey:@"name"]])
     {
-        [[arrayBand objectAtIndex:indexPath.item] setObject:@"YES" forKey:@"isSelected"];
+        NSInteger foundIndex = [arrSelectedBand indexOfObject:[[arrayBand objectAtIndex:indexPath.item] valueForKey:@"name"]];
+        if (foundIndex != NSNotFound)
+        {
+            if ([arrSelectedBand count] > foundIndex)
+            {
+                [arrSelectedBand removeObjectAtIndex:foundIndex];
+                [[arrayBand objectAtIndex:indexPath.item] setObject:@"NO" forKey:@"isSelected"];
+            }
+        }
     }
-    else if ([[[arrayBand objectAtIndex:indexPath.item] valueForKey:@"isSelected"] isEqual:@"YES"])
+    else
     {
-        [[arrayBand objectAtIndex:indexPath.item] setObject:@"NO" forKey:@"isSelected"];
+        if ([arrSelectedBand count] ==3 )
+        {
+            [self TostNotification:@"Maximum 3 bands allowed."];
+        }
+        else
+        {
+            [arrSelectedBand addObject:[[arrayBand objectAtIndex:indexPath.item] valueForKey:@"name"]];
+            
+            if ([[[arrayBand objectAtIndex:indexPath.item] valueForKey:@"isSelected"] isEqualToString:@"NO"])
+            {
+                [[arrayBand objectAtIndex:indexPath.item] setObject:@"YES" forKey:@"isSelected"];
+            }
+            else if ([[[arrayBand objectAtIndex:indexPath.item] valueForKey:@"isSelected"] isEqual:@"YES"])
+            {
+                [[arrayBand objectAtIndex:indexPath.item] setObject:@"NO" forKey:@"isSelected"];
+            }
+
+        }
     }
     
     [_collectionView reloadData];
@@ -199,7 +261,7 @@
                 andButtons:nil];
 }
 -(void)TostNotification:(NSString *)StrToast
-    {
+{
         MBProgressHUD *hud = [MBProgressHUD showHUDAddedTo:self.navigationController.view animated:YES];
         // Configure for text only and offset down
         hud.mode = MBProgressHUDModeText;
@@ -261,4 +323,43 @@
     }
     
 }
+
+-(NSString *)GetBinaryfromHex:(NSString *)strHex
+{
+    NSString *hex = strHex;
+    long hexAsInt;
+    [[NSScanner scannerWithString:hex] scanHexInt:&hexAsInt];
+    NSString *binary = [NSString stringWithFormat:@"%@", [self toBinary:hexAsInt]];
+    
+    NSLog(@"===========Binary==========%@",binary);
+    return binary;
+}
+-(NSString *)toBinary:(NSUInteger)input
+{
+    if (input == 1 || input == 0)
+        return [NSString stringWithFormat:@"%lu", (unsigned long)input];
+    return [NSString stringWithFormat:@"%@%lu", [self toBinary:input / 2], input % 2];
+}
+
+
 @end
+
+/*
+ Heres a short example:
+
+ unsigned char bytes[] = { 0x00, 0x00, 0x01, 0x02 };
+ int intData = *((int *)bytes);
+ int reverseData = NSSwapInt(intData);
+
+ NSLog(@"integer:%d", intData);
+ NSLog(@"bytes:%08x", intData);
+ NSLog(@"reverse integer: %d", reverseData);
+ NSLog(@"reverse bytes: %08x", reverseData);
+ The output will be:
+
+ integer:33619968
+ bytes:02010000
+ reverse integer: 258
+ reverse bytes: 00000102
+
+ */

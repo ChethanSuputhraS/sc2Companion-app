@@ -14,6 +14,8 @@
 {
     UIFloatLabelTextField * txtBLEscanInterval ,*txtBLEscanTime;
     NSMutableArray *arrRadioBtns;
+    NSTimer * timerConfig;
+    NSMutableArray * arraySetConfigvalue;
 }
 @end
 @implementation IndustrySpeConfigVC
@@ -22,10 +24,39 @@
 - (void)viewDidLoad
 {
     [self setNavigationViewFrames];
+    arraySetConfigvalue = [[NSMutableArray alloc] init];
+
+    if (classPeripheral.state == CBPeripheralStateConnected)
+    {
+        [timerConfig invalidate];
+        timerConfig = [NSTimer scheduledTimerWithTimeInterval:5 target:self selector:@selector(timeOutforFetchConfig) userInfo:nil repeats:NO];
+        [APP_DELEGATE startHudProcess:@"Fetching Configuration..."];
+        
+        
+        [self GetIndustrySpecificConfiguration:@"1"];
+    }
+
+    [self SetDefaultValueofUI];
+    
     [super viewDidLoad];
     // Do any additional setup after loading the view.
 }
+-(void)SetDefaultValueofUI
+{
+    NSArray *  arrTitle = [NSArray arrayWithObjects:@"flight_mode",@"garage_mode", @"gigo_mode",@"depthtemp_mode", nil];
 
+    for (int i = 0 ; i < [arrTitle count]; i++)
+    {
+        if ([arrTitle count] > i)
+        {
+            NSMutableDictionary * tempDict = [[NSMutableDictionary alloc] init];
+            [tempDict setValue:[arrTitle objectAtIndex:i] forKeyPath:@"title"];
+            [tempDict setValue:@"255" forKeyPath:@"value"];
+            [tempDict setValue:@"0" forKeyPath:@"isChanaged"];
+            [arraySetConfigvalue addObject:tempDict];
+        }
+    }
+}
 #pragma mark - Set Frames
 -(void)setNavigationViewFrames
 {
@@ -35,11 +66,11 @@
           yy = 44;
       }
 
-        UIImageView * imgLogo = [[UIImageView alloc] init];
-        imgLogo.frame = CGRectMake(0, 0, DEVICE_WIDTH, DEVICE_HEIGHT);
-        imgLogo.image = [UIImage imageNamed:@"Splash_bg.png"];
-        imgLogo.userInteractionEnabled = YES;
-        [self.view addSubview:imgLogo];
+    UIImageView * imgLogo = [[UIImageView alloc] init];
+    imgLogo.frame = CGRectMake(0, 0, DEVICE_WIDTH, DEVICE_HEIGHT);
+    imgLogo.image = [UIImage imageNamed:@"Splash_bg.png"];
+    imgLogo.userInteractionEnabled = YES;
+    [self.view addSubview:imgLogo];
     
     UIView * viewHeader = [[UIView alloc] initWithFrame:CGRectMake(0, 0, DEVICE_WIDTH, yy + globalStatusHeight)];
     [viewHeader setBackgroundColor:[UIColor blackColor]];
@@ -61,7 +92,6 @@
      btnBack.contentHorizontalAlignment = UIControlContentHorizontalAlignmentLeft;
      [viewHeader addSubview:btnBack];
     
-    
     UIButton * btnSaveCh = [UIButton buttonWithType:UIButtonTypeCustom];
     [btnSaveCh setFrame:CGRectMake((DEVICE_WIDTH-70), 15, 60, 44)];
 //    [btnSaveCh setBackgroundImage:[UIImage imageNamed:@"BTN.png"] forState:UIControlStateNormal];
@@ -69,96 +99,47 @@
     [btnSaveCh setTitleColor:UIColor.whiteColor forState:UIControlStateNormal];
     [btnSaveCh addTarget:self action:@selector(btnSaveChClick) forControlEvents:UIControlEventTouchUpInside];
     [viewHeader addSubview:btnSaveCh];
- 
-    
-    int ya = 70;
 
-    txtBLEscanInterval = [[UIFloatLabelTextField alloc] initWithFrame:CGRectMake(10, ya, DEVICE_WIDTH-20, 50)];
-    [txtBLEscanInterval setBackgroundColor:[UIColor clearColor]];
-    [txtBLEscanInterval setTextColor:[UIColor whiteColor]];
-    [txtBLEscanInterval setFont:[UIFont fontWithName:CGRegular size:textSize]];
-    [txtBLEscanInterval setTextAlignment:NSTextAlignmentLeft];
-    txtBLEscanInterval.placeholder = @"Enter BLE scan interval";
-    txtBLEscanInterval.layer.borderColor = UIColor.lightGrayColor.CGColor;
-    txtBLEscanInterval.layer.borderWidth = 0.5;
-    txtBLEscanInterval.layer.cornerRadius = 4;
-    [APP_DELEGATE getPlaceholderText:txtBLEscanInterval andColor:UIColor.whiteColor];
-    txtBLEscanInterval.returnKeyType = UIReturnKeyNext;
-    txtBLEscanInterval.delegate = self;
-//    [self.view addSubview:txtBLEscanInterval];
-    
-     
-    txtBLEscanTime = [[UIFloatLabelTextField alloc] initWithFrame:CGRectMake(10, ya+60, DEVICE_WIDTH-20, 50)];
-    [txtBLEscanTime setBackgroundColor:[UIColor clearColor]];
-    [txtBLEscanTime setTextColor:[UIColor whiteColor]];
-    [txtBLEscanTime setFont:[UIFont fontWithName:CGRegular size:textSize]];
-    [txtBLEscanTime setTextAlignment:NSTextAlignmentLeft];
-    txtBLEscanTime.placeholder = @"Enter BLE scan time";
-    [APP_DELEGATE getPlaceholderText:txtBLEscanTime andColor:UIColor.whiteColor];
-    txtBLEscanTime.layer.borderColor = UIColor.lightGrayColor.CGColor;
-    txtBLEscanTime.layer.borderWidth = 0.5;
-    txtBLEscanTime.layer.cornerRadius = 4;
-    txtBLEscanTime.returnKeyType = UIReturnKeyDone;
-    txtBLEscanTime.delegate= self;
-//    [self.view addSubview:txtBLEscanTime];
-    
-    
+    NSArray * arrItems = [NSArray arrayWithObjects:@"Off", @"Cellular ON",@"Satellite ON", nil];
+    NSArray * arrHeadding = [NSArray arrayWithObjects:@"Flight mode",@"Garage mode", @"GIGO mode",@"Depth and temperature mode", nil];
 
-    /*NSMutableArray *  arrayData = [[NSMutableArray alloc] init];
-    NSString * sqlquery = [NSString stringWithFormat:@"select * from tbl_industryspecific"];
-    [[DataBaseManager dataBaseManager] execute:sqlquery resultsArray:arrayData];*/
-
-        NSArray * arrItems = [NSArray arrayWithObjects:@"Off", @"Cellular ON",@"Satellite ON", nil];
-        NSArray * arrHeadding = [NSArray arrayWithObjects:@"Flight mode",@"Garage mode", @"GIGO mode",@"Depth and temperature mode", nil];
-        NSArray *  arrDatabaseKye = [NSArray arrayWithObjects:@"flight_mode",@"garage_mode", @"gigo_mode",@"depthtemp_mode", nil];
-
-        int yt = 70;
-        int ySwitch = 0;
-        arrRadioBtns = [[NSMutableArray alloc] init];
+    int yt = 70;
+    int ySwitch = 0;
+    arrRadioBtns = [[NSMutableArray alloc] init];
     
-        for (int i = 0; i< [arrHeadding count]; i++)
-        {
+    for (int i = 0; i< [arrHeadding count]; i++)
+    {
+        UIView * switchView = [[UIView alloc] initWithFrame:CGRectMake(10, yt + ySwitch, DEVICE_WIDTH - 20, 80)];
+        switchView.layer.masksToBounds = YES;
+        switchView.layer.borderColor = [UIColor grayColor].CGColor;
+        switchView.layer.borderWidth = 0.6;
+        switchView.layer.cornerRadius = 12;
+        switchView.tag = 9999 +  i;
+        [self.view addSubview:switchView];
             
-            UIView * switchView = [[UIView alloc] initWithFrame:CGRectMake(10, yt + ySwitch, DEVICE_WIDTH - 20, 80)];
-            switchView.layer.masksToBounds = YES;
-            switchView.layer.borderColor = [UIColor grayColor].CGColor;
-            switchView.layer.borderWidth = 0.6;
-            switchView.layer.cornerRadius = 12;
-            [self.view addSubview:switchView];
+        UILabel *lblMenu = [[UILabel alloc] initWithFrame:CGRectMake(10,0, switchView.frame.size.width - 20, 30)];
+        lblMenu.text = [arrHeadding objectAtIndex:i];
+        lblMenu.textColor= UIColor.whiteColor;
+        lblMenu.font = [UIFont fontWithName:CGRegular size:textSize-1];
+        [switchView addSubview:lblMenu];
             
-            UILabel *lblMenu = [[UILabel alloc] initWithFrame:CGRectMake(10,0, switchView.frame.size.width - 20, 30)];
-            lblMenu.text = [arrHeadding objectAtIndex:i];
-            lblMenu.textColor= UIColor.whiteColor;
-    //        lblMenu.numberOfLines = 2;
-            lblMenu.font = [UIFont fontWithName:CGRegular size:textSize-1];
-            [switchView addSubview:lblMenu];
+        RadioButtonClass * globalRadioButtonClass = [[RadioButtonClass alloc] init];
+        globalRadioButtonClass.viewTag = 500 + i;
+        globalRadioButtonClass.delegate = self;
+        [globalRadioButtonClass setButtonFrame:CGRectMake(10, 30, switchView.frame.size.width - 10 , 50) withNumberofItems:arrItems withSelectedIndex:-1];
+        [switchView addSubview:globalRadioButtonClass];
             
-            RadioButtonClass * globalRadioButtonClass = [[RadioButtonClass alloc] init];
-            globalRadioButtonClass.viewTag = 500 + i;
-            globalRadioButtonClass.delegate = self;
-                
-                /*if ([arrayData count] > 0)
-                {
-                    NSInteger selectedIndex = [self getIndexfromValue:[[arrayData objectAtIndex:0] valueForKey:[arrDatabaseKye objectAtIndex:i]]];
-                    [globalRadioButtonClass setButtonFrame:CGRectMake(10, 30, switchView.frame.size.width - 10 , 50) withNumberofItems:arrItems withSelectedIndex:selectedIndex];
-                }
-                else*/
-                {
-                    [globalRadioButtonClass setButtonFrame:CGRectMake(10, 30, switchView.frame.size.width - 10 , 50) withNumberofItems:arrItems withSelectedIndex:-1];
-                }
-                [switchView addSubview:globalRadioButtonClass];
-            
-            NSMutableDictionary * dict = [[NSMutableDictionary alloc] init];
-            [dict setValue:[arrHeadding objectAtIndex:i] forKey:@"name"];
-            [dict setValue:[NSString stringWithFormat:@"%d",i] forKey:@"index"];
-            [dict setValue:@"255" forKey:@"selection"];
-            [arrRadioBtns addObject:dict];
-                ySwitch = ySwitch + 100;
-        }
+        NSMutableDictionary * dict = [[NSMutableDictionary alloc] init];
+        [dict setValue:[arrHeadding objectAtIndex:i] forKey:@"name"];
+        [dict setValue:[NSString stringWithFormat:@"%d",i] forKey:@"index"];
+        [dict setValue:@"255" forKey:@"selection"];
+        [arrRadioBtns addObject:dict];
+        ySwitch = ySwitch + 100;
+    }
 }
 -(NSInteger)getIndexfromValue:(NSString *)strValue
 {
-     if ([strValue isEqualToString:@"0"])
+    if ([strValue isEqualToString:@"0"])
     {
         return 0;
     }
@@ -196,21 +177,36 @@
 
     if (arrRadioBtns.count > currentIndex)
     {
-            NSString * strValue = @"255";
+        NSString * strValue = @"255";
             
-            if (selectedIndex == 0)
+        if (selectedIndex == 0)
+        {
+            strValue = @"0";
+        }
+        else if (selectedIndex == 1)
+        {
+            strValue = @"1";
+        }
+        else if (selectedIndex == 2)
+        {
+            strValue = @"2";
+        }
+        [[arrRadioBtns objectAtIndex:currentIndex] setValue:strValue forKey:@"selection"];
+        
+        NSInteger arrIndex = currentIndex;
+        if (arrIndex >= 0 && arraySetConfigvalue.count > arrIndex)
+        {
+            NSString * strPreviousValue = [self checkforValidString:[[arraySetConfigvalue objectAtIndex:arrIndex] valueForKey:@"value"]];
+            NSString * strCurrentValue = [self checkforValidString:strValue];
+            if (![strPreviousValue isEqualToString:strCurrentValue])
             {
-                strValue = @"0";
+                [[arraySetConfigvalue objectAtIndex:arrIndex] setValue:@"1" forKey:@"isChanaged"];
             }
-            else if (selectedIndex == 1)
+            else
             {
-                strValue = @"1";
+                [[arraySetConfigvalue objectAtIndex:arrIndex] setValue:@"0" forKey:@"isChanaged"];
             }
-          else if (selectedIndex == 2)
-          {
-              strValue = @"2";
-          }
-            [[arrRadioBtns objectAtIndex:currentIndex] setValue:strValue forKey:@"selection"];
+        }
   }
 }
 -(void)showSuccesMessage:(NSString *)strMessage
@@ -243,55 +239,91 @@
 }
 -(void)btnSaveChClick
 {
-        [APP_DELEGATE startHudProcess:@"saving..."];
-        [self InsertingtoDatabase:arrRadioBtns];
+    [APP_DELEGATE startHudProcess:@"saving..."];
+    [timerConfig invalidate];
+    timerConfig = nil;
+    timerConfig = [NSTimer scheduledTimerWithTimeInterval:5 target:self selector:@selector(timeOutforFetchConfig) userInfo:nil repeats:NO];
+
+    [self InsertingtoDatabase:arrRadioBtns];
 }
 -(void)InsertingtoDatabase:(NSMutableArray *)arrydata
 {
-    NSString * strFlightMode = @"";
-    NSString * strgarageMode = @"";
-    NSString * strgigoMode = @"";
-    NSString * strdepthandtempMode = @"";
-        
-    NSMutableArray *  tmpArray = [[NSMutableArray alloc] init];
-    NSString * sqlquery = [NSString stringWithFormat:@"select * from tbl_industryspecific"];
-    [[DataBaseManager dataBaseManager] execute:sqlquery resultsArray:tmpArray];
     
-
-    for (int i = 0; i< [arrydata count]; i++)
+    BOOL isValueChanged = NO;
+    for (int i =0; i < [arraySetConfigvalue count]; i++)
     {
-        NSLog(@"=========>>>>Index=%d     Selection==%@",i, [[arrydata objectAtIndex:i] valueForKey:@"selection"]);
-
-        if ([[[arrydata objectAtIndex:i] valueForKey:@"index"] isEqual:@"0"])
+        if ([[[arraySetConfigvalue objectAtIndex:i] valueForKey:@"isChanaged"] isEqualToString:@"1"])
         {
-            strFlightMode = [[arrydata objectAtIndex:i] valueForKey:@"selection"];
-        }
-        else if ([[[arrydata objectAtIndex:i] valueForKey:@"index"] isEqual:@"1"])
-        {
-            strgarageMode = [[arrydata objectAtIndex:i] valueForKey:@"selection"];
-        }
-        else if ([[[arrydata objectAtIndex:i] valueForKey:@"index"] isEqual:@"2"])
-        {
-            strgigoMode = [[arrydata objectAtIndex:i] valueForKey:@"selection"];
-        }
-        else if ([[[arrydata objectAtIndex:i] valueForKey:@"index"] isEqual:@"3"])
-        {
-            strdepthandtempMode = [[arrydata objectAtIndex:i] valueForKey:@"selection"];
+            isValueChanged = YES;
         }
     }
-    NSArray * arrFirstOpcode = [NSArray arrayWithObjects:strFlightMode, strgarageMode, strgigoMode, strdepthandtempMode, nil];
-    [self WriteIndustryConfigurationtoDevice:arrFirstOpcode];
-    /*if (tmpArray.count > 0)
+    if (isValueChanged == YES)
     {
-        strIndustryConfigQuery =  [NSString stringWithFormat:@"update tbl_industryspecific set flight_mode = \"%@\",garage_mode = \"%@\",gigo_mode = \"%@\",depthtemp_mode = \"%@\"",strFlightMode,strgarageMode,strgigoMode,strdepthandtempMode];
-        [[DataBaseManager dataBaseManager] executeSw:strIndustryConfigQuery];
+        NSLog(@"Valye Has Changed.....");
+        
+        if (classPeripheral.state == CBPeripheralStateConnected)
+        {
+            NSString * strFlightMode = @"";
+            NSString * strgarageMode = @"";
+            NSString * strgigoMode = @"";
+            NSString * strdepthandtempMode = @"";
+                
+            NSMutableArray *  tmpArray = [[NSMutableArray alloc] init];
+            NSString * sqlquery = [NSString stringWithFormat:@"select * from tbl_industryspecific"];
+            [[DataBaseManager dataBaseManager] execute:sqlquery resultsArray:tmpArray];
+
+            for (int i = 0; i< [arrydata count]; i++)
+            {
+                NSLog(@"=========>>>>Index=%d     Selection==%@",i, [[arrydata objectAtIndex:i] valueForKey:@"selection"]);
+
+                if ([[[arrydata objectAtIndex:i] valueForKey:@"index"] isEqual:@"0"])
+                {
+                    strFlightMode = [[arrydata objectAtIndex:i] valueForKey:@"selection"];
+                }
+                else if ([[[arrydata objectAtIndex:i] valueForKey:@"index"] isEqual:@"1"])
+                {
+                    strgarageMode = [[arrydata objectAtIndex:i] valueForKey:@"selection"];
+                }
+                else if ([[[arrydata objectAtIndex:i] valueForKey:@"index"] isEqual:@"2"])
+                {
+                    strgigoMode = [[arrydata objectAtIndex:i] valueForKey:@"selection"];
+                }
+                else if ([[[arrydata objectAtIndex:i] valueForKey:@"index"] isEqual:@"3"])
+                {
+                    strdepthandtempMode = [[arrydata objectAtIndex:i] valueForKey:@"selection"];
+                }
+            }
+            NSArray * arrFirstOpcode = [NSArray arrayWithObjects:strFlightMode, strgarageMode, strgigoMode, strdepthandtempMode, nil];
+            [self WriteIndustryConfigurationtoDevice:arrFirstOpcode];
+        }
+        else
+        {
+            [APP_DELEGATE endHudProcess];
+            [self showCautionMessage:@"Device Disconnected. Please connect first."];
+        }
     }
     else
     {
-         strIndustryConfigQuery =  [NSString stringWithFormat:@"insert into 'tbl_industryspecific'('flight_mode','garage_mode','gigo_mode','depthtemp_mode') values(\"%@\",\"%@\",\"%@\",\"%@\")",strFlightMode,strgarageMode,strgigoMode,strdepthandtempMode];
-        [[DataBaseManager dataBaseManager] executeSw:strIndustryConfigQuery];
-    }*/
+        NSLog(@"Value Has Not Changed.....");
+
+        [APP_DELEGATE endHudProcess];
+        [self.navigationController popViewControllerAnimated:YES];
+    }
 }
+-(void)GetIndustrySpecificConfiguration:(NSString *)strOpcode
+{
+    NSInteger intCommand = [@"194" integerValue];
+    NSData * dataCommand = [[NSData alloc] initWithBytes:&intCommand length:1];
+
+    NSInteger intLength = 0;// 13 previously
+    NSData * dataLength = [[NSData alloc] initWithBytes:&intLength length:1];
+        
+    NSMutableData *completeData = [dataCommand mutableCopy];
+    [completeData appendData:dataLength];
+
+    [[BLEService sharedInstance] WriteNSDataforEncryptionAndthenSendtoPeripheral:completeData withPeripheral:classPeripheral];
+}
+
 -(void)WriteIndustryConfigurationtoDevice:(NSArray *)arrData
 {
     NSInteger intCommand = [@"194" integerValue];
@@ -312,6 +344,61 @@
     
     [[BLEService sharedInstance] WriteNSDataforEncryptionAndthenSendtoPeripheral:completeData withPeripheral:classPeripheral];
 }
+-(void)SetIndustrySpecificionValuetoUI:(NSArray *)arrData
+{
+    dispatch_async(dispatch_get_main_queue(), ^{
+        
+        NSArray *  arrTitle = [NSArray arrayWithObjects:@"flight_mode",@"garage_mode", @"gigo_mode",@"depthtemp_mode", nil];
+
+        for (int i = 0 ; i < [arrData count]; i++)
+        {
+            UIView * tmpView = [self.view viewWithTag:9999 +i];
+            NSArray * arr = [tmpView subviews];
+            
+            for (int j = 0; j < arr.count; j++)
+            {
+                id objct = [arr objectAtIndex:j];
+                if ([objct isKindOfClass:[RadioButtonClass class]])
+                {
+                    if ([[arrData objectAtIndex:i] isEqualToString:@"1"])
+                    {
+                        [objct UpdateButtonsforIndustryConfiguration:1 withObject:objct];
+                    }
+                    else if ([[arrData objectAtIndex:i] isEqualToString:@"0"])
+                    {
+                        [objct UpdateButtonsforIndustryConfiguration:0 withObject:objct];
+                    }
+                    else if ([[arrData objectAtIndex:i] isEqualToString:@"2"])
+                    {
+                        [objct UpdateButtonsforIndustryConfiguration:2 withObject:objct];
+                    }
+                    else if ([[arrData objectAtIndex:i] isEqualToString:@"255"])
+                    {
+                        [objct UpdateButtonsforIndustryConfiguration:3 withObject:objct];
+                    }
+                }
+            }
+            
+            if ([arrTitle count] > i)
+            {
+                NSMutableDictionary * tempDict = [[NSMutableDictionary alloc] init];
+                [tempDict setValue:[arrTitle objectAtIndex:i] forKeyPath:@"title"];
+                [tempDict setValue:[arrData objectAtIndex:i] forKeyPath:@"value"];
+                [tempDict setValue:@"0" forKeyPath:@"isChanaged"];
+                [self->arraySetConfigvalue replaceObjectAtIndex:i withObject:tempDict];
+                
+                if ([self->arrRadioBtns count] > i)
+                {
+                    [[self->arrRadioBtns objectAtIndex:i] setValue:[arrData objectAtIndex:i] forKey:@"selection"];
+                }
+            }
+        }
+        [self->timerConfig invalidate];
+        self->timerConfig = nil;
+        [APP_DELEGATE endHudProcess];
+
+    });
+}
 - (BOOL)isAllDigits:(NSString *)strTexr
 {
     NSCharacterSet* nonNumbers = [[NSCharacterSet decimalDigitCharacterSet] invertedSet];
@@ -320,17 +407,44 @@
 }
 -(void)ReceviedSuccesResponseFromDevice:(NSString *)strResponse
 {
-        dispatch_async(dispatch_get_main_queue(), ^(void)
-        {
-    [APP_DELEGATE endHudProcess];
+    dispatch_async(dispatch_get_main_queue(), ^(void)
+    {
+        [APP_DELEGATE endHudProcess];
     if ([strResponse isEqualToString:@"0101"])
     {
-        [self showSuccesMessage:@"Industry-Specfic configuration svaed"];
+        [self showSuccesMessage:@"Industry Specific configuration applied successfully. Device will restart after 3 minutes. Please connect after some time."];
     }
     else
     {
         [self showCautionMessage:@"Faied to configure device Please try agin later"];
     }
-        });
+    });
 }
+-(void)timeOutforFetchConfig
+{
+    [timerConfig invalidate];
+    timerConfig = nil;
+    [APP_DELEGATE endHudProcess];
+}
+-(NSString *)checkforValidString:(NSString *)strRequest
+{
+    NSString * strValid;
+    if (![strRequest isEqual:[NSNull null]])
+    {
+        if (strRequest != nil && strRequest != NULL && ![strRequest isEqualToString:@""])
+        {
+            strValid = strRequest;
+        }
+        else
+        {
+            strValid = @"NA";
+        }
+    }
+    else
+    {
+        strValid = @"NA";
+    }
+    return strValid;
+}
+
 @end

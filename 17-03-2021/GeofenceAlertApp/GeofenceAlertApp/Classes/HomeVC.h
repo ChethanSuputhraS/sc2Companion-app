@@ -26,7 +26,7 @@ NS_ASSUME_NONNULL_BEGIN
     NSMutableDictionary * globalDict, * notificationDict, * currentAlertDict;
     NSMutableArray * arrActons, * arrPolygon, * arrRules, * arrAllSavedRules, * arrTempListGeofence, * arrIMEITokens;
     
-    NSTimer * connectionTimer, * advertiseTimer,* timerForNotification;;
+    NSTimer * connectionTimer, * advertiseTimer,* timerForbattryRequest,*timerForNotification;
     CBPeripheral * tempSelectedPeripheral, * classPeripheral;
     CBCentralManager*centralManager;
     NSInteger selectedMoreIndex;

@@ -10,8 +10,6 @@
 #import "CustomAnnotation.h"
 #import "CustomAnnotationView.h"
 
-
-
 @interface LiveTrackingVC ()<BLEServiceDelegate,MKMapViewDelegate>
 {
     NSMutableDictionary * dictLatLong;
@@ -21,8 +19,7 @@
     NSTimer * timerForGPSFix;
     
     CustomAnnotation * annotationPin;
-    CustomAnnotationView* custannotationView;
-
+    CustomAnnotationView * custannotationView;
 }
 @end
 
@@ -35,30 +32,28 @@
     strScreenMode = @"Light";
     if (@available(iOS 12.0, *))
     {
-            switch (UIScreen.mainScreen.traitCollection.userInterfaceStyle) {
-                case UIUserInterfaceStyleDark:
-                    // put your dark mode code here
-                    strScreenMode = @"Dark";
-                    break;
-                case UIUserInterfaceStyleLight:
-                case UIUserInterfaceStyleUnspecified:
-                    break;
-                default:
-                    break;
-            }
+        switch (UIScreen.mainScreen.traitCollection.userInterfaceStyle) {
+            case UIUserInterfaceStyleDark:
+                // put your dark mode code here
+                strScreenMode = @"Dark";
+                break;
+            case UIUserInterfaceStyleLight:
+            case UIUserInterfaceStyleUnspecified:
+                break;
+            default:
+                break;
+        }
     }
     
     [self setNavigationViewFrames];
     [self setContentViewFrames];
     [[BLEService sharedInstance] setDelegate:self];
     
-    
     [timerForGPSFix invalidate];
     timerForGPSFix = nil;
     timerForGPSFix = [NSTimer scheduledTimerWithTimeInterval:20 target:self selector:@selector(timerFortimerForGPSFix) userInfo:nil repeats:YES];
     
     [APP_DELEGATE startHudProcess:@"Waiting for GPS Fix..."];
-
 
     [super viewDidLoad];
 

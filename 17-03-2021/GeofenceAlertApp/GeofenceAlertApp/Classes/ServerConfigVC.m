@@ -13,7 +13,9 @@
 {
     UIFloatLabelTextField *txtSeverAdd,*txtKeepAliv,*txtserverPort;
     NSMutableArray * arryServer;
-    NSTimer * btnSaveTimer;
+    NSTimer * btnSaveTimer, * timerConfig;
+    NSMutableArray * arrSetServerConfigs, * arrAddresData;
+
 }
 @end
 
@@ -23,25 +25,59 @@
 - (void)viewDidLoad
 {
     arryServer = [[NSMutableArray alloc] init];
+    arrSetServerConfigs = [[NSMutableArray alloc] init];
+    arrAddresData = [[NSMutableArray alloc] init];
+     
     [self setNavigationViewFrames];
+    [self SetDefaultValuetoUI];
+    
+    if (classPeripheral.state == CBPeripheralStateConnected)
+    {
+        [timerConfig invalidate];
+        timerConfig = [NSTimer scheduledTimerWithTimeInterval:5 target:self selector:@selector(timeOutforFetchConfig) userInfo:nil repeats:NO];
+        [APP_DELEGATE startHudProcess:@"Fetching Configuration..."];
+        
+        [self WritetoReceiveStartPacketfromDevice];
+    }
     [super viewDidLoad];
     // Do any additional setup after loading the view.
 }
+-(void)SetDefaultValuetoUI
+{
+    NSArray *   arrFirst = [NSArray arrayWithObjects:@"address", @"interval", @"port", nil];
 
+    for (int i = 0 ; i < [arrFirst count]; i++)
+    {
+        if ([arrFirst count] > i)
+        {
+            NSMutableDictionary * tempDict = [[NSMutableDictionary alloc] init];
+            [tempDict setValue:[arrFirst objectAtIndex:i] forKeyPath:@"title"];
+            [tempDict setValue:@"NA" forKeyPath:@"value"];
+            [tempDict setValue:@"0" forKeyPath:@"isChanaged"];
+            [arrSetServerConfigs addObject:tempDict];
+        }
+    }
+}
+-(void)timeOutforFetchConfig
+{
+    [timerConfig invalidate];
+    timerConfig = nil;
+    [APP_DELEGATE endHudProcess];
+}
 #pragma mark - Set Frames
 -(void)setNavigationViewFrames
 {
     int yy = 44;
-      if (IS_IPHONE_X)
-      {
-          yy = 44;
-      }
+    if (IS_IPHONE_X)
+    {
+        yy = 44;
+    }
 
-        UIImageView * imgLogo = [[UIImageView alloc] init];
-        imgLogo.frame = CGRectMake(0, 0, DEVICE_WIDTH, DEVICE_HEIGHT);
-        imgLogo.image = [UIImage imageNamed:@"Splash_bg.png"];
-        imgLogo.userInteractionEnabled = YES;
-        [self.view addSubview:imgLogo];
+    UIImageView * imgLogo = [[UIImageView alloc] init];
+    imgLogo.frame = CGRectMake(0, 0, DEVICE_WIDTH, DEVICE_HEIGHT);
+    imgLogo.image = [UIImage imageNamed:@"Splash_bg.png"];
+    imgLogo.userInteractionEnabled = YES;
+    [self.view addSubview:imgLogo];
     
     UIView * viewHeader = [[UIView alloc] initWithFrame:CGRectMake(0, 0, DEVICE_WIDTH, yy + globalStatusHeight)];
     [viewHeader setBackgroundColor:[UIColor blackColor]];
@@ -114,12 +150,11 @@
     [APP_DELEGATE getPlaceholderText:txtserverPort andColor:UIColor.whiteColor];
     txtserverPort.returnKeyType = UIReturnKeyDone;
     txtserverPort.layer.cornerRadius = 4;
-     txtserverPort.layer.borderWidth = 0.5;
+    txtserverPort.layer.borderWidth = 0.5;
     txtserverPort.keyboardType = UIKeyboardTypeNumbersAndPunctuation;
-     txtserverPort.layer.borderColor = UIColor.lightGrayColor.CGColor;
-     txtserverPort.delegate = self;
+    txtserverPort.layer.borderColor = UIColor.lightGrayColor.CGColor;
+    txtserverPort.delegate = self;
     [self.view addSubview:txtserverPort];
-    
 
 }
 -(void)btnBackClick
@@ -128,40 +163,67 @@
 }
 -(void)btnSaveChClick
 {
-    
     if ([[APP_DELEGATE checkforValidString:txtSeverAdd.text] isEqualToString:@"NA"])
     {
         [self showErrorMessage:@"Please enter valid Server Address"];
 
     }
-  else  if ([[APP_DELEGATE checkforValidString:txtKeepAliv.text] isEqualToString:@"NA"])
+    else  if ([[APP_DELEGATE checkforValidString:txtKeepAliv.text] isEqualToString:@"NA"])
     {
         [self showErrorMessage:@"Please enter valid keppaliv interval"];
 
     }
-  else  if ([[APP_DELEGATE checkforValidString:txtserverPort.text] isEqualToString:@"NA"])
+    else  if ([[APP_DELEGATE checkforValidString:txtserverPort.text] isEqualToString:@"NA"])
     {
         [self showErrorMessage:@"Please enter valid Server poart"];
     }
     else
     {
-//        btnSaveTimer = [NSTimer scheduledTimerWithTimeInterval:15 target:self selector:@selector(savingTimeout) userInfo:nil repeats:NO];
         
-        [APP_DELEGATE startHudProcess:@"Saving..."];
+        BOOL isValueChanged = NO;
+        for (int i =0; i < [arrSetServerConfigs count]; i++)
+        {
+            if ([[[arrSetServerConfigs objectAtIndex:i] valueForKey:@"isChanaged"] isEqualToString:@"1"])
+            {
+                isValueChanged = YES;
+            }
+        }
+        if (isValueChanged == YES)
+        {
+            NSLog(@"Valye Has Changed.....");
+            if (classPeripheral.state == CBPeripheralStateConnected)
+            {
+                [timerConfig invalidate];
+                timerConfig = nil;
+                timerConfig = [NSTimer scheduledTimerWithTimeInterval:5 target:self selector:@selector(timeOutforFetchConfig) userInfo:nil repeats:NO];
+                [APP_DELEGATE startHudProcess:@"Saving..."];
 
-        NSMutableArray * arrAddressPackets = [[NSMutableArray alloc] init];
-        NSInteger totalPackets = 0;
+                NSMutableArray * arrAddressPackets = [[NSMutableArray alloc] init];
+                NSInteger totalPackets = 0;
 
-        NSString * strServerAddress = txtSeverAdd.text;
-        totalPackets = [self getTotalNumberofPackets:strServerAddress];
-        [self AddPacketstoArray:arrAddressPackets withString:strServerAddress withTotalPackets:totalPackets];
+                NSString * strServerAddress = txtSeverAdd.text;
+                totalPackets = [self getTotalNumberofPackets:strServerAddress];
+                [self AddPacketstoArray:arrAddressPackets withString:strServerAddress withTotalPackets:totalPackets];
 
-        totalPackets = 1 + [arrAddressPackets count] ;
+                totalPackets = 1 + [arrAddressPackets count] ;
 
-        [self WriteStartPackettoDevicewithtotalPackets:totalPackets];//Write Start Packet with sending Total number of Packets
+                [self WriteStartPackettoDevicewithtotalPackets:totalPackets];//Write Start Packet with sending Total number of Packets
 
-        //Send Server Packets
-        [self WriteServerAddressPacketToDevicewithPacketsArray:arrAddressPackets withPacketType:@"2"];
+                //Send Server Packets
+                [self WriteServerAddressPacketToDevicewithPacketsArray:arrAddressPackets withPacketType:@"2"];
+            }
+            else
+            {
+                [APP_DELEGATE endHudProcess];
+                [self showErrorMessage:@"Device Disconnected. Please connect first."];
+            }
+        }
+        else
+        {
+            NSLog(@"Value Has Not Changed.....");
+            [APP_DELEGATE endHudProcess];
+            [self.navigationController popViewControllerAnimated:YES];
+        }
     }
        /*NSMutableDictionary * dict = [[NSMutableDictionary alloc] init];
        [dict setValue:txtSeverAdd.text forKey:@"serverAddress"];
@@ -197,23 +259,40 @@
 #pragma mark - Textfield Delegates
 -(BOOL)textFieldShouldReturn:(UITextField *)textField
 {
+    NSInteger arrIndex = 0;
     if (textField == txtSeverAdd)
     {
         [txtKeepAliv becomeFirstResponder];
     }
     else if (textField == txtKeepAliv)
     {
+        arrIndex = 1;
         [txtserverPort becomeFirstResponder];
     }
     else if (textField == txtserverPort)
     {
+        arrIndex = 2;
         [txtserverPort resignFirstResponder];
     }
+    
+    if (arrIndex >= 0 && arrSetServerConfigs.count > arrIndex)
+    {
+        NSString * strPreviousValue = [self checkforValidString:[[arrSetServerConfigs objectAtIndex:arrIndex] valueForKey:@"value"]];
+        NSString * strCurrentValue = textField.text;
+        if (![strPreviousValue isEqualToString:strCurrentValue])
+        {
+            [[arrSetServerConfigs objectAtIndex:arrIndex] setValue:@"1" forKey:@"isChanaged"];
+        }
+        else
+        {
+            [[arrSetServerConfigs objectAtIndex:arrIndex] setValue:@"0" forKey:@"isChanaged"];
+        }
+    }
+
     return textField;
 }
 -(void)textFieldDidBeginEditing:(UITextField *)textField
 {
-    
 }
 -(void)showErrorMessage:(NSString *)strMessage
 {
@@ -305,6 +384,42 @@
     }
 }
 #pragma mark - Write Configuration to Device
+-(void)WritetoReceiveStartPacketfromDevice
+{
+    NSInteger intCmd = [@"196" integerValue];
+    NSData * dataCmd = [[NSData alloc] initWithBytes:&intCmd length:1];
+    
+    NSInteger intLength = [@"1" integerValue];
+    NSData * dataLength = [[NSData alloc] initWithBytes:&intLength length:1];
+    
+    NSInteger intPacketType = [@"1" integerValue];
+    NSData * dataPacketType = [[NSData alloc] initWithBytes:&intPacketType length:1];
+
+
+    NSMutableData *completeData = [dataCmd mutableCopy];
+    [completeData appendData:dataLength];
+    [completeData appendData:dataPacketType];
+    
+    [[BLEService sharedInstance] WriteNSDataforEncryptionAndthenSendtoPeripheral:completeData withPeripheral:classPeripheral];
+}
+-(void)WritetoReceiveAddressDataPacketfromDevice
+{
+    NSInteger intCmd = [@"196" integerValue];
+    NSData * dataCmd = [[NSData alloc] initWithBytes:&intCmd length:1];
+    
+    NSInteger intLength = [@"1" integerValue];
+    NSData * dataLength = [[NSData alloc] initWithBytes:&intLength length:1];
+    
+    NSInteger intPacketType = [@"2" integerValue];
+    NSData * dataPacketType = [[NSData alloc] initWithBytes:&intPacketType length:1];
+
+    NSMutableData *completeData = [dataCmd mutableCopy];
+    [completeData appendData:dataLength];
+    [completeData appendData:dataPacketType];
+    
+    [[BLEService sharedInstance] WriteNSDataforEncryptionAndthenSendtoPeripheral:completeData withPeripheral:classPeripheral];
+}
+
 -(void)WriteStartPackettoDevicewithtotalPackets:(NSInteger)TotalPackets
 {
     NSInteger intCmd = [@"196" integerValue];
@@ -412,12 +527,93 @@
         [APP_DELEGATE endHudProcess];
         if ([strResponse isEqualToString:@"0101"])
         {
-            [self showSuccesMessage:@"Device configuration svaed"];
+            [self showSuccesMessage:@"Server Specific configuration applied successfully. Device will restart after 3 minutes. Please connect after some time. "];
         }
         else
         {
             [self showErrorMessage:@"Faied to configure device Please try agin later"];
         }
     });
+}
+-(void)ReceivedStartPacketfromDevice:(NSArray *)arrData
+{
+    dispatch_async(dispatch_get_main_queue(), ^{
+        if ([arrData count] >= 3)
+        {
+            self->txtKeepAliv.text = [arrData objectAtIndex:2];
+
+            if ([[arrData objectAtIndex:2] isEqualToString:@"255"])
+            {
+                self->txtKeepAliv.text = @"";
+
+            }
+            self->txtserverPort.text = [arrData objectAtIndex:1];
+            
+            [[self->arrSetServerConfigs objectAtIndex:1] setValue:self->txtKeepAliv.text forKey:@"value"];
+            [[self->arrSetServerConfigs objectAtIndex:1] setValue:@"0" forKey:@"isChanaged"];
+
+            [[self->arrSetServerConfigs objectAtIndex:2] setValue:self->txtserverPort.text forKey:@"value"];
+            [[self->arrSetServerConfigs objectAtIndex:2] setValue:@"0" forKey:@"isChanaged"];
+
+        }
+        [self WritetoReceiveAddressDataPacketfromDevice];
+
+    });
+
+}
+-(void)ReceivedAddressPacketfromDevice:(NSDictionary *)dictPackets isLastPacket:(BOOL)isLastPacket
+{
+    [arrAddresData addObject:dictPackets];
+
+    dispatch_async(dispatch_get_main_queue(), ^{
+    
+        if (isLastPacket == YES)
+        {
+            NSSortDescriptor * brandDescriptor = [[NSSortDescriptor alloc] initWithKey:@"PacketNo" ascending:NO];
+            NSArray *sortDescriptors = [NSArray arrayWithObject:brandDescriptor];
+            NSArray * arrAPNSSorted = [self->arrAddresData sortedArrayUsingDescriptors:sortDescriptors];
+            
+            NSString * strAddress;
+            for (int i = 0; i < [arrAPNSSorted count]; i++)
+            {
+                if (strAddress.length == 0)
+                {
+                    strAddress = [[arrAPNSSorted objectAtIndex:i] valueForKey:@"Text"];
+                }
+                else
+                {
+                    strAddress = [strAddress stringByAppendingString:[[arrAPNSSorted objectAtIndex:i] valueForKey:@"Text"]];
+                }
+            }
+            self->txtSeverAdd.text = strAddress;
+            
+            [[self->arrSetServerConfigs objectAtIndex:0] setValue:self->txtSeverAdd.text forKey:@"value"];
+            [[self->arrSetServerConfigs objectAtIndex:0] setValue:@"0" forKey:@"isChanaged"];
+
+                [APP_DELEGATE endHudProcess];
+
+        }
+    });
+
+}
+-(NSString *)checkforValidString:(NSString *)strRequest
+{
+    NSString * strValid;
+    if (![strRequest isEqual:[NSNull null]])
+    {
+        if (strRequest != nil && strRequest != NULL && ![strRequest isEqualToString:@""])
+        {
+            strValid = strRequest;
+        }
+        else
+        {
+            strValid = @"NA";
+        }
+    }
+    else
+    {
+        strValid = @"NA";
+    }
+    return strValid;
 }
 @end

@@ -53,7 +53,7 @@
     [viewHeader addSubview:lblTitle];
     
      UIButton * btnBack = [UIButton buttonWithType:UIButtonTypeCustom];
-     [btnBack setFrame:CGRectMake(0, 20, 60, yy)];
+     [btnBack setFrame:CGRectMake(10, 20, 60, yy)];
      [btnBack addTarget:self action:@selector(btnBackClick) forControlEvents:UIControlEventTouchUpInside];
      [btnBack setImage:[UIImage imageNamed:@"back_icon.png"] forState:UIControlStateNormal];
      btnBack.backgroundColor = UIColor.clearColor;
@@ -68,44 +68,55 @@
     [viewHeader addSubview:btnSaveCh];
 
     NSMutableArray *  arrEnableWifi = [[NSMutableArray alloc] initWithObjects:@"Disable",@"Enable",@"No change", nil];
-      NSMutableArray * arrFirmware = [[NSMutableArray alloc] initWithObjects:@"logg_ing",@"firm_ware",@"No_change", nil];
+//      NSMutableArray * arrFirmware = [[NSMutableArray alloc] initWithObjects:@"logg_ing",@"firm_ware",@"No_change", nil];
+    
+   
+    
     arrRadioBtns = [[NSMutableArray alloc] init];
     
-    [self SetupViewwithRadiobuttons:arrEnableWifi withTag:500 withY:70 withHintText:@"Enable/Disable Wifi"];
 
-    [self SetupViewwithRadiobuttons:arrFirmware withTag:503 withY:170 withHintText:@"Wifi logging/firmware update"];
+//    [self SetupViewwithRadiobuttons:arrEnableWifi withTag:500 withY:60 withHintText:@"Enable/Disable Wifi"];
 
-}
--(void)SetupViewwithRadiobuttons:(NSMutableArray *)arrOptions withTag:(int)tagValue withY:(int)yy withHintText:(NSString *)strText
-{
-    UILabel * lblTitle = [[UILabel alloc] initWithFrame:CGRectMake(10, yy, DEVICE_WIDTH-20, 30)];
-    [lblTitle setBackgroundColor:[UIColor clearColor]];
-    [lblTitle setText:strText];
-    [lblTitle setFont:[UIFont fontWithName:CGRegular size:textSize+2]];
-    [lblTitle setTextColor:[UIColor whiteColor]];
-    [self.view addSubview:lblTitle];
+//    [self SetupViewwithRadiobuttons:arrFirmware withTag:503 withY:170 withHintText:@"Wifi logging/firmware update"];
+    
+    NSMutableArray * arrHeadding = [[NSMutableArray alloc] initWithObjects:@"Enable/Disable Wifi",@"Wifi logging/firmware update", nil];
 
+    
+    int yt = 70;
     int ySwitch = 0;
-    int yt = yy + 35;
-    for (int i = 0; i< [arrOptions count]; i++)
+    
+    for (int i = 0; i< [arrHeadding count]; i++)
     {
-        UIView * switchView = [[UIView alloc] initWithFrame:CGRectMake(5, yt + ySwitch, DEVICE_WIDTH - 10, 50)];
+        UIView * switchView = [[UIView alloc] initWithFrame:CGRectMake(5, yt + ySwitch, DEVICE_WIDTH - 10, 80)];
         switchView.layer.masksToBounds = YES;
         switchView.layer.borderColor = [UIColor grayColor].CGColor;
         switchView.layer.borderWidth = 0.6;
         switchView.layer.cornerRadius = 12;
         [self.view addSubview:switchView];
+        
+        UILabel *lblMenu = [[UILabel alloc] initWithFrame:CGRectMake(10,0, switchView.frame.size.width - 20, 30)];
+        lblMenu.text = [arrHeadding objectAtIndex:i];
+        lblMenu.textColor= UIColor.whiteColor;
+        lblMenu.font = [UIFont fontWithName:CGRegular size:textSize-1];
+        [switchView addSubview:lblMenu];
             
         RadioButtonClass * globalRadioButtonClass = [[RadioButtonClass alloc] init];
-        globalRadioButtonClass.viewTag = tagValue + i;
+        globalRadioButtonClass.viewTag = 500 + i;
         globalRadioButtonClass.delegate = self;
-        [globalRadioButtonClass setButtonFrame:CGRectMake(10, 0, switchView.frame.size.width - 10 , 50) withNumberofItems:arrOptions withSelectedIndex:-1];
+        [globalRadioButtonClass setButtonFrame:CGRectMake(10, 30, switchView.frame.size.width - 10 , 50) withNumberofItems:arrEnableWifi withSelectedIndex:-1];
         [switchView addSubview:globalRadioButtonClass];
-            
+        
+        ySwitch = ySwitch + 100;
+
     }
+    
     NSMutableDictionary * dict = [[NSMutableDictionary alloc] init];
     [dict setValue:@"255" forKey:@"selection"];
     [arrRadioBtns addObject:dict];
+    
+}
+-(void)SetupViewwithRadiobuttons:(NSMutableArray *)arrOptions withTag:(int)tagValue withY:(int)yy withHintText:(NSString *)strText
+{
 
 }
 -(NSInteger)getIndexfromValue:(NSString *)strValue

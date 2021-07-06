@@ -239,10 +239,10 @@ static BLEService    *sharedInstance    = nil;
                 char batlevel;
                 [characteristic.value getBytes:&batlevel length:1];
                 if (_delegate) {
-                    [_delegate activeDevice:peripheral];
-                    NSString *battervalStr = [NSString stringWithFormat:@"%f",(float)batlevel];
+//                    [_delegate activeDevice:peripheral];
+//                    NSString *battervalStr = [NSString stringWithFormat:@"%f",(float)batlevel];
 //                    NSLog(@"battervalStr=====%@",battervalStr);
-                    [_delegate batterySignalValueUpdated:peripheral withBattLevel:battervalStr];
+//                    [_delegate batterySignalValueUpdated:peripheral withBattLevel:battervalStr];
                 }
                 //sending code to identify the from which app it has benn connected i.e, either Find App/others....
                 [self soundBuzzer:0x0E peripheral:peripheral];
@@ -306,7 +306,7 @@ static BLEService    *sharedInstance    = nil;
                         NSString * strKeyUnsigned = [self getStringConvertedinUnsigned:strKey];
                         NSString * strFirstPacket = [self getStringConvertedinUnsigned:strRawDataFirst];
                         NSString * valueStr = [self GetDecrypedDataKeyforData:strFirstPacket withKey:strKeyUnsigned withLength:strKey.length / 2];
-//                        NSLog(@"Decrypted.................=%@",valueStr);
+                        NSLog(@"Decrypted.................=%@",valueStr);
                         
                      NSString * strOpcode = [valueStr substringWithRange:NSMakeRange(0, 2)];
                      if ([[strOpcode lowercaseString] isEqualToString:@"a4"])
@@ -627,7 +627,6 @@ static BLEService    *sharedInstance    = nil;
                                                         strStatus = @"Failed";//Failed to send the message over Iridium
                                                     }
                                                     
-                                                    
                                                     NSString * strUpdate = [NSString stringWithFormat:@"Update NewChat set status = '%@'  where sequence = '%@'",strStatus,strSequence];
                                                     [[DataBaseManager dataBaseManager] execute:strUpdate];
                                                     
@@ -745,14 +744,33 @@ static BLEService    *sharedInstance    = nil;
                        {
                            if ([valueStr length] > 6)
                            {
-                               NSString * strSuccessResponse =  [valueStr substringWithRange:NSMakeRange(2, 4)];
-                               if ([strSuccessResponse isEqualToString:@"0101"])
+                               NSString * strC1PacketType =  [valueStr substringWithRange:NSMakeRange(2, 2)];
+                               if ([strC1PacketType isEqualToString:@"01"]) //For C2 Write Status
                                {
-                                   [globalIndustVC ReceviedSuccesResponseFromDevice:strSuccessResponse];
+                                   NSString * strSuccessResponse =  [valueStr substringWithRange:NSMakeRange(2, 4)];
+                                   if ([strSuccessResponse isEqualToString:@"0101"])
+                                   {
+                                       [globalIndustVC ReceviedSuccesResponseFromDevice:strSuccessResponse];
+                                   }
+                                   else
+                                   {
+                                       [globalIndustVC ReceviedSuccesResponseFromDevice:strSuccessResponse];
+                                   }
                                }
-                               else
+                               else //For Recieving Industry Specific configuration
                                {
-                                   [globalIndustVC ReceviedSuccesResponseFromDevice:strSuccessResponse];
+                                   if ([strC1PacketType isEqualToString:@"04"])
+                                   {
+                                       if ([valueStr length] >= 12)
+                                       {
+                                           NSString * str1 = [self stringFroHex:[valueStr substringWithRange:NSMakeRange(4, 2)]];
+                                           NSString * str2 = [self stringFroHex:[valueStr substringWithRange:NSMakeRange(6,2)]];
+                                           NSString * str3 = [self stringFroHex:[valueStr substringWithRange:NSMakeRange(8,2)]];
+                                           NSString * str4 = [self stringFroHex:[valueStr substringWithRange:NSMakeRange(10,2)]];
+                                           NSArray * arrData = [[NSArray alloc] initWithObjects:str1,str2,str3,str4, nil];
+                                           [globalIndustVC SetIndustrySpecificionValuetoUI:arrData];
+                                       }
+                                   }
                                }
                            }
                        }
@@ -760,14 +778,68 @@ static BLEService    *sharedInstance    = nil;
                        {
                            if ([valueStr length] > 6)
                            {
-                               NSString * strSuccessResponse =  [valueStr substringWithRange:NSMakeRange(2, 4)];
-                               if ([strSuccessResponse isEqualToString:@"0101"])
+                               if ([[valueStr substringWithRange:NSMakeRange(0, 8)] isEqualToString:@"c3020501"])
                                {
-                                   [globalSIMvc ReceviedSuccesResponseFromDevice:strSuccessResponse];
+                                   [globalSIMvc ReceivedEndPacketfromDevice];
+                                   //End Packet while receiving from device.
                                }
                                else
                                {
-                                   
+                                   NSString * strC1PacketType =  [valueStr substringWithRange:NSMakeRange(2, 2)];
+                                   if ([strC1PacketType isEqualToString:@"01"]) //For C3 Write Status
+                                   {
+                                       NSString * strSuccessResponse =  [valueStr substringWithRange:NSMakeRange(2, 4)];
+                                       if ([strSuccessResponse isEqualToString:@"0101"])
+                                       {
+                                           [globalSIMvc ReceviedSuccesResponseFromDevice:strSuccessResponse];
+                                       }
+                                       else
+                                       {
+                                           
+                                       }
+                                   }
+                                   else if ([strC1PacketType isEqualToString:@"07"]) //C3 Start Packet
+                                   {
+                                       if ([valueStr length] >= 18)
+                                       {
+                                           NSString * str1 = [self stringFroHex:[valueStr substringWithRange:NSMakeRange(6, 2)]];
+                                           NSString * str2 = [self stringFroHex:[valueStr substringWithRange:NSMakeRange(8,2)]];
+                                           NSString * str3 = [self stringFroHex:[valueStr substringWithRange:NSMakeRange(10,8)]];
+                                           NSArray * arrData = [[NSArray alloc] initWithObjects:str1,str2,str3, nil];
+                                           [globalSIMvc ReceivedFirstPacketfromDevice:arrData];
+                                       }
+
+                                   }
+                                   else //APNS, USERNAME & PASSWORD Packets...
+                                   {
+                                       if ([[valueStr substringWithRange:NSMakeRange(4, 2)] isEqualToString:@"02"])
+                                       {
+                                           //Second Packet of APNS
+                                           NSString * strPacketNo = [valueStr substringWithRange:NSMakeRange(6, 2)];
+                                           NSString *strHex = [valueStr substringWithRange:NSMakeRange(8,valueStr.length-8)];
+                                           NSString * strText = [self StringfromHexaUTF8:strHex];
+                                           NSDictionary * dicData = [[NSDictionary alloc] initWithObjectsAndKeys:strPacketNo,@"PacketNo",strText,@"Text", nil];
+                                           [globalSIMvc ReceivedAPNSPacketfromDevice:dicData];
+                                       }
+                                       else if ([[valueStr substringWithRange:NSMakeRange(4, 2)] isEqualToString:@"03"])
+                                       {
+                                           //Second Packet of Username
+                                           NSString * strPacketNo = [valueStr substringWithRange:NSMakeRange(6, 2)];
+                                           NSString *strHex = [valueStr substringWithRange:NSMakeRange(8,valueStr.length-8)];
+                                           NSString * strText = [self StringfromHexaUTF8:strHex];
+                                           NSDictionary * dicData = [[NSDictionary alloc] initWithObjectsAndKeys:strPacketNo,@"PacketNo",strText,@"Text", nil];
+                                           [globalSIMvc ReceivedUsernamePacketfromDevice:dicData];
+                                       }
+                                       else if ([[valueStr substringWithRange:NSMakeRange(4, 2)] isEqualToString:@"02"])
+                                       {
+                                           //Second Packet of Password
+                                           NSString * strPacketNo = [valueStr substringWithRange:NSMakeRange(6, 2)];
+                                           NSString *strHex = [valueStr substringWithRange:NSMakeRange(8,valueStr.length-8)];
+                                           NSString * strText = [self StringfromHexaUTF8:strHex];
+                                           NSDictionary * dicData = [[NSDictionary alloc] initWithObjectsAndKeys:strPacketNo,@"PacketNo",strText,@"Text", nil];
+                                           [globalSIMvc ReceivedPasswordPacketfromDevice:dicData];
+                                       }
+                                   }
                                }
                            }
                        }
@@ -775,14 +847,50 @@ static BLEService    *sharedInstance    = nil;
                        {
                            if ([valueStr length] > 6)
                            {
-                               NSString * strSuccessResponse =  [valueStr substringWithRange:NSMakeRange(2, 4)];
-                               if ([strSuccessResponse isEqualToString:@"0101"])
+                               NSString * strC1PacketType =  [valueStr substringWithRange:NSMakeRange(2, 2)];
+                               if ([strC1PacketType isEqualToString:@"01"]) //For C3 Write Status
                                {
-                                   [globalServerConfig ReceviedSuccesResponseFromDevice:strSuccessResponse];
+                                   NSString * strSuccessResponse =  [valueStr substringWithRange:NSMakeRange(2, 4)];
+                                   if ([strSuccessResponse isEqualToString:@"0101"])
+                                   {
+                                       [globalServerConfig ReceviedSuccesResponseFromDevice:strSuccessResponse];
+                                   }
+                                   else
+                                   {
+                                   }
                                }
-                               else
-                               {
-                                   
+                               else if ([[valueStr substringWithRange:NSMakeRange(0, 6)] isEqualToString:@"c40501"])
+                               {//Start Packet of Server Configuration
+                                   if (valueStr.length >= 14)
+                                   {
+                                       NSString * strNoofPackets = [self stringFroHex:[valueStr substringWithRange:NSMakeRange(6, 2)]];
+                                       NSString * strPort = [self stringFroHex:[valueStr substringWithRange:NSMakeRange(8,4)]];
+                                       NSString * strKeepAlive = [self stringFroHex:[valueStr substringWithRange:NSMakeRange(12,2)]];
+                                       NSArray * arrData = [[NSArray alloc] initWithObjects:strNoofPackets,strPort,strKeepAlive, nil];
+                                       [globalServerConfig ReceivedStartPacketfromDevice:arrData];
+
+                                   }
+                               }
+                               else if ([[valueStr substringWithRange:NSMakeRange(4, 2)] isEqualToString:@"02"])
+                               {//Data packet
+                                   int packetLength = [[self stringFroHex:[valueStr substringWithRange:NSMakeRange(2, 2)]] intValue] - 1;
+                                   int dataLength = packetLength * 2;
+                                   if ([valueStr length] >= dataLength)
+                                   {
+                                       NSString * strPacketNo = [valueStr substringWithRange:NSMakeRange(6, 2)];
+                                       NSString *strHex = [valueStr substringWithRange:NSMakeRange(8,dataLength)];
+                                       NSString * strText = [self StringfromHexaUTF8:strHex];
+                                       NSDictionary * dicData = [[NSDictionary alloc] initWithObjectsAndKeys:strPacketNo,@"PacketNo",strText,@"Text", nil];
+                                       if ([strPacketNo isEqualToString:@"01"])
+                                       {
+                                           [globalServerConfig ReceivedAddressPacketfromDevice:dicData isLastPacket:YES];
+                                       }
+                                       else
+                                       {
+                                           [globalServerConfig ReceivedAddressPacketfromDevice:dicData isLastPacket:NO];
+                                       }
+
+                                   }
                                }
                            }
                        }
@@ -839,7 +947,6 @@ static BLEService    *sharedInstance    = nil;
                                           {
                                               [globalHomeVC ReceievedGeofenceDatafromBLEIMEInumber:strOutput];
                                           }
-
                                       }
                                   }
                            }
@@ -849,7 +956,8 @@ static BLEService    *sharedInstance    = nil;
                            if ([valueStr length] >= 6)
                            {
                                NSString * strSuccessResponse =  [valueStr substringWithRange:NSMakeRange(4, 2)];
-                               
+                               NSLog(@"=== Token Write Response ====%@",strSuccessResponse);
+
                                if ([strSuccessResponse isEqualToString:@"00"])
                                {
                                    [globalHomeVC ReceviedValidTokenFromDevice:strSuccessResponse];
@@ -880,6 +988,14 @@ static BLEService    *sharedInstance    = nil;
                                [dict setValue:[NSString stringWithFormat:@"%f",longFloat] forKey:@"Long"];
                                [_delegate ReceviedLatLongFromDevice:dict];
                            }
+                       }
+                       else if ([strOpcode isEqualToString:@"e4"]) //battery
+                       {
+//                           if ([valueStr length] > 8)
+//                           {
+//
+//                           }
+                           NSLog(@"E4 receive%@-=====>>>>>>",valueStr);
                        }
                     }
                 }
@@ -1127,7 +1243,7 @@ static BLEService    *sharedInstance    = nil;
         {
             if (_delegate)
             {
-                [_delegate updateSignalImage:[peripheral.RSSI doubleValue] forDevice:peripheral];
+//                [_delegate updateSignalImage:[peripheral.RSSI doubleValue] forDevice:peripheral];
             }
             if (peripheral.state == CBPeripheralStateConnected)
             {
@@ -1996,6 +2112,24 @@ float ConverttoFloatfromHexadecimal(NSString *  strHex)
         }
     }
     return strTime;
+}
+#pragma mark - To Get Text from Hexa Value
+-(NSString *)StringfromHexaUTF8:(NSString *)strHex
+{
+    NSString * strValue = strHex;
+    NSMutableString * newString = [[NSMutableString alloc] init];
+    int i = 0;
+    while (i < [strValue length])
+    {
+        NSString * hexChar = [strValue substringWithRange: NSMakeRange(i, 2)];
+        int value = 0;
+        sscanf([hexChar cStringUsingEncoding:NSASCIIStringEncoding], "%x", &value);
+        [newString appendFormat:@"%c", (char)value];
+        i+=2;
+    }
+    NSLog(@"Final inputs=%@",newString);
+
+    return newString;
 }
 
 /*

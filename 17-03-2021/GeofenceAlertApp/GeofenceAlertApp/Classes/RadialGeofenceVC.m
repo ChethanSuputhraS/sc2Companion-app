@@ -280,9 +280,9 @@
 - (MKAnnotationView *)mapView:(MKMapView *)theMapView viewForAnnotation:(id <MKAnnotation>)annotation
 {
     if ([annotation coordinate].latitude == geofenceLat &&  [annotation coordinate].longitude == geofenceLong)
-       {
-           return nil;
-       }
+    {
+        return nil;
+    }
     if (isPinAdded == YES)
     {
         return nil;
@@ -291,19 +291,19 @@
     {
         isPinAdded = YES;
 
-             static NSString * const identifier = @"CustomAnnotation";
-             custannotationView = [[CustomAnnotationView alloc] initWithAnnotation:annotation reuseIdentifier:identifier];
-             if (custannotationView)
-             {
-                 custannotationView.annotation = annotation;
-             }
-             else
-             {
-                 custannotationView = [[CustomAnnotationView alloc] initWithAnnotation:annotation reuseIdentifier:identifier];
-             }
+        static NSString * const identifier = @"CustomAnnotation";
+        custannotationView = [[CustomAnnotationView alloc] initWithAnnotation:annotation reuseIdentifier:identifier];
+        if (custannotationView)
+        {
+            custannotationView.annotation = annotation;
+        }
+        else
+        {
+            custannotationView = [[CustomAnnotationView alloc] initWithAnnotation:annotation reuseIdentifier:identifier];
+        }
         
-             custannotationView.canShowCallout = NO;
-             custannotationView.image = [UIImage imageNamed:@"map_pin.png"];
+        custannotationView.canShowCallout = NO;
+        custannotationView.image = [UIImage imageNamed:@"map_pin.png"];
          if ([strScreenMode isEqualToString:@"Dark"])
          {
              custannotationView.image = [UIImage imageNamed:@"MapPinWhite.png"];

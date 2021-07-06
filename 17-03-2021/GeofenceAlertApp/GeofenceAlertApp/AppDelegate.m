@@ -20,6 +20,7 @@
 #import "RemotNavigationVC.h"
 #import "LiveTrackingVC.h"
 #import "DeviceConfigurVC.h"
+#import "SIMconfigurVC.h"
 
 
 @import Firebase;
@@ -36,21 +37,17 @@
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions
 {
-    
-    
-              NSInteger sequenceInt = 80302044; //Unique Sequence No
-              NSData * sequencData = [[NSData alloc] initWithBytes:&sequenceInt length:4];
+    [self HextoBinaryTestFunction];
+    NSInteger sequenceInt = 80302044; //Unique Sequence No
+    NSData * sequencData = [[NSData alloc] initWithBytes:&sequenceInt length:4];
 
     NSData* nsData = [@"$%^&!@*#$$%%()?<:{}{|+`~}" dataUsingEncoding:NSUTF8StringEncoding];
     NSLog(@"=================================%@",sequencData);
 
-//    [FIRApp configure];// dont forget //IMP_UNCOMMENT
-    
-    
-    if ([UIApplication instancesRespondToSelector:@selector(registerUserNotificationSettings:)]){
-        
+    [FIRApp configure];// dont forget //IMP_UNCOMMENT
+    if ([UIApplication instancesRespondToSelector:@selector(registerUserNotificationSettings:)])
+    {
         [application registerUserNotificationSettings:[UIUserNotificationSettings settingsForTypes:UIUserNotificationTypeAlert|UIUserNotificationTypeBadge|UIUserNotificationTypeSound categories:nil]];
-        
     }
     [launchOptions valueForKey:UIApplicationLaunchOptionsLocalNotificationKey];
     
@@ -97,11 +94,6 @@
     }
     
 // for badge count of alert popup
- 
-    
-    
-    
-    
     
     if ([[self checkforValidString:[[NSUserDefaults standardUserDefaults] valueForKey:@"SetTimeInterval"]] isEqualToString:@"NA"])
     {
@@ -111,9 +103,10 @@
     
     deviceTokenStr = @"1234567";
     
-//    globalDeviceConfig = [[DeviceConfigurVC alloc]init];
-//    UINavigationController *navig = [[UINavigationController alloc]initWithRootViewController:globalDeviceConfig];
+//    globalSIMvc = [[SIMconfigurVC alloc]init];
+//    UINavigationController *navig = [[UINavigationController alloc]initWithRootViewController:globalSIMvc];
 //    self.window = [[UIWindow alloc]init];
+//    navig.navigationBarHidden = YES;
 //    self.window.frame = self.window.bounds;
 //    self.window.rootViewController = navig;
 //    [self.window makeKeyAndVisible];
@@ -695,8 +688,23 @@
     [[NSUserDefaults standardUserDefaults] setValue:@"3499ab12138898473308492112d46574" forKey:@"EncryptionKey"];
     [[NSUserDefaults standardUserDefaults] synchronize];
 }
-@end
+-(void)HextoBinaryTestFunction
+{
+    NSString *hex = @"4000";
+    long hexAsInt;
+    [[NSScanner scannerWithString:hex] scanHexInt:&hexAsInt];
+    NSString *binary = [NSString stringWithFormat:@"%@", [self toBinary:hexAsInt]];
+    NSLog(@"===========Binary==========%@",binary);
 
+}
+-(NSString *)toBinary:(NSUInteger)input
+{
+    if (input == 1 || input == 0)
+        return [NSString stringWithFormat:@"%lu", (unsigned long)input];
+    return [NSString stringWithFormat:@"%@%lu", [self toBinary:input / 2], input % 2];
+}
+
+@end
 
 
 // LIVE  https: //ws.succorfish.net/
