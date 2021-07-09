@@ -20,17 +20,19 @@
 @import iOSDFULibrary;
 
 
-@interface SettingVC ()<UITableViewDelegate,UITableViewDataSource,UIPickerViewDelegate,UIPickerViewDataSource,UIDocumentPickerDelegate,LoggerDelegate,DFUServiceDelegate,DFUProgressDelegate,DFUPeripheralSelectorDelegate>
+@interface SettingVC ()<UITableViewDelegate,UITableViewDataSource,UIPickerViewDelegate,UIPickerViewDataSource,UIDocumentPickerDelegate,LoggerDelegate,DFUServiceDelegate,DFUProgressDelegate,DFUPeripheralSelectorDelegate,FCAlertViewDelegate>
 {
     UIView * viewBGPicker;
     UIPickerView * pickerSetting;
     NSString *selectedTime;
     NSMutableArray * arrayPickr;
     CBPeripheral * classPeripheral;
-    NSTimer * buzzerTimer;
+    NSTimer * buzzerTimer ,*timerForDFU;
     BOOL isAckReceieved;
     NSMutableArray * arrAPNList;
      NSIndexPath * selectedIndex;
+    DFUServiceInitiator *initiator;
+    BOOL  isFWUpdatedSuccessfull;
 
 }
 @end
@@ -39,12 +41,14 @@
 @synthesize classPeripheral;
 - (void)viewDidLoad
 {
+    isFWUpdatedSuccessfull = NO;
     self.navigationController.navigationBarHidden = true;
     self.view.backgroundColor = UIColor.blackColor;
     
     [self setNavigationViewFrames];
     arrayPickr =[[NSMutableArray alloc]initWithObjects:@"1 sec",@"2 sec",@"3 sec",@"4 sec",@"5 sec",@"6 sec",@"7 sec",@"8 sec",@"9 sec",@"10 sec", nil];
 
+    strCurrentScreen = @"Setting";
     [super viewDidLoad];
     // Do any additional setup after loading the view.
 }
@@ -662,6 +666,7 @@
     {
         isAckReceieved = NO;
         [buzzerTimer invalidate];
+        buzzerTimer = nil;
         buzzerTimer = [NSTimer scheduledTimerWithTimeInterval:5 target:self selector:@selector(buzzerTimeoutMethod) userInfo:nil repeats:NO];
         [[BLEService sharedInstance] SetTimerForBuzzer:selectedTime withPeripheral:classPeripheral];
     }
@@ -732,25 +737,38 @@
 }
 - (void)documentPicker:(UIDocumentPickerViewController *)controller didPickDocumentsAtURLs:(NSArray<NSURL *> *)urls
 {
+    [APP_DELEGATE startHudProcess:@"Updating..."];
+
     NSLog(@"FilePath======>>>>>>>%@",urls);
     
     NSString * result = [[urls valueForKey:@"description"] componentsJoinedByString:@""];//description
     NSString * strfilePath =  [result substringWithRange:NSMakeRange(8, result.length-8)];
     
     NSURL *uRL = [NSURL URLWithString:strfilePath];
-    DFUFirmware *selectedFirmware = [[DFUFirmware alloc] initWithUrlToZipFile:uRL type:DFUFirmwareTypeApplication];
+    DFUFirmware * selectedFirmware = [[DFUFirmware alloc] initWithUrlToZipFile:uRL type:DFUFirmwareTypeApplication];
     NSLog(@"Selected Firmware========>>>>>>>%@",selectedFirmware);
   
     dispatch_queue_t queue = dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0);
-    
-    DFUServiceInitiator *initiator = [[DFUServiceInitiator alloc] initWithQueue:queue];
+
+    initiator = [[DFUServiceInitiator alloc] initWithQueue:queue];
     [initiator withFirmware:selectedFirmware];
-    
+
+    isFWUpdatedSuccessfull = NO;
+    isGlobalFWUpdatedSuccess = NO;
+    [self performSelector:@selector(UpdateFWAfter5SecDelay) withObject:nil afterDelay:5];
+
+}
+-(void)UpdateFWAfter5SecDelay
+{
     initiator.logger = self; //
     initiator.delegate = self; //
     initiator.progressDelegate = self;
     DFUServiceController * controller1 = [initiator startWithTarget:classPeripheral];
-    [APP_DELEGATE startHudProcess:@"Updating..."];
+    NSLog(@"DFU Class=%@",controller1);
+    
+    [timerForDFU invalidate];
+    timerForDFU = nil;
+    timerForDFU = [NSTimer scheduledTimerWithTimeInterval:25 target:self selector:@selector(timeOutForDFU) userInfo:nil repeats:NO];
 
 }
 - (void)documentPicker:(UIDocumentPickerViewController *)controller didPickDocumentAtURL:(NSURL *)url
@@ -767,17 +785,86 @@
 }
 - (void)dfuError:(enum DFUError)error didOccurWithMessage:(NSString *)message
 {
-    
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [self->timerForDFU invalidate];
+        self->timerForDFU = nil;
+        [APP_DELEGATE endHudProcess];
+        [self ErrorPopUP:@"Something went wrong. \n Please try again."];
+        NSLog(@"DFU Error====>>>=%ld",(long)error);
+        NSLog(@"Error message DFU===>>>%@",message);
+        
+    });
 }
 -(void)logWith:(enum LogLevel)level message:(NSString *)message
 {
     dispatch_async(dispatch_get_main_queue(), ^{
-    NSLog(@"LogWith Message=%@",message);
-    
-//    if ([[APP_DELEGATE checkforValidString:message] isEqualToString:@"=Upload completed in"])
-//    {
-        [APP_DELEGATE endHudProcess];
-//    }
+        NSLog(@"LogWith Message=%@",message);
+        NSLog(@"Udating level =====>>>>>%ld", level);
+
+        NSString * strMsg = [APP_DELEGATE checkforValidString:message];
+        
+        if ([strMsg rangeOfString:@"Upload completed"].location != NSNotFound )
+        {
+            [self->timerForDFU invalidate];
+            self->timerForDFU = nil;
+            self->isFWUpdatedSuccessfull = YES;
+            isGlobalFWUpdatedSuccess = YES;
+            [APP_DELEGATE endHudProcess];
+            FCAlertView *alert = [[FCAlertView alloc] init];
+            alert.colorScheme = [UIColor blackColor];
+            [alert makeAlertTypeSuccess];
+            alert.tag = 9090;
+            alert.delegate = self;
+            [alert showAlertInView:self
+                         withTitle:@"SC2 Companion App"
+                      withSubtitle:@"Device Updatated Succesfully...\n Device is Disconnected. Please connect back."
+                   withCustomImage:[UIImage imageNamed:@"logo.png"]
+               withDoneButtonTitle:OK_BTN
+                        andButtons:nil];
+
+        }
+
+//        Upload completed
+    if ([[APP_DELEGATE checkforValidString:message] isEqualToString:@"Disconnected by the remote device"])
+    {
+
+    }
+    });
+}
+-(void)timeOutForDFU
+{
+    [self->timerForDFU invalidate];
+    self->timerForDFU = nil;
+
+    [APP_DELEGATE endHudProcess];
+
+    if (isFWUpdatedSuccessfull == NO)
+    {
+        [self ErrorPopUP:@"Something went wrong. Please try again later."];
+    }
+
+}
+- (void)FCAlertDoneButtonClicked:(FCAlertView *)alertView;
+{
+    if (alertView.tag == 9090)
+    {
+        [self.navigationController popViewControllerAnimated:true];
+    }
+}
+-(void)ErrorPopUP:(NSString *)strErrorMsg
+{
+    dispatch_async(dispatch_get_main_queue(), ^{
+
+        FCAlertView *alert = [[FCAlertView alloc] init];
+                alert.colorScheme = [UIColor blackColor];
+                [alert makeAlertTypeWarning];
+                [alert showAlertInView:self
+                             withTitle:@"SC2 Companion App"
+                          withSubtitle:strErrorMsg
+                       withCustomImage:[UIImage imageNamed:@"logo.png"]
+                   withDoneButtonTitle:nil
+                            andButtons:nil];
+
     });
 }
 @end

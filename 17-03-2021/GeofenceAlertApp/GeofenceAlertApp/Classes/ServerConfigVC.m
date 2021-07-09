@@ -92,7 +92,7 @@
     [viewHeader addSubview:lblTitle];
     
      UIButton * btnBack = [UIButton buttonWithType:UIButtonTypeCustom];
-     [btnBack setFrame:CGRectMake(0, 20, 60, yy)];
+     [btnBack setFrame:CGRectMake(10, 20, 60, yy)];
      [btnBack addTarget:self action:@selector(btnBackClick) forControlEvents:UIControlEventTouchUpInside];
      [btnBack setImage:[UIImage imageNamed:@"back_icon.png"] forState:UIControlStateNormal];
      btnBack.backgroundColor = UIColor.clearColor;

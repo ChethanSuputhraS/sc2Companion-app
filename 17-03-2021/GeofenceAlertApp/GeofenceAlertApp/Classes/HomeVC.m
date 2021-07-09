@@ -20,6 +20,9 @@
 #import "RemotNavigationVC.h"
 #import "LoginVC.h"
 #import "LiveTrackingVC.h"
+#import "ALBatteryView.h"
+
+
 
 #if __has_feature(objc_arc)
   #define DLog(format, ...) CFShow((__bridge CFStringRef)[NSString stringWithFormat:format, ## __VA_ARGS__]);
@@ -29,6 +32,7 @@
 
 @interface HomeVC()<UITableViewDelegate,UITableViewDataSource,FCAlertViewDelegate,CBCentralManagerDelegate,URLManagerDelegate>
 {
+    NSMutableArray * arrayBattery;
 }
 @end
 
@@ -74,6 +78,8 @@
     arrGlobalDeviceNames = [[NSMutableArray alloc] init];
     arrGlobalDeviceNames = [[[NSUserDefaults standardUserDefaults] arrayForKey:@"DeviceName"] mutableCopy];
     
+    arrayBattery = [[NSMutableArray alloc] init];
+
     if ([arrGlobalDeviceNames count] == 0)
     {
         arrGlobalDeviceNames = [[NSMutableArray alloc] init];
@@ -241,8 +247,6 @@
     [APP_DELEGATE endHudProcess];
     NSLog(@"The error is...%@", error);
 }
-
-
 #pragma mark- UITableView Header Methods
 - (UIView *)tableView:(UITableView *)tableView viewForHeaderInSection:(NSInteger)section;   // custom view for header. will be adjusted to default or specified header height
 {
@@ -333,6 +337,10 @@
     cell.btnMore.tag = indexPath.row;
     cell.optionView.hidden = true;
     cell.settingView.hidden = true;
+    
+    cell.imageViewBattery.hidden = true;
+    cell.lblBatteryIndication.hidden = true;
+
 
     BOOL isMoreClicked = NO;
     if (selectedMoreIndex == indexPath.row)
@@ -355,6 +363,11 @@
     if (intBadgeCount == 100)
     {
         cell.lblBadgeCount.frame = CGRectMake(cell.btnGeofence.frame.size.width/2+5, 2, 40, 20);
+
+    }
+    else if (intBadgeCount >= 1000)
+    {
+        cell.lblBadgeCount.frame = CGRectMake(cell.btnGeofence.frame.size.width/2+5, 2, 40, 20);
     }
     
     cell.lblBadgeCount.text = [NSString stringWithFormat:@"%d",intBadgeCount];
@@ -366,6 +379,19 @@
         cell.btnMore.hidden = false;
         cell.optionView.hidden = false;
         cell.imgviewMoreButton.hidden = false;
+        cell.imageViewBattery.hidden = false;
+        cell.lblBatteryIndication.hidden = false;
+        
+        
+        if (![[APP_DELEGATE checkforValidString:strBatterypercentage] isEqualToString:@""])
+        {
+        }
+            
+            if (arrayBattery.count > 0)
+            {
+                cell.lblBatteryIndication.text = [NSString stringWithFormat:@"%@"@"%@",[[arrayBattery objectAtIndex:indexPath.row] valueForKey:@"batteryValue"],@"%"];// testing for reading single device batteru percentage
+                [cell.batteryView setBatteryLevelWithAnimation:NO forValue:[[[arrayBattery objectAtIndex:indexPath.row] valueForKey:@"batteryValue"] floatValue] inPercent:YES];
+            }
 
         if (isMoreClicked == YES)
         {
@@ -381,6 +407,8 @@
         cell.lblAddress.text = [[arrayDevices  objectAtIndex:indexPath.row]valueForKey:@"bleAddress"];
         cell.backgroundColor = UIColor.clearColor;
         cell.selectionStyle = UITableViewCellSelectionStyleNone;
+    
+   
 
         return cell;
 }
@@ -391,6 +419,14 @@
 #pragma mark-Cell Buttons
 -(void)btnConnectClick:(id)sender
 {
+//    static NSString *cellReuseIdentifier = @"cellIdentifier";
+//    HomeCell *cell = [tblDeviceList dequeueReusableCellWithIdentifier:cellReuseIdentifier];
+//    if (cell == nil)
+//    {
+//        cell = [[HomeCell alloc]initWithStyle:UITableViewCellStyleDefault reuseIdentifier:cellReuseIdentifier];
+//    }
+    
+    
     NSLog(@"%ld", (long)[sender tag]);
     NSMutableArray * arrayDevices = [[NSMutableArray alloc] init];
     arrayDevices =[[BLEManager sharedManager] foundDevices];
@@ -402,6 +438,7 @@
         {
             [APP_DELEGATE startHudProcess:@"Disconnecting..."];
             [[BLEManager sharedManager] disconnectDevice:p];
+            
         }
         else
         {
@@ -779,7 +816,15 @@ dispatch_async(dispatch_get_main_queue(), ^(void)
         [[BLEManager sharedManager] rescan];
         [self->tblDeviceList reloadData];
         [APP_DELEGATE endHudProcess];
-        [self ShowToastNotification:@"Device Disconnected"];
+        
+        if ([strCurrentScreen isEqual: @"Setting"])
+        {
+            
+        }
+        else
+        {
+            [self ShowToastNotification:@"Device Disconnected"];
+        }
         
         NSArray * tmparr = [[BLEManager sharedManager]getLastConnected];
         for (int i=0; i<tmparr.count; i++)
@@ -808,6 +853,12 @@ dispatch_async(dispatch_get_main_queue(), ^(void)
 {
     dispatch_async(dispatch_get_main_queue(), ^(void)
     {
+        
+        [self->timerForbattryRequest invalidate]; // Battery percentage after 10 minit
+        self->timerForbattryRequest = nil;
+        self->timerForbattryRequest = [NSTimer scheduledTimerWithTimeInterval:600 target:self selector:@selector(BatteryRepeateTimer) userInfo:nil repeats:YES];
+        [self RequestforBatteryPercentage];
+        
         globalPeripheral = self->classPeripheral;
         self->tempSelectedPeripheral = self->classPeripheral;
         [self RequestForIMEInumbertotheDevice];
@@ -927,8 +978,7 @@ dispatch_async(dispatch_get_main_queue(), ^(void)
     NSInteger intCommand = [@"228" integerValue];
     NSData * dataCommand = [[NSData alloc] initWithBytes:&intCommand length:1];
 
-
-    NSInteger intLength = 0;// 13 previously
+    NSInteger intLength = 0;
     NSData * dataLength = [[NSData alloc] initWithBytes:&intLength length:1];
         
     NSMutableData *completeData = [dataCommand mutableCopy];
@@ -1131,12 +1181,6 @@ dispatch_async(dispatch_get_main_queue(), ^(void)
 -(void)ReceivedFifthPacketofGeofenceData //
 {
     NSLog(@"=Sixth Packet =>");
-    
-//    [timerForbattryRequest invalidate]; // css add this 
-//    timerForbattryRequest = nil;
-//    timerForbattryRequest = [NSTimer scheduledTimerWithTimeInterval:10 target:self selector:@selector(BatteryRepeateTimer) userInfo:nil repeats:YES];
-//    [self RequestforBatteryPercentage];
-    
     [self InsertToDataBase];
 }
 #pragma mark : After Receiving fifth Packet Insert Geofence Data to Database
@@ -1877,4 +1921,41 @@ dispatch_async(dispatch_get_main_queue(), ^(void)
         NSLog(@"100==Packets =====>>>>%@",completeData);
     }
 }
+-(void)ReceviedBattryPercentageFromDevice:(NSString *)strBattery withDictPeriferal:(NSMutableDictionary *) dictPeriPheral
+{
+    dispatch_async(dispatch_get_main_queue(), ^(void)
+        {
+    NSString * strFoundIdentifier = [dictPeriPheral valueForKey:@"identifier"];
+    if ([[arrGlobalDevices valueForKey:@"identifier"] containsObject:strFoundIdentifier])
+    {
+        NSInteger  foudIndex = [[arrGlobalDevices valueForKey:@"identifier"] indexOfObject:strFoundIdentifier];
+        if (foudIndex != NSNotFound)
+        {
+            if ([arrGlobalDevices count] > foudIndex)
+            {
+                NSString * strCurrentIdentifier = [NSString stringWithFormat:@"%@",globalPeripheral.identifier]; // classPeripheral
+                NSString * strbattery = [[arrGlobalDevices objectAtIndex:foudIndex]valueForKey:@"batteryValue"];
+                NSString * strAddress = [[arrGlobalDevices  objectAtIndex:foudIndex]valueForKey:@"bleAddress"];
+                if ([[arrGlobalDeviceNames valueForKey:@"BLE_Address"] containsObject:strAddress])
+                {
+                    NSInteger foundIndex1 = [[arrGlobalDeviceNames valueForKey:@"BLE_Address"] indexOfObject:strAddress];
+                    if (foundIndex1 != NSNotFound)
+                    {
+                        if ([arrGlobalDeviceNames count] > foundIndex1)
+                        {
+                            strbattery = [[arrGlobalDeviceNames objectAtIndex:foundIndex1] valueForKey:@"batteryValue"];
+                        }
+                    }
+                }
+                
+                [dictPeriPheral setObject:strCurrentIdentifier forKey:@"identifier"];
+                [dictPeriPheral setObject:strBattery forKey:@"batteryValue"];
+            }
+        }
+    }
+        [self->arrayBattery addObject:dictPeriPheral];
+        [self->tblDeviceList reloadData];
+    });
+}
+
 @end

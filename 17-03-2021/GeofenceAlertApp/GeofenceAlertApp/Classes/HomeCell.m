@@ -9,7 +9,7 @@
 #import "HomeCell.h"
 
 @implementation HomeCell
-@synthesize lblDeviceName,lblConnect,lblAddress,lblBack,btnMore,btnConnect,imgviewMoreButton,optionView,btnmap,btnmessage,btnLivelocation,btnMore1,lblline2,lblline3,btnGeofence,btnSetting,settingView,btnSOS,lbllineSetting,lblBadgeCount,imageViewBattery;
+@synthesize lblDeviceName,lblConnect,lblAddress,lblBack,btnMore,btnConnect,imgviewMoreButton,optionView,btnmap,btnmessage,btnLivelocation,btnMore1,lblline2,lblline3,btnGeofence,btnSetting,settingView,btnSOS,lbllineSetting,lblBadgeCount,imageViewBattery,lblBatteryIndication,batteryView;
 - (void)awakeFromNib {
     [super awakeFromNib];
     // Initialization code
@@ -60,11 +60,25 @@
         [self.contentView addSubview:lblConnect];
 
         imageViewBattery = [[UIImageView alloc] initWithImage:[UIImage imageNamed:@"battery.png"]];
-        [imageViewBattery setFrame:CGRectMake(DEVICE_WIDTH-30, 0, 20, 15)];
+        [imageViewBattery setFrame:CGRectMake(DEVICE_WIDTH-30, 0, 20, 20)];
         [imageViewBattery setContentMode:UIViewContentModeScaleAspectFit];
 //        [imageViewBattery setAutoresizingMask:UIViewAutoresizingFlexibleHeight | UIViewAutoresizingFlexibleWidth];
         imageViewBattery.hidden = true;
         [self.contentView addSubview:imageViewBattery];
+        
+        batteryView = [[ALBatteryView alloc] initWithFrame:CGRectMake(0, 0, 20, 20)];
+        [imageViewBattery addSubview:batteryView];
+        [batteryView setBatteryLevelWithAnimation:NO forValue:0 inPercent:YES];
+
+        
+        lblBatteryIndication = [[UILabel alloc] initWithFrame:CGRectMake(DEVICE_WIDTH-110, 0,  80, 20)];
+        [lblBatteryIndication setBackgroundColor:[UIColor clearColor]];
+        [lblBatteryIndication setTextColor:[UIColor whiteColor]];
+        [lblBatteryIndication setFont:[UIFont fontWithName:CGRegular size:textSize-4]];
+        [lblBatteryIndication setTextAlignment:NSTextAlignmentRight];
+        lblBatteryIndication.hidden = true;
+        [self.contentView addSubview:lblBatteryIndication];
+        
         btnConnect = [[UIButton alloc] initWithFrame:CGRectMake(DEVICE_WIDTH/2, 5, DEVICE_WIDTH/2-10, 50)];
 //        [btnConnect setTitle:@"Coonect" forState:UIControlStateNormal];
         [btnConnect setBackgroundColor:UIColor.clearColor];
@@ -82,7 +96,6 @@
         imgviewMoreButton.image = [UIImage imageNamed:@"view-more.png"];
 //        imgviewMoreButton.hidden = true;
         [btnMore addSubview:imgviewMoreButton];
-        
         
         float btnWidth = (DEVICE_WIDTH)/4;
         
@@ -106,7 +119,6 @@
         lblmessage.textAlignment = NSTextAlignmentCenter;
         lblmessage.font = [UIFont fontWithName:CGRegular size:10];
         [btnmessage addSubview:lblmessage];
-
         
         UILabel * lblmap = [[UILabel alloc] init];
         lblmap.frame = CGRectMake(btnWidth, 27.5,btnWidth, 23);
@@ -123,7 +135,6 @@
         btnGeofence.backgroundColor = [UIColor clearColor];
         [btnGeofence setImage:[UIImage imageNamed:@"map-marker.png"] forState:UIControlStateNormal];
         [optionView addSubview:btnGeofence];
-        
 
         lblBadgeCount = [[UILabel alloc] init];
         lblBadgeCount.frame = CGRectMake(btnGeofence.frame.size.width/2+5, 2, 20, 20);
@@ -136,12 +147,10 @@
         lblBadgeCount.font = [UIFont fontWithName:CGRegular size:10];
         [btnGeofence addSubview:lblBadgeCount];
         
-        
-        
         btnLivelocation = [UIButton buttonWithType:UIButtonTypeCustom];
         btnLivelocation.frame = CGRectMake(btnWidth*2, 0, btnWidth, 40);
         btnLivelocation.backgroundColor = [UIColor clearColor];
-        [btnLivelocation setImage:[UIImage imageNamed:@"liv.png"] forState:UIControlStateNormal];
+        [btnLivelocation setImage:[UIImage imageNamed:@"liveTrack.png"] forState:UIControlStateNormal];
         [optionView addSubview:btnLivelocation];
         
         UILabel * lbllivTrack = [[UILabel alloc] init];
@@ -153,8 +162,6 @@
         lbllivTrack.font = [UIFont fontWithName:CGRegular size:10];
         [btnLivelocation addSubview:lbllivTrack];
         
-    
-        
         UILabel * lblsetting = [[UILabel alloc] init];
         lblsetting.frame = CGRectMake(0, 35, btnSetting.frame.size.width, 15);
         lblsetting.backgroundColor= UIColor.clearColor;
@@ -163,7 +170,6 @@
         lblsetting.textAlignment = NSTextAlignmentCenter;
         lblsetting.font = [UIFont fontWithName:CGRegular size:10];
 //        [btnSetting addSubview:lblsetting];
-        
         
         btnMore1 = [UIButton buttonWithType:UIButtonTypeCustom];
         [btnMore1 setImage:[UIImage imageNamed:@"view-more.png"] forState:UIControlStateNormal];

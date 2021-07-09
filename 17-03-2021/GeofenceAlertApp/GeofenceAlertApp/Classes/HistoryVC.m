@@ -72,7 +72,7 @@
     [viewHeader addSubview:imgBack];
     
     UIButton * btnBack = [UIButton buttonWithType:UIButtonTypeCustom];
-    [btnBack setFrame:CGRectMake(0, 0, 80, yy+globalStatusHeight)];
+    [btnBack setFrame:CGRectMake(5, 0, 80, yy+globalStatusHeight)];
     [btnBack addTarget:self action:@selector(btnBackClick) forControlEvents:UIControlEventTouchUpInside];
     [viewHeader addSubview:btnBack];
     

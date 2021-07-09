@@ -639,7 +639,18 @@
 }
 -(void)endHudProcess
 {
-    [HUD hide:YES];
+    if ([strCurrentScreen isEqualToString:@"Setting"])
+    {
+        if (isGlobalFWUpdatedSuccess == YES)
+        {
+            [HUD hide:YES];
+        }
+    }
+    else
+    {
+        [HUD hide:YES];
+    }
+
 }
 -(void)ShowNotificationView:(UIView *)view
 {

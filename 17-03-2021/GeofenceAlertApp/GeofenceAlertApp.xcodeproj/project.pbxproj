@@ -25,9 +25,6 @@
 		0432CA0A2599B40800FBECA1 /* sosg.png in Resources */ = {isa = PBXBuildFile; fileRef = 0432CA072599B40800FBECA1 /* sosg.png */; };
 		0432CA0B2599B40800FBECA1 /* sosg@3x.png in Resources */ = {isa = PBXBuildFile; fileRef = 0432CA082599B40800FBECA1 /* sosg@3x.png */; };
 		0432CA0C2599B40800FBECA1 /* sosg@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 0432CA092599B40800FBECA1 /* sosg@2x.png */; };
-		044D349B25DE9C8300AA1E07 /* liv@3x.png in Resources */ = {isa = PBXBuildFile; fileRef = 044D349825DE9C8300AA1E07 /* liv@3x.png */; };
-		044D349C25DE9C8300AA1E07 /* liv@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 044D349925DE9C8300AA1E07 /* liv@2x.png */; };
-		044D349D25DE9C8300AA1E07 /* liv.png in Resources */ = {isa = PBXBuildFile; fileRef = 044D349A25DE9C8300AA1E07 /* liv.png */; };
 		044FE14025A5865B004527EC /* logout@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 044FE13D25A5865B004527EC /* logout@2x.png */; };
 		044FE14125A5865B004527EC /* logout.png in Resources */ = {isa = PBXBuildFile; fileRef = 044FE13E25A5865B004527EC /* logout.png */; };
 		044FE14225A5865B004527EC /* logout@3x.png in Resources */ = {isa = PBXBuildFile; fileRef = 044FE13F25A5865B004527EC /* logout@3x.png */; };
@@ -282,6 +279,13 @@
 		FA7A19BE26946AA100DE2F00 /* battery@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = FA7A19BB26946AA100DE2F00 /* battery@2x.png */; };
 		FA7A19BF26946AA100DE2F00 /* battery@3x.png in Resources */ = {isa = PBXBuildFile; fileRef = FA7A19BC26946AA100DE2F00 /* battery@3x.png */; };
 		FA7A19C026946AA100DE2F00 /* battery.png in Resources */ = {isa = PBXBuildFile; fileRef = FA7A19BD26946AA100DE2F00 /* battery.png */; };
+		FA7A19C42695807200DE2F00 /* liveTrack@3x.png in Resources */ = {isa = PBXBuildFile; fileRef = FA7A19C12695807100DE2F00 /* liveTrack@3x.png */; };
+		FA7A19C52695807200DE2F00 /* liveTrack.png in Resources */ = {isa = PBXBuildFile; fileRef = FA7A19C22695807200DE2F00 /* liveTrack.png */; };
+		FA7A19C62695807200DE2F00 /* liveTrack@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = FA7A19C32695807200DE2F00 /* liveTrack@2x.png */; };
+		FADCE4902696C02400E86E94 /* battery.png in Resources */ = {isa = PBXBuildFile; fileRef = FADCE48A2696C02300E86E94 /* battery.png */; };
+		FADCE4912696C02400E86E94 /* battery@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = FADCE48B2696C02300E86E94 /* battery@2x.png */; };
+		FADCE4922696C02400E86E94 /* UIView+ALQuickFrame.m in Sources */ = {isa = PBXBuildFile; fileRef = FADCE48D2696C02300E86E94 /* UIView+ALQuickFrame.m */; };
+		FADCE4932696C02400E86E94 /* ALBatteryView.m in Sources */ = {isa = PBXBuildFile; fileRef = FADCE48F2696C02300E86E94 /* ALBatteryView.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -307,9 +311,6 @@
 		0432CA072599B40800FBECA1 /* sosg.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = sosg.png; sourceTree = "<group>"; };
 		0432CA082599B40800FBECA1 /* sosg@3x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "sosg@3x.png"; sourceTree = "<group>"; };
 		0432CA092599B40800FBECA1 /* sosg@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "sosg@2x.png"; sourceTree = "<group>"; };
-		044D349825DE9C8300AA1E07 /* liv@3x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "liv@3x.png"; sourceTree = "<group>"; };
-		044D349925DE9C8300AA1E07 /* liv@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "liv@2x.png"; sourceTree = "<group>"; };
-		044D349A25DE9C8300AA1E07 /* liv.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = liv.png; sourceTree = "<group>"; };
 		044FE13D25A5865B004527EC /* logout@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "logout@2x.png"; sourceTree = "<group>"; };
 		044FE13E25A5865B004527EC /* logout.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = logout.png; sourceTree = "<group>"; };
 		044FE13F25A5865B004527EC /* logout@3x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "logout@3x.png"; sourceTree = "<group>"; };
@@ -637,7 +638,16 @@
 		FA7A19BB26946AA100DE2F00 /* battery@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "battery@2x.png"; sourceTree = "<group>"; };
 		FA7A19BC26946AA100DE2F00 /* battery@3x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "battery@3x.png"; sourceTree = "<group>"; };
 		FA7A19BD26946AA100DE2F00 /* battery.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = battery.png; sourceTree = "<group>"; };
+		FA7A19C12695807100DE2F00 /* liveTrack@3x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "liveTrack@3x.png"; sourceTree = "<group>"; };
+		FA7A19C22695807200DE2F00 /* liveTrack.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = liveTrack.png; sourceTree = "<group>"; };
+		FA7A19C32695807200DE2F00 /* liveTrack@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "liveTrack@2x.png"; sourceTree = "<group>"; };
 		FA897CC3251C60D1008F8E0E /* Header.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Header.h; sourceTree = "<group>"; };
+		FADCE4882696C02300E86E94 /* ALBatteryView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ALBatteryView.h; sourceTree = "<group>"; };
+		FADCE48A2696C02300E86E94 /* battery.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = battery.png; sourceTree = "<group>"; };
+		FADCE48B2696C02300E86E94 /* battery@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "battery@2x.png"; sourceTree = "<group>"; };
+		FADCE48D2696C02300E86E94 /* UIView+ALQuickFrame.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "UIView+ALQuickFrame.m"; sourceTree = "<group>"; };
+		FADCE48E2696C02300E86E94 /* UIView+ALQuickFrame.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "UIView+ALQuickFrame.h"; sourceTree = "<group>"; };
+		FADCE48F2696C02300E86E94 /* ALBatteryView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ALBatteryView.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -656,9 +666,9 @@
 		0432C9802597394100FBECA1 /* droupDownBox */ = {
 			isa = PBXGroup;
 			children = (
-				044D349A25DE9C8300AA1E07 /* liv.png */,
-				044D349925DE9C8300AA1E07 /* liv@2x.png */,
-				044D349825DE9C8300AA1E07 /* liv@3x.png */,
+				FA7A19C22695807200DE2F00 /* liveTrack.png */,
+				FA7A19C32695807200DE2F00 /* liveTrack@2x.png */,
+				FA7A19C12695807100DE2F00 /* liveTrack@3x.png */,
 				0432CA072599B40800FBECA1 /* sosg.png */,
 				0432CA092599B40800FBECA1 /* sosg@2x.png */,
 				0432CA082599B40800FBECA1 /* sosg@3x.png */,
@@ -1069,6 +1079,7 @@
 		AB2903CA22A9343500EFC6B8 /* Helper Classes */ = {
 			isa = PBXGroup;
 			children = (
+				FADCE4872696C02300E86E94 /* ALBatteryView */,
 				CF2AA9D025404C4500E8E6C1 /* CollectionView */,
 				CFFBF389252F352B000E208D /* AFNetworking */,
 				CFFBF36D252F2051000E208D /* Rechability */,
@@ -1294,6 +1305,35 @@
 			path = AFNetworking;
 			sourceTree = "<group>";
 		};
+		FADCE4872696C02300E86E94 /* ALBatteryView */ = {
+			isa = PBXGroup;
+			children = (
+				FADCE4882696C02300E86E94 /* ALBatteryView.h */,
+				FADCE4892696C02300E86E94 /* Resources */,
+				FADCE48C2696C02300E86E94 /* UIView+ALQuickFrame */,
+				FADCE48F2696C02300E86E94 /* ALBatteryView.m */,
+			);
+			path = ALBatteryView;
+			sourceTree = "<group>";
+		};
+		FADCE4892696C02300E86E94 /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				FADCE48A2696C02300E86E94 /* battery.png */,
+				FADCE48B2696C02300E86E94 /* battery@2x.png */,
+			);
+			path = Resources;
+			sourceTree = "<group>";
+		};
+		FADCE48C2696C02300E86E94 /* UIView+ALQuickFrame */ = {
+			isa = PBXGroup;
+			children = (
+				FADCE48D2696C02300E86E94 /* UIView+ALQuickFrame.m */,
+				FADCE48E2696C02300E86E94 /* UIView+ALQuickFrame.h */,
+			);
+			path = "UIView+ALQuickFrame";
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -1377,6 +1417,7 @@
 				97FE732722BCED5F003430D6 /* Icon-App-20x20@2x.png in Resources */,
 				9705320322B2317B00E3D8A8 /* radiobuttonSelected@2x.png in Resources */,
 				970531F522B22A1200E3D8A8 /* add@2x.png in Resources */,
+				FA7A19C62695807200DE2F00 /* liveTrack@2x.png in Resources */,
 				9710762422A91CC900921B02 /* LaunchScreen.storyboard in Resources */,
 				CFE162E224C0835E006FFA44 /* map_pin@1x.png in Resources */,
 				9705320522B2317B00E3D8A8 /* radiobuttonSelected.png in Resources */,
@@ -1412,7 +1453,6 @@
 				0432C9922597394100FBECA1 /* edit_icon@3x.png in Resources */,
 				04E3671B25D4F9CC00B3D0A7 /* cancel@2x.png in Resources */,
 				0432C9912597394100FBECA1 /* settingsGrey.png in Resources */,
-				044D349B25DE9C8300AA1E07 /* liv@3x.png in Resources */,
 				97FE733322BCED5F003430D6 /* iTunesArtwork@2x.png in Resources */,
 				97FE733C22BCED5F003430D6 /* Splash4.png in Resources */,
 				CF80359024C9C7FF00B2395F /* reload.png in Resources */,
@@ -1492,6 +1532,7 @@
 				97F89D3122B0FC0B006BFC40 /* ble@3x.png in Resources */,
 				FA24080324CB092A00BC5045 /* active_history@3x.png in Resources */,
 				CFE1634024C860D9006FFA44 /* star.png in Resources */,
+				FADCE4902696C02400E86E94 /* battery.png in Resources */,
 				9710762122A91CC900921B02 /* Assets.xcassets in Resources */,
 				970531E522B20C4400E3D8A8 /* back_icon.png in Resources */,
 				FA28029424D03E7E00547488 /* MapPinWhite@3x.png in Resources */,
@@ -1500,7 +1541,6 @@
 				CF6622BB24FFBA7100799C07 /* Active_device@3x.png in Resources */,
 				CF6622DD2502484700799C07 /* GoogleService-Info.plist in Resources */,
 				97FE731C22BCED5F003430D6 /* Icon-Small-50x50@2x.png in Resources */,
-				044D349D25DE9C8300AA1E07 /* liv.png in Resources */,
 				04E3677725D7AC6800B3D0A7 /* home@2x.png in Resources */,
 				0432C98F2597394100FBECA1 /* edit_icon.png in Resources */,
 				97FE731B22BCED5F003430D6 /* Icon-App-60x60@1x.png in Resources */,
@@ -1508,6 +1548,7 @@
 				CF6622D32500B73B00799C07 /* settings@3x.png in Resources */,
 				9710761F22A91CC700921B02 /* Main.storyboard in Resources */,
 				CF6622BE24FFBA7100799C07 /* device.png in Resources */,
+				FA7A19C42695807200DE2F00 /* liveTrack@3x.png in Resources */,
 				CFABCD002513A20F0087AC03 /* view-more.png in Resources */,
 				FA24080124CB092A00BC5045 /* active_history@2x.png in Resources */,
 				97FE731922BCED5F003430D6 /* Icon-App-76x76@2x.png in Resources */,
@@ -1535,16 +1576,17 @@
 				CF6622B424FFBA7100799C07 /* send_icon.png in Resources */,
 				97FE733722BCED5F003430D6 /* SplashX.png in Resources */,
 				CF6622AC24FFBA7100799C07 /* messsage_icon.png in Resources */,
+				FADCE4912696C02400E86E94 /* battery@2x.png in Resources */,
 				04E3671825D4F9CC00B3D0A7 /* search-icon@2x.png in Resources */,
 				CFE1633D24C860D9006FFA44 /* heart.png in Resources */,
 				FA2B2326268DF496006C02CB /* cell_bg@3x.png in Resources */,
 				9705320622B2317B00E3D8A8 /* radiobuttonUnselected.png in Resources */,
 				CF6622DA25020C7300799C07 /* BTN@3x.png in Resources */,
-				044D349C25DE9C8300AA1E07 /* liv@2x.png in Resources */,
 				FA28028D24D02A0800547488 /* history.png in Resources */,
 				04E3677825D7AC6800B3D0A7 /* radioUnselectedWhite.png in Resources */,
 				CF6622BA24FFBA7100799C07 /* Active_device@2x.png in Resources */,
 				97F89D2822B0F6DE006BFC40 /* MNMPullToRefresh.strings in Resources */,
+				FA7A19C52695807200DE2F00 /* liveTrack.png in Resources */,
 				CF6622B924FFBA7100799C07 /* msg_main_bg@2x.png in Resources */,
 				97FE733822BCED5F003430D6 /* Splash@3x.png in Resources */,
 				CFFBF375252F2692000E208D /* logo@2x.png in Resources */,
@@ -1631,6 +1673,7 @@
 			files = (
 				CFFBF3A3252F352C000E208D /* AFHTTPRequestOperation.m in Sources */,
 				9705321B22B289AC00E3D8A8 /* ViewController.m in Sources */,
+				FADCE4922696C02400E86E94 /* UIView+ALQuickFrame.m in Sources */,
 				CFAA91F725357FF500B05CA3 /* SIMconfigurVC.m in Sources */,
 				CFFBF368252F1B14000E208D /* NSDictionary+SBJSON.m in Sources */,
 				CFFBF365252F1B14000E208D /* NSObject+SBJSON.m in Sources */,
@@ -1691,6 +1734,7 @@
 				AB2903E122A9343500EFC6B8 /* UILocalNotification+Locative.m in Sources */,
 				9710761922A91CC700921B02 /* AppDelegate.m in Sources */,
 				CFFBF351252F1A8E000E208D /* URLManager.m in Sources */,
+				FADCE4932696C02400E86E94 /* ALBatteryView.m in Sources */,
 				CF6622C524FFBA7100799C07 /* TableArray.m in Sources */,
 				CF2AA9D325404C4500E8E6C1 /* CollectionCustomCell.m in Sources */,
 				CFAA92072537012900B05CA3 /* BandConfigVC.m in Sources */,

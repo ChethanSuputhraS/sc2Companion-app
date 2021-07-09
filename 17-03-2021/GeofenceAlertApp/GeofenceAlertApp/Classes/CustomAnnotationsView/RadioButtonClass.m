@@ -91,11 +91,11 @@
     UIImageView * img3 = [radioObject viewWithTag:2 + 100];
     img3.image = [UIImage imageNamed:@"radiobuttonUnselected"];
 
-    if (selectedIndex == 1)
+    if (selectedIndex == 0)
     {
         [img1 setImage:[UIImage imageNamed:@"radiobuttonSelected"]];
     }
-    else if (selectedIndex == 0)
+    else if (selectedIndex == 11)
     {
         [img2 setImage:[UIImage imageNamed:@"radiobuttonSelected"]];
     }

@@ -7,12 +7,15 @@
 //
 
 #import <UIKit/UIKit.h>
+#import "ALBatteryView.h"
+
+
 
 @interface HomeCell : UITableViewCell
 {
     
 }
-@property(nonatomic,strong)UILabel * lblAddress,*lblline2,*lblline3;
+@property(nonatomic,strong)UILabel * lblAddress,*lblline2,*lblline3,* lblBatteryIndication;
 @property(nonatomic,strong)UILabel * lblDeviceName;
 @property(nonatomic,strong)UILabel * lblConnect,* lbllineSetting,*lblBadgeCount;
 @property(nonatomic,strong)UILabel * lblBack;
@@ -20,6 +23,7 @@
 @property(nonatomic,strong)UIButton * btnConnect,*btnmessage,*btnmap,*btnLivelocation,*btnMore1,*btnGeofence,*btnSetting,*btnSOS;
 @property(nonatomic,strong)UIImageView * imgviewMoreButton,*imageViewBattery;
 @property(nonatomic,strong)UIView * optionView,*settingView;
+@property(nonatomic,strong)ALBatteryView *batteryView;
 
 
 @end

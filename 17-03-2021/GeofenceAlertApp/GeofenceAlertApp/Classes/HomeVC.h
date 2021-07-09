@@ -30,6 +30,7 @@ NS_ASSUME_NONNULL_BEGIN
     CBPeripheral * tempSelectedPeripheral, * classPeripheral;
     CBCentralManager*centralManager;
     NSInteger selectedMoreIndex;
+    NSString* strBatterypercentage;
 }
 
 
@@ -48,6 +49,7 @@ NS_ASSUME_NONNULL_BEGIN
 -(void)AuthenticationCompleted;
 -(void)ReceievedGeofenceDatafromBLEIMEInumber:(NSString *)strIMEI;
 -(void)ReceviedValidTokenFromDevice:(NSString *)strVAlidate;
+-(void)ReceviedBattryPercentageFromDevice:(NSString *)strBattery withDictPeriferal:(NSMutableDictionary *) dictPeriPheral;
 
 @end
 

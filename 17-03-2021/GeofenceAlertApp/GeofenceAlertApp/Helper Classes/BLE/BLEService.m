@@ -989,13 +989,20 @@ static BLEService    *sharedInstance    = nil;
                                [_delegate ReceviedLatLongFromDevice:dict];
                            }
                        }
-                       else if ([strOpcode isEqualToString:@"e4"]) //battery
+                       else if ([strOpcode isEqualToString:@"e4"]) //battery //e4014a00000000000000000000000000
                        {
-//                           if ([valueStr length] > 8)
-//                           {
-//
-//                           }
-                           NSLog(@"E4 receive%@-=====>>>>>>",valueStr);
+                           if ([valueStr length] > 6)
+                           {
+                               NSString * strBattery = [valueStr substringWithRange:NSMakeRange(4, 2)];
+                               NSString *  strBatteryPercentage = [self stringFroHex:strBattery];
+                               
+                               NSMutableDictionary * dictData = [[NSMutableDictionary alloc] init];
+                               [dictData setObject:[NSString stringWithFormat:@"%@",peripheral.identifier] forKey:@"identifier"];
+                               [dictData setValue:strBatteryPercentage forKey:@"batteryValue"];
+
+                               [globalHomeVC ReceviedBattryPercentageFromDevice:strBatteryPercentage withDictPeriferal:dictData];
+                               NSLog(@"E4 Received ====>>>>>%@",dictData);
+                           }
                        }
                     }
                 }

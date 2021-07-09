@@ -61,6 +61,7 @@ NSData * kpsData;
 UIView * viewForNotification;
 
 BOOL isMapNavigated;
+BOOL isGlobalFWUpdatedSuccess;
 
 
 @interface AppDelegate : UIResponder <UIApplicationDelegate>
