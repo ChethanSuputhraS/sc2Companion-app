@@ -45,18 +45,26 @@
     self.navigationController.navigationBarHidden = true;
     self.view.backgroundColor = UIColor.blackColor;
     
+    selectedTime = [[NSUserDefaults standardUserDefaults] valueForKey:@"SetTimeInterval"];
     [self setNavigationViewFrames];
-    arrayPickr =[[NSMutableArray alloc]initWithObjects:@"1 sec",@"2 sec",@"3 sec",@"4 sec",@"5 sec",@"6 sec",@"7 sec",@"8 sec",@"9 sec",@"10 sec", nil];
+    arrayPickr =[[NSMutableArray alloc]initWithObjects:@"1 sec",@"2 secs",@"3 sec",@"4 sec",@"5 sec",@"6 sec",@"7 sec",@"8 sec",@"9 sec",@"10 sec", nil];
 
-    strCurrentScreen = @"Setting";
     [super viewDidLoad];
     // Do any additional setup after loading the view.
 }
 -(void)viewWillAppear:(BOOL)animated
 {
+    strCurrentScreen = @"NA";
+
     [APP_DELEGATE hideTabBar:self.tabBarController];
     [super viewWillAppear:YES];
     [tblSetting reloadData];
+}
+-(void)viewWillDisappear:(BOOL)animated
+{
+    strCurrentScreen = @"NA";
+    [super viewWillDisappear:YES];
+
 }
 #pragma mark - Set Frames
 -(void)setNavigationViewFrames
@@ -106,28 +114,11 @@
 #pragma mark-Tableview method
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section
 {
-    if (tableView == tblSetting)
-    {
-         return 9;
-    }
-    else if (tableView == tblListOfAPN)
-    {
-        return arrAPNList.count;
-    }
-    return 0;
-    // array have to pass
+    return 9;
 }
 -(CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath
 {
-    if (tableView == tblSetting)
-    {
-         return 55;
-    }
-    else if (tableView == tblListOfAPN)
-    {
-        return 40;
-    }
-    return 0;
+    return 55;
 }
 -(UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath
 {
@@ -137,126 +128,104 @@
     {
         cell = [[SettingCell alloc]initWithStyle:UITableViewCellStyleDefault reuseIdentifier:cellReuseIdentifier];
     }
-
     [cell.swReconnect addTarget:self action:@selector(SwitchVlueChange:) forControlEvents:UIControlEventValueChanged];
     
-    if (tableView == tblSetting)
+    if (indexPath.row == 0)
     {
-        if (indexPath.row == 0)
-        {
-            cell.lblForSetting.text = @"Set buzzer time interval";
-            cell.lblSetValue.text = [[NSUserDefaults standardUserDefaults] valueForKey:@"SetTimeInterval"];
-        }
-        else if (indexPath.row == 1)
-        {
-            cell.imgArrow.hidden = true;
-            cell.swReconnect.hidden = false;
-            cell.lblForSetting.text = @"Re-connect Device Enable";
-              
-            if ([[NSUserDefaults standardUserDefaults] boolForKey:@"BLEAutoconnect"] == true)//Kalpesh26062021
-            {
-                [cell.swReconnect setOn:YES animated:YES];
-            }
-            else
-            {
-                [cell.swReconnect setOn:NO animated:YES];
-            }
-        }
-        else if (indexPath.row == 2)
-        {
-            cell.lblForSetting.text = @"Set Device configuration";
-        }
-        else if (indexPath.row == 3)
-        {
-             cell.lblForSetting.text = @"Set SIM configuration";
-        }
-        else if (indexPath.row == 4)
-        {
-             cell.lblForSetting.text = @"Set server configuraton";
-        }
-        else if (indexPath.row == 5)
-        {
-             cell.lblForSetting.text = @"Industry-Specific Configuration";
-        }
-        else if (indexPath.row == 6)
-        {
-            cell.lblForSetting.text = @"Wi-Fi Configuration";
-        }
-        else if (indexPath.row == 7)
-        {
-            cell.lblForSetting.text = @"Reset device";
-        }
-        else if (indexPath.row == 8)
-        {
-            cell.lblForSetting.text = @"Update firmware";
-        }
+        cell.lblForSetting.text = @"Set buzzer time interval";
+        cell.lblSetValue.text = [[NSUserDefaults standardUserDefaults] valueForKey:@"SetTimeInterval"];
     }
-    else if (tableView == tblListOfAPN)
+    else if (indexPath.row == 1)
     {
-        NSMutableDictionary * tmpDict = [[NSMutableDictionary alloc] init];
-
-        [cell.lblForSetting setFont:[UIFont fontWithName:CGRegular size:textSize-2]];
-        cell.lblForSetting.text = [arrAPNList objectAtIndex:indexPath.row];
-        
-         if([[tmpDict valueForKey:@"isSelected"] isEqualToString:@"1"])
-         {
-             cell.accessoryType = UITableViewCellAccessoryCheckmark;
-             cell.tintColor = UIColor.whiteColor;
-         }
+        cell.imgArrow.hidden = true;
+        cell.swReconnect.hidden = false;
+        cell.lblForSetting.text = @"Re-connect device Enable";
+              
+        if ([[NSUserDefaults standardUserDefaults] boolForKey:@"BLEAutoconnect"] == true)//Kalpesh26062021
+        {
+            [cell.swReconnect setOn:YES animated:YES];
+        }
         else
         {
-             cell.accessoryType = UITableViewCellAccessoryNone;
+            [cell.swReconnect setOn:NO animated:YES];
         }
     }
-        cell.backgroundColor = UIColor.clearColor;
-        cell.selectionStyle = UITableViewCellSelectionStyleNone;
-        return cell;
+    else if (indexPath.row == 2)
+    {
+        cell.lblForSetting.text = @"Set device configuration";
+    }
+    else if (indexPath.row == 3)
+    {
+        cell.lblForSetting.text = @"Set SIM configuration";
+    }
+    else if (indexPath.row == 4)
+    {
+        cell.lblForSetting.text = @"Set server configuraton";
+    }
+    else if (indexPath.row == 5)
+    {
+        cell.lblForSetting.text = @"Industry-specific configuration";
+    }
+    else if (indexPath.row == 6)
+    {
+        cell.lblForSetting.text = @"Wi-Fi configuration";
+    }
+    else if (indexPath.row == 7)
+    {
+        cell.lblForSetting.text = @"Reset device";
+    }
+    else if (indexPath.row == 8)
+    {
+        cell.lblForSetting.text = @"Update firmware";
+    }
+    cell.backgroundColor = UIColor.clearColor;
+    cell.selectionStyle = UITableViewCellSelectionStyleNone;
+    return cell;
  }
 -(void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath
 {
     if (tableView == tblSetting)
     {
-         if (indexPath.row == 0)
-           {
-               [self setupForSettingPicker];
-               [APP_DELEGATE hideTabBar:self.tabBarController];
-               [super viewWillAppear:YES];
-           }
+        if (indexPath.row == 0)
+        {
+            [self setupForSettingPicker];
+            [APP_DELEGATE hideTabBar:self.tabBarController];
+            [super viewWillAppear:YES];
+        }
         else if (indexPath.row == 2)
-          {
-              globalDeviceConfig = [[DeviceConfigurVC alloc] init];
-              globalDeviceConfig.classPeripheral = classPeripheral;
-              [self.navigationController pushViewController:globalDeviceConfig animated:true];
-          }
-           else if (indexPath.row == 3)
-           {
-               globalSIMvc = [[SIMconfigurVC alloc] init];
-               globalSIMvc.classPeripheral = classPeripheral;
-               [self.navigationController pushViewController:globalSIMvc animated:true];
-//               [self SetupForAPNConfiguration];
-           }
-           else if (indexPath.row == 4)
-            {
-                globalServerConfig = [[ServerConfigVC alloc] init];
-                globalServerConfig.classPeripheral = classPeripheral;
-                [self.navigationController pushViewController:globalServerConfig animated:true];
-            }
-           else if (indexPath.row == 5)
-            {
-                globalIndustVC = [[IndustrySpeConfigVC alloc] init];
-                globalIndustVC.classPeripheral = classPeripheral;
-                [self.navigationController pushViewController:globalIndustVC animated:true];
-            }
-         else if (indexPath.row == 6)
-           {
-               globalWiFiVC = [[WifiSetupVC alloc] init];
-               globalWiFiVC.classPeripheral = classPeripheral;
-               [self.navigationController pushViewController:globalWiFiVC animated:true];
-           }
+        {
+            globalDeviceConfig = [[DeviceConfigurVC alloc] init];
+            globalDeviceConfig.classPeripheral = classPeripheral;
+            [self.navigationController pushViewController:globalDeviceConfig animated:true];
+        }
+        else if (indexPath.row == 3)
+        {
+            globalSIMvc = [[SIMconfigurVC alloc] init];
+            globalSIMvc.classPeripheral = classPeripheral;
+            [self.navigationController pushViewController:globalSIMvc animated:true];
+        }
+        else if (indexPath.row == 4)
+        {
+            globalServerConfig = [[ServerConfigVC alloc] init];
+            globalServerConfig.classPeripheral = classPeripheral;
+            [self.navigationController pushViewController:globalServerConfig animated:true];
+        }
+        else if (indexPath.row == 5)
+        {
+            globalIndustVC = [[IndustrySpeConfigVC alloc] init];
+            globalIndustVC.classPeripheral = classPeripheral;
+            [self.navigationController pushViewController:globalIndustVC animated:true];
+        }
+        else if (indexPath.row == 6)
+        {
+            globalWiFiVC = [[WifiSetupVC alloc] init];
+            globalWiFiVC.classPeripheral = classPeripheral;
+            [self.navigationController pushViewController:globalWiFiVC animated:true];
+        }
         else if (indexPath.row == 7)
-          {
-                [self AlertForReset];
-          }
+        {
+            [self AlertForReset];
+        }
         else if (indexPath.row == 8)
         {
             [self OpenFileManager];
@@ -266,47 +235,15 @@
     {
         NSMutableDictionary * tmpDict = [[NSMutableDictionary alloc] init];
         tmpDict = [arrAPNList objectAtIndex:indexPath.row];
-
         [tmpDict setValue:@"0" forKey:@"isSelected"];
     }
-    
     if (indexPath.row == 1 || indexPath.row == 2 || indexPath.row == 3 || indexPath.row == 4 || indexPath.row == 5 || indexPath.row == 6)
     {
           [self ShowPicker:NO andView:viewBGPicker];
     }
     [super viewWillAppear:YES];
 }
-- (UIView *)tableView:(UITableView *)tableView viewForHeaderInSection:(NSInteger)section;
-{
-    if (tableView == tblListOfAPN)
-    {
-             UIView * headerView =[[UIView alloc] initWithFrame:CGRectMake(0, 0, tblListOfAPN.frame.size.width, 55)];
-                headerView.backgroundColor = [UIColor clearColor];
-                
-                UILabel *lblmenu=[[UILabel alloc]init];
-                lblmenu.frame = CGRectMake(0,0, DEVICE_WIDTH, 35);
-                lblmenu.text = @"Select to setup SIM configuration";
-                [lblmenu setTextColor:[UIColor whiteColor]];
-                [lblmenu setFont:[UIFont fontWithName:CGRegular size:textSize-2]];
-                lblmenu.backgroundColor = UIColor.blackColor;
-                lblmenu.textAlignment = NSTextAlignmentCenter;
-                [headerView addSubview:lblmenu];
-                return headerView;
-    }
-   return tableView;
-}
--(CGFloat)tableView:(UITableView *)tableView heightForHeaderInSection:(NSInteger)section
-{
-    if (tableView == tblListOfAPN)
-    {
-        return 35;
-    }
-    else
-    {
-        return 0;
-    }
-        return 0; //41
-}
+
 #pragma mark - Animations
 -(void)ShowPicker:(BOOL)isShow andView:(UIView *)myView
 {
@@ -350,8 +287,23 @@
     pickerSetting.tag=123;
     [pickerSetting setDelegate:self];
     [pickerSetting setDataSource:self];
-    NSInteger indexSelctTemp = [[NSUserDefaults standardUserDefaults] integerForKey:@"IndexTime"];
-    [pickerSetting selectRow:indexSelctTemp inComponent:0 animated:YES];
+    
+    NSInteger selectedIndex = 0;
+    if ([arrayPickr containsObject:selectedTime])
+    {
+        selectedIndex = [arrayPickr indexOfObject:selectedTime];
+        if (selectedIndex != NSNotFound)
+        {
+            
+        }
+        else
+        {
+            selectedIndex = 0;
+        }
+    }
+    [pickerSetting selectRow:selectedIndex inComponent:0 animated:YES];
+    
+    
 
     [viewBGPicker addSubview:pickerSetting];
     
@@ -413,7 +365,6 @@
         [self TostNotification:@"Buzzer timer set"];
     }
 }
-
 -(void)selctedIndexTime:(NSString *)strTempSelect
 {
     if ([strTempSelect isEqual:@"1 sec"])
@@ -560,78 +511,7 @@
            withCustomImage:[UIImage imageNamed:@"Subsea White 180.png"]
        withDoneButtonTitle:@"Cancel" andButtons:nil];
 }
--(void)SetupForAPNConfiguration
-{
-    viewAPNConifg = [[UIView alloc]initWithFrame:CGRectMake(0, 0, DEVICE_WIDTH, DEVICE_HEIGHT)];
-    viewAPNConifg.backgroundColor = [UIColor colorWithRed:0 green:(CGFloat)0 blue:0 alpha:0.8];
-    [self.view addSubview:viewAPNConifg];
 
-    viewAPNList = [[UIView alloc]initWithFrame:CGRectMake(20, (DEVICE_HEIGHT), DEVICE_WIDTH-40, DEVICE_HEIGHT-40)];
-    viewAPNList.backgroundColor = UIColor.clearColor;
-    viewAPNList.layer.cornerRadius = 6;
-    viewAPNList.clipsToBounds = true;
-    [viewAPNConifg addSubview:viewAPNList];
-
-    UIView * viewForBgAllSnr = [[UIView alloc]initWithFrame:CGRectMake(0, 0, viewAPNList.frame.size.width, 50)];
-    viewForBgAllSnr.backgroundColor = UIColor.blackColor; //[UIColor colorWithRed:24.0/255 green:(CGFloat)157.0/255 blue:191.0/255 alpha:1];
-    [viewAPNList addSubview:viewForBgAllSnr];
-    
-    lblHeader = [[UILabel alloc] initWithFrame:CGRectMake(0, 0, viewAPNList.frame.size.width-100, 60)];
-    [self setLabelProperties:lblHeader withText:@"Select to setup SIM configuration" backColor:UIColor.clearColor textColor:UIColor.whiteColor textSize:textSize-2];
-    lblHeader.textAlignment = NSTextAlignmentCenter;
-//    [viewForBgAllSnr addSubview:lblHeader];
-
- 
-
-    UIButton *btnCancelSlSnr = [[UIButton alloc]initWithFrame:CGRectMake(5, 0, 100, 60)];
-    [self setButtonProperties:btnCancelSlSnr withTitle:@"Cancel" backColor:UIColor.clearColor textColor:UIColor.whiteColor txtSize:textSize];
-    
-    [btnCancelSlSnr addTarget:self action:@selector(btnCancelClick) forControlEvents:UIControlEventTouchUpInside];
-    btnCancelSlSnr.layer.cornerRadius = 5;
-    [viewForBgAllSnr addSubview:btnCancelSlSnr];
-
-    UIButton *btnSelectOk = [[UIButton alloc]initWithFrame:CGRectMake(viewAPNList.frame.size.width-60, 0, 50, 60)];
-    [self setButtonProperties:btnSelectOk withTitle:@"Save" backColor:UIColor.clearColor textColor:UIColor.whiteColor txtSize:textSize];
-    [btnSelectOk addTarget:self action:@selector(btnSaveClick) forControlEvents:UIControlEventTouchUpInside];
-    [viewForBgAllSnr addSubview:btnSelectOk];
-    
-    
-    tblListOfAPN = [[UITableView alloc]initWithFrame: CGRectMake(0, 125, viewAPNList.frame.size.width, viewAPNList.frame.size.height-250) style:UITableViewStylePlain];
-    tblListOfAPN.frame = CGRectMake(0, 60, viewAPNList.frame.size.width, viewAPNList.frame.size.height-255);
-    tblListOfAPN.backgroundColor = UIColor.clearColor;
-    tblListOfAPN.delegate= self;
-    tblListOfAPN.dataSource = self;
-    [viewAPNList addSubview:tblListOfAPN];
-
-   [UIView transitionWithView:self.view duration:0.3 options:UIViewAnimationOptionCurveEaseOut animations:^
-       {
-           self->viewAPNList.frame = CGRectMake(20, 125, DEVICE_WIDTH-40, DEVICE_HEIGHT-240);
-           [self->tblListOfAPN reloadData];
-       }
-                   completion:NULL];
-}
--(void)btnCancelClick
-{
-    [UIView transitionWithView:self.view duration:0.3 options:UIViewAnimationOptionCurveEaseOut animations:^
-    {
-        self-> viewAPNList.frame = CGRectMake(20, DEVICE_HEIGHT, DEVICE_WIDTH-40, DEVICE_HEIGHT-40);
-    }
-                    completion:(^(BOOL finished)
-    {
-                    [self-> viewAPNConifg removeFromSuperview];
-    })];
-}
--(void)btnSaveClick
-{
-
-    [UIView transitionWithView:self.view duration:0.3 options:UIViewAnimationOptionCurveEaseOut animations:^
-    {
-        self->viewAPNList.frame = CGRectMake(20, DEVICE_HEIGHT, DEVICE_WIDTH-40, DEVICE_HEIGHT-240);
-        [self->tblListOfAPN reloadData];
-        [self->viewAPNConifg removeFromSuperview];
-    }
-                    completion:NULL];
-}
 -(void)btnBackClick
 {
     isAckReceieved = YES;
@@ -658,7 +538,7 @@
     [self ShowPicker:NO andView:viewBGPicker];
     [APP_DELEGATE hideTabBar:self.tabBarController];
     
-    [APP_DELEGATE startHudProcess:@"Setting time..."];
+    [APP_DELEGATE startHudProcess:@"Setting Time Interval..."];
     [super viewWillAppear:YES];
     [self selctedIndexTime:selectedTime];
     
@@ -668,7 +548,15 @@
         [buzzerTimer invalidate];
         buzzerTimer = nil;
         buzzerTimer = [NSTimer scheduledTimerWithTimeInterval:5 target:self selector:@selector(buzzerTimeoutMethod) userInfo:nil repeats:NO];
-        [[BLEService sharedInstance] SetTimerForBuzzer:selectedTime withPeripheral:classPeripheral];
+        
+        NSArray * arrItems = [selectedTime componentsSeparatedByString:@" "];
+        NSString * strValue = selectedTime;
+        if ([arrItems count] == 2)
+        {
+            strValue = [arrItems objectAtIndex:0];
+        }
+        
+        [[BLEService sharedInstance] SetTimerForBuzzer:strValue withPeripheral:classPeripheral];
     }
     
     [tblSetting reloadData];
@@ -737,7 +625,9 @@
 }
 - (void)documentPicker:(UIDocumentPickerViewController *)controller didPickDocumentsAtURLs:(NSArray<NSURL *> *)urls
 {
-    [APP_DELEGATE startHudProcess:@"Updating..."];
+    strCurrentScreen = @"FirmwareUpdate";
+
+    [APP_DELEGATE startHudProcess:@"Updating Firmware..."];
 
     NSLog(@"FilePath======>>>>>>>%@",urls);
     
@@ -785,6 +675,8 @@
 }
 - (void)dfuError:(enum DFUError)error didOccurWithMessage:(NSString *)message
 {
+    strCurrentScreen = @"NA";
+
     dispatch_async(dispatch_get_main_queue(), ^{
         [self->timerForDFU invalidate];
         self->timerForDFU = nil;
@@ -797,6 +689,7 @@
 }
 -(void)logWith:(enum LogLevel)level message:(NSString *)message
 {
+    
     dispatch_async(dispatch_get_main_queue(), ^{
         NSLog(@"LogWith Message=%@",message);
         NSLog(@"Udating level =====>>>>>%ld", level);
@@ -805,11 +698,14 @@
         
         if ([strMsg rangeOfString:@"Upload completed"].location != NSNotFound )
         {
+
             [self->timerForDFU invalidate];
             self->timerForDFU = nil;
             self->isFWUpdatedSuccessfull = YES;
             isGlobalFWUpdatedSuccess = YES;
             [APP_DELEGATE endHudProcess];
+            strCurrentScreen = @"NA";
+
             FCAlertView *alert = [[FCAlertView alloc] init];
             alert.colorScheme = [UIColor blackColor];
             [alert makeAlertTypeSuccess];
@@ -824,15 +720,12 @@
 
         }
 
-//        Upload completed
-    if ([[APP_DELEGATE checkforValidString:message] isEqualToString:@"Disconnected by the remote device"])
-    {
-
-    }
     });
 }
 -(void)timeOutForDFU
 {
+    strCurrentScreen = @"NA";
+
     [self->timerForDFU invalidate];
     self->timerForDFU = nil;
 
@@ -853,6 +746,8 @@
 }
 -(void)ErrorPopUP:(NSString *)strErrorMsg
 {
+    strCurrentScreen = @"NA";
+
     dispatch_async(dispatch_get_main_queue(), ^{
 
         FCAlertView *alert = [[FCAlertView alloc] init];

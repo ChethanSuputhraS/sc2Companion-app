@@ -97,7 +97,7 @@
     [viewHeader addSubview:btnRefresh];
 
     
-    searchBarIMEi = [[SSSearchBar alloc] initWithFrame:CGRectMake(0, yy+globalStatusHeight, DEVICE_WIDTH, 50)];
+    searchBarIMEi = [[SSSearchBar alloc] initWithFrame:CGRectMake(5, yy+globalStatusHeight, DEVICE_WIDTH-10, 50)];
     searchBarIMEi.delegate=self;
     searchBarIMEi.backgroundColor = [UIColor clearColor];
     searchBarIMEi.layer.cornerRadius = 26;

@@ -30,9 +30,9 @@
             filePath = "GeofenceAlertApp/Classes/HomeVC.m"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "1653"
-            endingLineNumber = "1653"
-            landmarkName = "-RequestForStartLivetracking:"
+            startingLineNumber = "1651"
+            endingLineNumber = "1651"
+            landmarkName = "-ShowNotificationofGeofence:withMsg:withData:"
             landmarkType = "7">
          </BreakpointContent>
       </BreakpointProxy>
@@ -46,8 +46,8 @@
             filePath = "GeofenceAlertApp/Classes/HomeVC.m"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "1668"
-            endingLineNumber = "1668"
+            startingLineNumber = "1666"
+            endingLineNumber = "1666"
             landmarkName = "-RequestForStartLivetracking:"
             landmarkType = "7">
          </BreakpointContent>

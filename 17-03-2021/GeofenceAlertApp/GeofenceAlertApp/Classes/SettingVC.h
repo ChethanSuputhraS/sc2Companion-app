@@ -12,7 +12,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface SettingVC : UIViewController
 {
-    UITableView * tblSetting ,*tblListOfAPN;
+    UITableView * tblSetting ;
     UIView *viewAPNConifg,*viewAPNList;
     UILabel *lblHeader;
     bool isAPNViewSelect;

@@ -873,7 +873,7 @@ static BLEService    *sharedInstance    = nil;
                                }
                                else if ([[valueStr substringWithRange:NSMakeRange(4, 2)] isEqualToString:@"02"])
                                {//Data packet
-                                   int packetLength = [[self stringFroHex:[valueStr substringWithRange:NSMakeRange(2, 2)]] intValue] - 1;
+                                   int packetLength = [[self stringFroHex:[valueStr substringWithRange:NSMakeRange(2, 2)]] intValue] - 2;
                                    int dataLength = packetLength * 2;
                                    if ([valueStr length] >= dataLength)
                                    {

@@ -639,7 +639,7 @@
 }
 -(void)endHudProcess
 {
-    if ([strCurrentScreen isEqualToString:@"Setting"])
+    if ([strCurrentScreen isEqualToString:@"FirmwareUpdate"])
     {
         if (isGlobalFWUpdatedSuccess == YES)
         {

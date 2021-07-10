@@ -363,7 +363,6 @@
     if (intBadgeCount == 100)
     {
         cell.lblBadgeCount.frame = CGRectMake(cell.btnGeofence.frame.size.width/2+5, 2, 40, 20);
-
     }
     else if (intBadgeCount >= 1000)
     {
@@ -379,19 +378,19 @@
         cell.btnMore.hidden = false;
         cell.optionView.hidden = false;
         cell.imgviewMoreButton.hidden = false;
-        cell.imageViewBattery.hidden = false;
-        cell.lblBatteryIndication.hidden = false;
-        
+
+        /*//For Battery
+         cell.imageViewBattery.hidden = false;
+         cell.lblBatteryIndication.hidden = false;
         
         if (![[APP_DELEGATE checkforValidString:strBatterypercentage] isEqualToString:@""])
         {
         }
-            
-            if (arrayBattery.count > 0)
-            {
-                cell.lblBatteryIndication.text = [NSString stringWithFormat:@"%@"@"%@",[[arrayBattery objectAtIndex:indexPath.row] valueForKey:@"batteryValue"],@"%"];// testing for reading single device batteru percentage
-                [cell.batteryView setBatteryLevelWithAnimation:NO forValue:[[[arrayBattery objectAtIndex:indexPath.row] valueForKey:@"batteryValue"] floatValue] inPercent:YES];
-            }
+        if (arrayBattery.count > 0)
+        {
+            cell.lblBatteryIndication.text = [NSString stringWithFormat:@"%@"@"%@",[[arrayBattery objectAtIndex:indexPath.row] valueForKey:@"batteryValue"],@"%"];// testing for reading single device batteru percentage
+            [cell.batteryView setBatteryLevelWithAnimation:NO forValue:[[[arrayBattery objectAtIndex:indexPath.row] valueForKey:@"batteryValue"] floatValue] inPercent:YES];
+        }*/
 
         if (isMoreClicked == YES)
         {
@@ -853,11 +852,11 @@ dispatch_async(dispatch_get_main_queue(), ^(void)
 {
     dispatch_async(dispatch_get_main_queue(), ^(void)
     {
-        
-        [self->timerForbattryRequest invalidate]; // Battery percentage after 10 minit
+        /* //For Battery
+         [self->timerForbattryRequest invalidate]; // Battery percentage after 10 minit
         self->timerForbattryRequest = nil;
         self->timerForbattryRequest = [NSTimer scheduledTimerWithTimeInterval:600 target:self selector:@selector(BatteryRepeateTimer) userInfo:nil repeats:YES];
-        [self RequestforBatteryPercentage];
+        [self RequestforBatteryPercentage];*/
         
         globalPeripheral = self->classPeripheral;
         self->tempSelectedPeripheral = self->classPeripheral;
@@ -1953,6 +1952,7 @@ dispatch_async(dispatch_get_main_queue(), ^(void)
             }
         }
     }
+        [self-> arrayBattery removeAllObjects];
         [self->arrayBattery addObject:dictPeriPheral];
         [self->tblDeviceList reloadData];
     });

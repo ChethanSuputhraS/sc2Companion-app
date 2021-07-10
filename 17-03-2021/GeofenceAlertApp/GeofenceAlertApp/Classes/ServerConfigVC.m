@@ -60,9 +60,10 @@
 }
 -(void)timeOutforFetchConfig
 {
+    [APP_DELEGATE endHudProcess];
+
     [timerConfig invalidate];
     timerConfig = nil;
-    [APP_DELEGATE endHudProcess];
 }
 #pragma mark - Set Frames
 -(void)setNavigationViewFrames
@@ -567,6 +568,7 @@
 
     dispatch_async(dispatch_get_main_queue(), ^{
     
+
         if (isLastPacket == YES)
         {
             NSSortDescriptor * brandDescriptor = [[NSSortDescriptor alloc] initWithKey:@"PacketNo" ascending:NO];
@@ -590,7 +592,7 @@
             [[self->arrSetServerConfigs objectAtIndex:0] setValue:self->txtSeverAdd.text forKey:@"value"];
             [[self->arrSetServerConfigs objectAtIndex:0] setValue:@"0" forKey:@"isChanaged"];
 
-                [APP_DELEGATE endHudProcess];
+            [APP_DELEGATE endHudProcess];
 
         }
     });
