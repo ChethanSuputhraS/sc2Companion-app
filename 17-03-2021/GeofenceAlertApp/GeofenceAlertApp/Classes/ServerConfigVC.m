@@ -71,7 +71,7 @@
     int yy = 44;
     if (IS_IPHONE_X)
     {
-        yy = 44;
+        yy = 64;
     }
 
     UIImageView * imgLogo = [[UIImageView alloc] init];
@@ -111,6 +111,15 @@
  
     
     int ya = 70;
+    
+    if (IS_IPHONE_X)
+    {
+        ya = viewHeader.frame.size.height+10;
+        [btnSaveCh setFrame:CGRectMake((DEVICE_WIDTH-70), 55, 60, 45)];
+        [btnBack setFrame:CGRectMake(10, 55, 60, 45)];
+        
+    }
+    
     txtSeverAdd = [[UIFloatLabelTextField alloc] initWithFrame:CGRectMake(10, ya, DEVICE_WIDTH-20, 50)];
     [txtSeverAdd setBackgroundColor:[UIColor clearColor]];
     [txtSeverAdd setTextColor:[UIColor whiteColor]];

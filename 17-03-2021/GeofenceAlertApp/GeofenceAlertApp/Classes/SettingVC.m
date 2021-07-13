@@ -420,7 +420,7 @@
     isAckReceieved = YES;
         dispatch_async(dispatch_get_main_queue(), ^{
             [APP_DELEGATE endHudProcess];
-            MBProgressHUD *hud = [MBProgressHUD showHUDAddedTo:self.navigationController.view animated:YES];
+            MBProgressHUD *hud = [MBProgressHUD showHUDAddedTo:self.view animated:YES];
 
             // Configure for text only and offset down
             hud.mode = MBProgressHUDModeText;

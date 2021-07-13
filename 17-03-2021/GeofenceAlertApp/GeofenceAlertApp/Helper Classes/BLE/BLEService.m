@@ -275,6 +275,8 @@ static BLEService    *sharedInstance    = nil;
                 NSString * strOpcode = [valueCharStr substringWithRange:NSMakeRange(0, 2)];
                 if ([strOpcode isEqualToString:@"01"] && [valueCharStr length] == 6)
                 {
+                    NSLog(@"<<<<<Kalpesh>>>>Recieved_from_Device>>%@",characteristic);
+
                     NSString * strValue = [valueCharStr substringWithRange:NSMakeRange(4, 2)];
                     NSString * strinfromHex = [self stringFroHex:strValue];
                     NSInteger  valuInt = [self convertAlgo:[strinfromHex integerValue]];

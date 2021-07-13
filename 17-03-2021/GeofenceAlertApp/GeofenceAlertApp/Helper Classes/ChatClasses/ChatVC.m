@@ -82,6 +82,7 @@
         {
             headerhHeight = 88;
         }
+        
         viewWidth = DEVICE_WIDTH;
         imgBack.frame = CGRectMake(0, 0, viewWidth, DEVICE_HEIGHT);
     }
@@ -132,8 +133,6 @@
     [viewHeader addSubview:btnIrridium];
     
     
-
-
     UIImageView * imgDelete = [[UIImageView alloc] initWithFrame:CGRectMake(viewWidth-40, 20+(headerhHeight-20-21)/2, 20, 21)];
     [imgDelete setImage:[UIImage imageNamed:@"delete.png"]];
     [imgDelete setContentMode:UIViewContentModeScaleAspectFit];
@@ -162,13 +161,22 @@
     
     [self setupMainContentView:headerhHeight];
 
+    
     if (IS_IPHONE_X)
     {
-        viewHeader.frame = CGRectMake(0, 0, DEVICE_WIDTH, 88);
-        lblTitle.frame = CGRectMake(0, 40, DEVICE_WIDTH, 44);
-//        backImg.frame = CGRectMake(10, 12+44, 12, 20);
-        imgDelete.frame = CGRectMake(viewWidth-40, 12+44, 20, 21);
-        btnDelete.frame = CGRectMake(DEVICE_WIDTH-70, 0, 70, 88);
+        viewHeader.frame = CGRectMake(0, 0, DEVICE_WIDTH, headerhHeight+50);
+        lblBack.frame = CGRectMake(0, 0, DEVICE_WIDTH, headerhHeight+50);
+        lblBack.userInteractionEnabled = YES;
+        lblTitle.frame = CGRectMake(0, 40, DEVICE_WIDTH, 30);
+        lblTitle1.frame = CGRectMake(0, 70, DEVICE_WIDTH, 30);
+        btnGSM.frame = CGRectMake(DEVICE_WIDTH/2-70, 100, 70, 45);
+        btnIrridium.frame = CGRectMake(DEVICE_WIDTH/2+5, 100, 80, 45);
+        btnclose.frame = CGRectMake(10, 100, 50, 45);
+//        lblTitle1.backgroundColor = UIColor.redColor;
+//        btnGSM.backgroundColor = UIColor.blueColor;
+//        btnIrridium.backgroundColor = UIColor.greenColor;
+//        lblBack.backgroundColor = UIColor.purpleColor;
+
     }
     
 //    NSLog(@"Css======%@",arrGlobalChatHistory);
@@ -287,8 +295,7 @@
     self.tableArray = [[TableArray alloc] init];
      bottomHeight = 80;
     
-    if (IS_IPHONE)
-    {
+  
         if (IS_IPHONE_X)
         {
             bottomHeight = 70 + 45;
@@ -297,7 +304,7 @@
         {
             bottomHeight = 60;
         }
-    }
+    
     if ([self.isFrom isEqualToString:@"History"])
     {
         bottomHeight = 0;
@@ -313,7 +320,7 @@
     [tblchat setSeparatorColor:[UIColor clearColor]];
     [self.view addSubview:tblchat];
     
-    xx=headerHeights;
+    xx = headerHeights;
     
     viewMessage = [[UIView alloc]initWithFrame:CGRectMake(0, DEVICE_HEIGHT, viewWidth, 100)];//100 == 80
     viewMessage.backgroundColor = UIColor.clearColor;
@@ -383,23 +390,21 @@
     [btnMsgSend addTarget:self action:@selector(btnSendClick) forControlEvents:UIControlEventTouchUpInside];
     [viewBack addSubview:btnMsgSend];
  
-    if (IS_IPHONE)
-    {
-        viewMessage.frame = CGRectMake(0, DEVICE_HEIGHT-60, viewWidth-0, 60);
-        img.frame = CGRectMake(0, 0, viewWidth-0, 60);
+
+    viewMessage.frame = CGRectMake(0, DEVICE_HEIGHT-60, viewWidth-0, 60);
+    img.frame = CGRectMake(0, 0, viewWidth-0, 60);
+    
+    imgMsg.frame = CGRectMake(5, 10, 24, 20);
+    imgSend.frame = CGRectMake(viewBack.frame.size.width-45, 10, 40, 40);
+    btnMsgSend.frame = CGRectMake(viewWidth-65, 0, 65, 60);
+    txtChat.frame = CGRectMake(30, 0,DEVICE_WIDTH-65-30, 60);
+    
         if (IS_IPHONE_X)
         {
-            tblchat.frame = CGRectMake(0, headerHeights + 40, viewWidth, DEVICE_HEIGHT-headerHeights-bottomHeight+15 - 60);
-            
-
+            viewBack.frame = CGRectMake(0, DEVICE_HEIGHT-80, DEVICE_WIDTH, 60);
+            tblchat.frame = CGRectMake(0, headerHeights + 40, viewWidth, DEVICE_HEIGHT-headerhHeight-50);
             viewMessage.frame = CGRectMake(0, DEVICE_HEIGHT-100, viewWidth-0, 60);
         }
-        
-        imgMsg.frame = CGRectMake(5, 10, 24, 20);
-        imgSend.frame = CGRectMake(viewBack.frame.size.width-45, 10, 40, 40);
-        btnMsgSend.frame = CGRectMake(viewWidth-65, 0, 65, 60);
-        txtChat.frame = CGRectMake(30, 0,DEVICE_WIDTH-65-30, 60);
-    }
 }
 #pragma mark - TableViewDataSource
 - (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView
@@ -561,6 +566,12 @@
     {
             viewBack.frame = CGRectMake(0, DEVICE_HEIGHT-newSize.height-245, DEVICE_WIDTH, newSize.height+30);
     }
+    
+    if (IS_IPHONE_X)
+    {
+        viewBack.frame = CGRectMake(0, DEVICE_HEIGHT-newSize.height-320, DEVICE_WIDTH, newSize.height+30);
+
+    }
 }
 - (void)textViewDidChange:(UITextView *)textView
 {
@@ -586,6 +597,10 @@
 //            viewBack.frame = CGRectMake(0, DEVICE_HEIGHT-newSize.height-245, DEVICE_WIDTH, newSize.height+30);
     }
 //    imgSend.frame = CGRectMake(viewBack.frame.size.width-60-20, newSize.height+15, 40, 40);
+    if (IS_IPHONE_X)
+    {
+        viewBack.frame = CGRectMake(0, DEVICE_HEIGHT-newSize.height-320, DEVICE_WIDTH, newSize.height+30);
+    }
 }
 -(BOOL)textView:(UITextView *)textView shouldChangeTextInRange:(NSRange)range replacementText:(NSString *)text
 {
@@ -615,6 +630,7 @@
     }
     return YES;
 }
+
 - (void)textViewDidEndEditing:(UITextView *)textView
 {
     viewBack.frame = CGRectMake(0, DEVICE_HEIGHT-60, DEVICE_WIDTH, 60);
@@ -626,8 +642,29 @@
     [self ShowPicker:false andView:viewMessage];
 
 //    [self.view endEditing:true];
-}
+    
+    if (IS_IPHONE_X)
+    {
+        viewBack.frame = CGRectMake(0, DEVICE_HEIGHT-80, DEVICE_WIDTH, 60);
 
+    }
+    
+    
+}
+- (BOOL)textViewShouldEndEditing:(UITextView *)textView
+{
+    viewBack.frame = CGRectMake(0, DEVICE_HEIGHT-60, DEVICE_WIDTH, 60);
+
+    if (textView == txtViewChat)
+    {
+        if (IS_IPHONE_X)
+        {
+            viewBack.frame = CGRectMake(0, DEVICE_HEIGHT-80, DEVICE_WIDTH, 60);
+        }
+    }
+    
+    return YES;
+}
 - (void)scrollToBottom
 {
     CGFloat yOffset = 0;
@@ -731,6 +768,12 @@
         viewBack.frame = CGRectMake(0, DEVICE_HEIGHT-60, DEVICE_WIDTH, 60);
         txtViewChat.frame = CGRectMake(10, 10,viewWidth-60, 40);
 
+        if (IS_IPHONE_X)
+        {
+            viewBack.frame = CGRectMake(0, DEVICE_HEIGHT-80, DEVICE_WIDTH, 60);
+            txtViewChat.frame = CGRectMake(10, 10,viewWidth-60, 40);
+        }
+        
         [self.view endEditing:true];
     }
 }

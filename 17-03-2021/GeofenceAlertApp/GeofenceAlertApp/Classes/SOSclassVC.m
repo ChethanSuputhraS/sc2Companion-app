@@ -63,6 +63,11 @@
         imgBack.frame = CGRectMake(0, 0, viewWidth, DEVICE_HEIGHT);
     }
     
+    if (IS_IPHONE_X)
+    {
+        headerhHeight = 88;
+    }
+    
     UIView * viewHeader = [[UIView alloc] initWithFrame:CGRectMake(0, 0, DEVICE_HEIGHT-200, headerhHeight+40)];
     [viewHeader setBackgroundColor:[UIColor clearColor]];
     [self.view addSubview:viewHeader];
@@ -100,7 +105,7 @@
 
     if (IS_IPHONE_X)
     {
-        viewHeader.frame = CGRectMake(0, 0, DEVICE_WIDTH, 88);
+        viewHeader.frame = CGRectMake(0, globalStatusHeight, DEVICE_WIDTH, 88);
         lblTitle.frame = CGRectMake(0, 40, DEVICE_WIDTH, 44);
 //        backImg.frame = CGRectMake(10, 12+44, 12, 20);
         imgDelete.frame = CGRectMake(viewWidth-40, 12+44, 20, 21);
@@ -123,7 +128,7 @@
     int yy = 44;
     if (IS_IPHONE_X)
     {
-        yy = 44;
+        yy = 64;
     }
 
     UIImageView * imgLogo = [[UIImageView alloc] init];
@@ -136,7 +141,7 @@
     [viewHeader setBackgroundColor:[UIColor blackColor]];
     [self.view addSubview:viewHeader];
     
-    UILabel * lblTitle = [[UILabel alloc] initWithFrame:CGRectMake(50, globalStatusHeight, DEVICE_WIDTH-100, yy)];
+    UILabel * lblTitle = [[UILabel alloc] initWithFrame:CGRectMake(50, globalStatusHeight, DEVICE_WIDTH-100, 44)];
     [lblTitle setBackgroundColor:[UIColor clearColor]];
     [lblTitle setText:@"SOS  Messages"];
     [lblTitle setTextAlignment:NSTextAlignmentCenter];
@@ -152,6 +157,10 @@
      btnBack.contentHorizontalAlignment = UIControlContentHorizontalAlignmentLeft;
      [viewHeader addSubview:btnBack];
     
+    if (IS_IPHONE_X)
+    {
+        [btnBack setFrame:CGRectMake(10, 44, 60, 44)];
+    }
 
 
 }
@@ -268,15 +277,17 @@
     {
         viewMessage.frame = CGRectMake(0, DEVICE_HEIGHT-60, viewWidth-0, 60);
         img.frame = CGRectMake(0, 0, viewWidth-0, 60);
-        if (IS_IPHONE_X)
-        {
-            tblchat.frame = CGRectMake(0, headerHeights, viewWidth, DEVICE_HEIGHT-headerHeights-bottomHeight+15);
-            viewMessage.frame = CGRectMake(0, DEVICE_HEIGHT-100, viewWidth-0, 60);
-        }
+       
         imgMsg.frame = CGRectMake(5, 10, 24, 20);
         imgSend.frame = CGRectMake(viewBack.frame.size.width-45, 10, 40, 40);
         btnMsgSend.frame = CGRectMake(viewWidth-65, 0, 65, 60);
         txtChat.frame = CGRectMake(30, 0,DEVICE_WIDTH-65-30, 60);
+    }
+    
+    if (IS_IPHONE_X)
+    {
+        tblchat.frame = CGRectMake(0, headerHeights, viewWidth, DEVICE_HEIGHT-headerHeights-bottomHeight+50);
+        viewBack.frame = CGRectMake(0, DEVICE_HEIGHT-80, viewWidth-0, 60);
     }
 }
 #pragma mark- textview methods
@@ -293,7 +304,11 @@
 
     if (IS_IPHONE_5)
     {
-            viewBack.frame = CGRectMake(0, DEVICE_HEIGHT-newSize.height-245, DEVICE_WIDTH, newSize.height+30);
+        viewBack.frame = CGRectMake(0, DEVICE_HEIGHT-newSize.height-245, DEVICE_WIDTH, newSize.height+30);
+    }
+    if (IS_IPHONE_X)
+    {
+        viewBack.frame = CGRectMake(0, DEVICE_HEIGHT-newSize.height-320, DEVICE_WIDTH, newSize.height+30);
     }
 }
 - (void)textViewDidChange:(UITextView *)textView
@@ -310,8 +325,8 @@
      viewMessage.frame = CGRectMake(0, DEVICE_HEIGHT-bottomHeight-220, viewWidth-0, 60);
      tblchat.frame = CGRectMake(0, headerhHeight, viewWidth, DEVICE_HEIGHT-headerhHeight);
 
-     CGFloat fixedWidth = txtViewChat.frame.size.width;
-     newSize = [textView sizeThatFits:CGSizeMake(fixedWidth, MAX_INPUT)];
+    CGFloat fixedWidth = txtViewChat.frame.size.width;
+    newSize = [textView sizeThatFits:CGSizeMake(fixedWidth, MAX_INPUT)];
     CGRect newFrame = textView.frame;
     newFrame.size = CGSizeMake(fmaxf(newSize.width, fixedWidth), newSize.height+10);
     textView.frame = newFrame;
@@ -320,9 +335,13 @@
     
     if (IS_IPHONE_5)
     {
-            viewBack.frame = CGRectMake(0, DEVICE_HEIGHT-newSize.height-245, DEVICE_WIDTH, newSize.height+30);
+        viewBack.frame = CGRectMake(0, DEVICE_HEIGHT-newSize.height-245, DEVICE_WIDTH, newSize.height+30);
     }
-//    imgSend.frame = CGRectMake(viewBack.frame.size.width-60-20, newSize.height+15, 40, 40);
+    
+    if (IS_IPHONE_X)
+    {
+        viewBack.frame = CGRectMake(0, DEVICE_HEIGHT-newSize.height-320, DEVICE_WIDTH, newSize.height+30);
+    }
 }
 -(BOOL)textView:(UITextView *)textView shouldChangeTextInRange:(NSRange)range replacementText:(NSString *)text
 {
@@ -331,7 +350,6 @@
         if ([text isEqualToString:@"\n"])
         {
             [textView resignFirstResponder];
-                
             if ([txtViewChat.text isEqual:@""])
             {
                 viewBack.frame = CGRectMake(0, DEVICE_HEIGHT-60, DEVICE_WIDTH, 60);
@@ -352,7 +370,6 @@
         {
             lblPlceholdChat.hidden = YES;
             btnPredfnMsg.hidden = true;
-
         }
     if(range.length + range.location > textView.text.length)
     {
@@ -369,7 +386,15 @@
 //    viewBack.frame = CGRectMake(0, DEVICE_HEIGHT-newSize.height-60, DEVICE_WIDTH, newSize.height-60);
     viewMessage.frame = CGRectMake(0, DEVICE_HEIGHT-60, viewWidth-0, 60);
     tblchat.frame = CGRectMake(0, headerhHeight, viewWidth, DEVICE_HEIGHT-headerhHeight);
+    
+    if (IS_IPHONE_X)
+    {
+        viewBack.frame = CGRectMake(0, DEVICE_HEIGHT-80, DEVICE_WIDTH, 60);
+    }
+    
     [self.view endEditing:true];
+    
+    
 }
 - (void)scrollToBottom
 {
@@ -385,6 +410,8 @@
 {
     CGSize keyboardSize = [[[notification userInfo] objectForKey:UIKeyboardFrameBeginUserInfoKey] CGRectValue].size;
     intkeyboardHeight = MIN(keyboardSize.height,keyboardSize.width);
+    
+ 
 }
 #pragma mark - TableViewDataSource
 - (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView
@@ -415,28 +442,18 @@
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath
 {
     static NSString *CellIdentifier = @"MessageCell";
-
     if (tableView == tblPreDfnMsg)
     {
         static NSString *CellIdentifierHome = @"Homecell";
-        HomeCell *cellH = [tableView dequeueReusableCellWithIdentifier:CellIdentifierHome];
+        UITableViewCell *cellH = [tableView dequeueReusableCellWithIdentifier:CellIdentifierHome];
         if (!cellH)
         {
-            cellH = [[HomeCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:CellIdentifierHome];
+            cellH = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:CellIdentifierHome];
         }
-        
-        cellH.lblBack.hidden = true;
-        cellH.optionView.hidden = true;
-        cellH.lblDeviceName.textColor = UIColor.whiteColor;
-        cellH.lblAddress.hidden = true;
-        
-        cellH.lblDeviceName.frame = CGRectMake(10, 0, DEVICE_WIDTH/2-20, 44);
-        cellH.lblDeviceName.text = [arrPreDfnmsg objectAtIndex:indexPath.row];
-        cellH.lblDeviceName.font = [UIFont fontWithName:CGRegular size:textSize-1];
-        
-        cellH.backgroundColor = [UIColor colorWithPatternImage:[UIImage imageNamed:@"cell_bg.png"]];
-
-
+        cellH.textLabel.textColor = UIColor.whiteColor;
+        cellH.textLabel.text = [arrPreDfnmsg objectAtIndex:indexPath.row];
+        cellH.textLabel.font = [UIFont fontWithName:CGRegular size:textSize-1];
+        cellH.selectionStyle = UITableViewCellSelectionStyleNone;
         return cellH;
     }
     else if (tableView == tblchat)
@@ -446,23 +463,19 @@
         {
             cell = [[MessageCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:CellIdentifier];
         }
-        
-        
-            cell.message = [self.tableArray objectAtIndexPath:indexPath];
-            
-            cell.resendButton.tag = indexPath.row;
-        //    [cell.resendButton addTarget:self action:@selector(btnResendClick:) forControlEvents:UIControlEventTouchUpInside];
-        
+        cell.message = [self.tableArray objectAtIndexPath:indexPath];
+        cell.resendButton.tag = indexPath.row;
         return cell;
-
     }
-    
     MessageCell *cell = [tableView dequeueReusableCellWithIdentifier:CellIdentifier];
     return cell;
 }
 - (void)tableView:(UITableView *)tableView willDisplayCell:(UITableViewCell *)cell forRowAtIndexPath:(NSIndexPath *)indexPath;
 {
-//        cell.backgroundColor = [UIColor colorWithPatternImage:[UIImage imageNamed:@"cell_bg.png"]];
+    if (tableView == tblPreDfnMsg)
+    {
+        cell.backgroundColor = [UIColor colorWithPatternImage:[UIImage imageNamed:@"cell_bg.png"]];
+    }
 }
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath
 {
@@ -471,14 +484,14 @@
         txtViewChat.text = [arrPreDfnmsg objectAtIndex:indexPath.row];
         lblPlceholdChat.text = @"";
         
-        [UIView transitionWithView:self.view duration:0.3 options:UIViewAnimationOptionCurveEaseOut animations:^
-         {
+    [UIView transitionWithView:self.view duration:0.3 options:UIViewAnimationOptionCurveEaseOut animations:^
+    {
         self-> viewPreDfnTblview.frame = CGRectMake(20, DEVICE_HEIGHT, DEVICE_WIDTH-40, DEVICE_HEIGHT-150);
-         }
-            completion:(^(BOOL finished)
-          {
-            [self-> viewPredfnMSgback removeFromSuperview];
-        })];
+    }
+    completion:(^(BOOL finished)
+    {
+        [self-> viewPredfnMSgback removeFromSuperview];
+    })];
     }
     
 }
@@ -625,6 +638,14 @@
         lblPlceholdChat.text = @"Type a message";
         [tblchat reloadData];
         
+        
+        if (IS_IPHONE_X)
+        {
+            viewBack.frame = CGRectMake(0, DEVICE_HEIGHT-80, DEVICE_WIDTH, 60);
+            txtViewChat.frame = CGRectMake(10, 10,viewWidth-60, 40);
+
+        }
+        
         [self.view endEditing:true];
     }
 }
@@ -634,6 +655,9 @@
 }
 -(void)btnPreDefineClick
 {
+    viewBack.frame = CGRectMake(0, DEVICE_HEIGHT-80, DEVICE_WIDTH, 60);
+    txtViewChat.frame = CGRectMake(10, 10,viewWidth-60, 40);
+    [self.view endEditing:YES];
     [self SetupForPredefineMessaes];
 }
 -(void)btnCloseClick
@@ -655,7 +679,6 @@
     viewPredfnMSgback .backgroundColor = UIColor.blackColor;
     viewPredfnMSgback.alpha = 0.5;
     [self.view addSubview:viewPredfnMSgback];
-    
     
     viewPreDfnTblview = [[UIView alloc] initWithFrame:CGRectMake(20, DEVICE_HEIGHT, DEVICE_WIDTH-40, DEVICE_HEIGHT-150)];
     viewPreDfnTblview.backgroundColor = UIColor.clearColor;//[UIColor colorWithRed:1 green:1 blue:1 alpha:1]; // white

@@ -31,7 +31,7 @@
     int yy = 44;
     if (IS_IPHONE_X)
     {
-        yy = 44;
+        yy = 64;
     }
 
     UIImageView * imgLogo = [[UIImageView alloc] init];
@@ -44,7 +44,7 @@
     [viewHeader setBackgroundColor:[UIColor blackColor]];
     [self.view addSubview:viewHeader];
     
-    UILabel * lblTitle = [[UILabel alloc] initWithFrame:CGRectMake(50, globalStatusHeight, DEVICE_WIDTH-100, yy)];
+    UILabel * lblTitle = [[UILabel alloc] initWithFrame:CGRectMake(50, globalStatusHeight, DEVICE_WIDTH-100, 44)];
     [lblTitle setBackgroundColor:[UIColor clearColor]];
     [lblTitle setText:@"Wi-Fi Configuration"];
     [lblTitle setTextAlignment:NSTextAlignmentCenter];
@@ -85,6 +85,13 @@
     int yt = 70;
     int ySwitch = 0;
     
+    if (IS_IPHONE_X)
+    {
+        yt = 120;
+        [btnSaveCh setFrame:CGRectMake((DEVICE_WIDTH-70), 44, 60, 44)];
+        [btnBack setFrame:CGRectMake(10, 44, 60, 44)];
+    }
+    
     for (int i = 0; i< [arrHeadding count]; i++)
     {
         UIView * switchView = [[UIView alloc] initWithFrame:CGRectMake(5, yt + ySwitch, DEVICE_WIDTH - 10, 80)];
@@ -109,6 +116,8 @@
         ySwitch = ySwitch + 100;
 
     }
+
+    
     
     NSMutableDictionary * dict = [[NSMutableDictionary alloc] init];
     [dict setValue:@"255" forKey:@"selection"];

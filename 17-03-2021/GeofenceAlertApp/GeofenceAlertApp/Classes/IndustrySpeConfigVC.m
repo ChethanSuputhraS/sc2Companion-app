@@ -61,10 +61,12 @@
 -(void)setNavigationViewFrames
 {
     int yy = 44;
+    
       if (IS_IPHONE_X)
       {
-          yy = 44;
+          yy = 64;
       }
+//    self.view.backgroundColor = UIColor.whiteColor;
 
     UIImageView * imgLogo = [[UIImageView alloc] init];
     imgLogo.frame = CGRectMake(0, 0, DEVICE_WIDTH, DEVICE_HEIGHT);
@@ -72,11 +74,11 @@
     imgLogo.userInteractionEnabled = YES;
     [self.view addSubview:imgLogo];
     
-    UIView * viewHeader = [[UIView alloc] initWithFrame:CGRectMake(0, 0, DEVICE_WIDTH, yy + globalStatusHeight)];
+    UIView * viewHeader = [[UIView alloc] initWithFrame:CGRectMake(0, 0, DEVICE_WIDTH,  yy+ globalStatusHeight)];
     [viewHeader setBackgroundColor:[UIColor blackColor]];
     [self.view addSubview:viewHeader];
     
-    UILabel * lblTitle = [[UILabel alloc] initWithFrame:CGRectMake(50, globalStatusHeight, DEVICE_WIDTH-100, yy)];
+    UILabel * lblTitle = [[UILabel alloc] initWithFrame:CGRectMake(50, globalStatusHeight, DEVICE_WIDTH-100, 44)];
     [lblTitle setBackgroundColor:[UIColor clearColor]];
     [lblTitle setText:@"Industry-Specific Configuration"];
     [lblTitle setTextAlignment:NSTextAlignmentCenter];
@@ -106,9 +108,16 @@
     int yt = 70;
     int ySwitch = 0;
     arrRadioBtns = [[NSMutableArray alloc] init];
+    if (IS_IPHONE_X)
+    {
+        yt = 120;
+        [btnSaveCh setFrame:CGRectMake((DEVICE_WIDTH-70), 44, 60, 44)];
+        [btnBack setFrame:CGRectMake(10, 44, 60, 44)];
+    }
     
     for (int i = 0; i< [arrHeadding count]; i++)
     {
+        
         UIView * switchView = [[UIView alloc] initWithFrame:CGRectMake(10, yt + ySwitch, DEVICE_WIDTH - 20, 80)];
         switchView.layer.masksToBounds = YES;
         switchView.layer.borderColor = [UIColor grayColor].CGColor;
@@ -123,6 +132,10 @@
         lblMenu.font = [UIFont fontWithName:CGRegular size:textSize-1];
         [switchView addSubview:lblMenu];
             
+        
+        
+ 
+        
         RadioButtonClass * globalRadioButtonClass = [[RadioButtonClass alloc] init];
         globalRadioButtonClass.viewTag = 500 + i;
         globalRadioButtonClass.delegate = self;
@@ -134,7 +147,9 @@
         [dict setValue:[NSString stringWithFormat:@"%d",i] forKey:@"index"];
         [dict setValue:@"255" forKey:@"selection"];
         [arrRadioBtns addObject:dict];
+        
         ySwitch = ySwitch + 100;
+        
     }
 }
 -(NSInteger)getIndexfromValue:(NSString *)strValue

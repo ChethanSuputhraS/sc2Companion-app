@@ -572,6 +572,22 @@
         [[NSUserDefaults standardUserDefaults] setObject:@"NO" forKey:@"IS_LOGGEDIN"];
      
         [[NSUserDefaults standardUserDefaults] synchronize];
+        
+        [[NSNotificationCenter defaultCenter] removeObserver:self name:@"AuthenticationCompleted" object:nil];
+        [[NSNotificationCenter defaultCenter] removeObserver:self name:@"NotifiyDiscoveredDevices" object:nil];
+        [[NSNotificationCenter defaultCenter] removeObserver:self name:@"DeviceDidConnectNotification" object:nil];
+        [[NSNotificationCenter defaultCenter] removeObserver:self name:@"DeviceDidDisConnectNotification" object:nil];
+
+        NSMutableArray * arrayDevices = [[BLEManager sharedManager] foundDevices];
+        for (int i = 0; i < [arrayDevices count]; i++)
+        {
+            CBPeripheral * p = [[arrayDevices objectAtIndex:i] valueForKey:@"peripheral"];
+            if (p.state == CBPeripheralStateConnected)
+            {
+                [[BLEManager sharedManager] disconnectDevice:p];
+            }
+        }
+
     
         [APP_DELEGATE movetoLogin];
      }];
@@ -1803,7 +1819,9 @@ dispatch_async(dispatch_get_main_queue(), ^(void)
 }
 -(void)ShowToastNotification:(NSString *)StrToast
 {
-    MBProgressHUD *hud = [MBProgressHUD showHUDAddedTo:self.navigationController.view animated:YES];
+    NSLog(@"====ShowToastNotification===%@",self.view);
+
+    MBProgressHUD *hud = [MBProgressHUD showHUDAddedTo:self.view animated:YES];
     // Configure for text only and offset down
     hud.mode = MBProgressHUDModeText;
     hud.labelText = StrToast;

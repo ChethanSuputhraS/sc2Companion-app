@@ -103,8 +103,8 @@
     
     deviceTokenStr = @"1234567";
     
-//    globalSIMvc = [[SIMconfigurVC alloc]init];
-//    UINavigationController *navig = [[UINavigationController alloc]initWithRootViewController:globalSIMvc];
+//    globalChatVC  = [[ChatVC alloc]init];
+//    UINavigationController *navig = [[UINavigationController alloc]initWithRootViewController:globalChatVC];
 //    self.window = [[UIWindow alloc]init];
 //    navig.navigationBarHidden = YES;
 //    self.window.frame = self.window.bounds;
@@ -128,11 +128,11 @@
             [UIView setAnimationTransition:UIViewAnimationTransitionFlipFromLeft forView:[[UIApplication sharedApplication] keyWindow] cache:YES];
             [UIView commitAnimations];
 
-            globalHomeVC = [[HomeVC alloc]init];
-            UINavigationController *navig = [[UINavigationController   alloc]initWithRootViewController:globalHomeVC]; //globalHomeVC
+//            globalHomeVC = [[HomeVC alloc]init];
+//            UINavigationController *navig = [[UINavigationController   alloc]initWithRootViewController:globalHomeVC]; //globalHomeVC
             self.window = [[UIWindow alloc]init];
             self.window.frame = self.window.bounds;
-            self.window.rootViewController = navig;
+//            self.window.rootViewController = navig;
             [self.window makeKeyAndVisible];
             [self setUpTabBarController];
            
@@ -527,6 +527,7 @@
 #pragma mark - SetUp Tabbar
 -(void)setUpTabBarController
 {
+    globalHomeVC = nil;
     globalHomeVC = [[HomeVC alloc]init];
     globalHomeVC.title=@"Home";
     globalHomeVC.tabBarItem=[[UITabBarItem alloc] initWithTitle:@"Home" image:[[UIImage imageNamed:@"home.png"] imageWithRenderingMode:UIImageRenderingModeAlwaysOriginal ] selectedImage:[[UIImage imageNamed:@"home_active.png"] imageWithRenderingMode:UIImageRenderingModeAlwaysOriginal] ];
@@ -540,14 +541,8 @@
     thirdNavigation = [[UINavigationController alloc]initWithRootViewController:thirdViewController];
     thirdNavigation.navigationBarHidden = YES;
     
-//    SOSclassVC * forthViewController = [[SOSclassVC alloc]init];
-//    forthViewController.title=@"device";
-//    forthViewController.tabBarItem=[[UITabBarItem alloc] initWithTitle:@"sos" image:[[UIImage imageNamed:@"sosg.png"] imageWithRenderingMode:UIImageRenderingModeAlwaysOriginal ] selectedImage:[[UIImage imageNamed:@"sos.png"] imageWithRenderingMode:UIImageRenderingModeAlwaysOriginal] ];
-//    forthNavigation = [[UINavigationController alloc]initWithRootViewController:forthViewController];
-//    forthNavigation.navigationBarHidden = YES;  // 
-
     mainTabBarController = [[UITabBarController alloc] init];
-    mainTabBarController.viewControllers = [[NSArray alloc] initWithObjects:firstNavigation, thirdNavigation,forthNavigation, nil];
+    mainTabBarController.viewControllers = [[NSArray alloc] initWithObjects:firstNavigation, thirdNavigation, nil];
     mainTabBarController.tabBar.tintColor = [UIColor grayColor];
     mainTabBarController.delegate = self;
     mainTabBarController.tabBar.barTintColor = [UIColor blackColor]; //
@@ -604,13 +599,14 @@
     [UIView setAnimationTransition:UIViewAnimationTransitionFlipFromRight forView:[[UIApplication sharedApplication] keyWindow] cache:YES];
     [UIView commitAnimations];
 
-    globalHomeVC = [[HomeVC alloc]init];
+//    globalHomeVC = [[HomeVC alloc]init];
 //    UINavigationController *navig = [[UINavigationController   alloc]initWithRootViewController:globalHomeVC];
 //    self.window = [[UIWindow alloc]init];
 //    self.window.frame = self.window.bounds;
 //    self.window.rootViewController = navig;
+//    [self.window makeKeyAndVisible];
     [self setUpTabBarController];
-    [self.window makeKeyAndVisible];
+
 
 }
 #pragma mark Hud Method

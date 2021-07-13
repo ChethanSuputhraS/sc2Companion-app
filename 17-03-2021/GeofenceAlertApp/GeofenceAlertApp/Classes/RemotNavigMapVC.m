@@ -98,6 +98,7 @@
 -(void)setNavigationViewFrames
 {
     int  yy = 64;
+    
     if (IS_IPHONE_X)
     {
         yy = 84;
@@ -141,8 +142,10 @@
     
     if (IS_IPHONE_X)
     {
-        lblTitle.frame = CGRectMake(50, 40, DEVICE_WIDTH-100, 44);
+        lblTitle.frame = CGRectMake(50, 30, DEVICE_WIDTH-100, 44);
+        lblSubTitle.frame = CGRectMake(50, 60, DEVICE_WIDTH-100, 30);
         imgBack.frame = CGRectMake(10,40+11, 14, 22);
+        btnBack.frame = CGRectMake(0, 30, DEVICE_WIDTH-100, 44);
     }
 }
 -(void)GetLatLongFromSelectedDevice:(NSString *)strDeviceId
@@ -174,6 +177,11 @@
     mapView.showsUserLocation = false;
     mapView.mapType = MKMapTypeStandard;
     [self.view addSubview:mapView];
+    
+    if (IS_IPHONE_X)
+    {
+        mapView.frame = CGRectMake(0, yy, DEVICE_WIDTH,DEVICE_HEIGHT-yy);
+    }
 
 }
 #pragma mark - Map View Delegates
@@ -304,7 +312,7 @@
 }
 -(void)TostNotification:(NSString *)StrToast
 {
-    MBProgressHUD * hud = [MBProgressHUD showHUDAddedTo:self.navigationController.view animated:YES];
+    MBProgressHUD * hud = [MBProgressHUD showHUDAddedTo:self.view animated:YES];
     hud.mode = MBProgressHUDModeText;
     hud.labelText = StrToast;
     hud.margin = 10.f;

@@ -136,7 +136,7 @@
     btnShowPass.frame = CGRectMake(viewPopUp.frame.size.width-60, yy, 60, 35);
     btnShowPass.backgroundColor = [UIColor clearColor];
     [btnShowPass addTarget:self action:@selector(showPassclick) forControlEvents:UIControlEventTouchUpInside];
-    [btnShowPass setImage:[UIImage imageNamed:@"passShow.png"] forState:UIControlStateNormal];
+    [btnShowPass setImage:[UIImage imageNamed:@"hidePassword.png"] forState:UIControlStateNormal];
     [viewPopUp addSubview:btnShowPass];
     
     yy = yy+50*approaxSize;
@@ -243,13 +243,13 @@
     if (isShowPassword)
     {
         isShowPassword = NO;
-        [btnShowPass setImage:[UIImage imageNamed:@"passShow.png"] forState:UIControlStateNormal];
+        [btnShowPass setImage:[UIImage imageNamed:@"hidePassword.png"] forState:UIControlStateNormal];
         txtPassword.secureTextEntry = YES;
     }
     else
     {
         isShowPassword = YES;
-        [btnShowPass setImage:[UIImage imageNamed:@"visible.png"] forState:UIControlStateNormal];
+        [btnShowPass setImage:[UIImage imageNamed:@"showPassword.png"] forState:UIControlStateNormal];
         txtPassword.secureTextEntry = NO;
     }
 }
