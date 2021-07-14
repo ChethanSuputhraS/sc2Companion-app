@@ -78,7 +78,7 @@
 #pragma mark - Set Frames
 -(void)setNavigationViewFrames
 {
-    int yy = 44;
+    int yy = 20;
     if (IS_IPHONE_X)
     {
         yy = 44;
@@ -90,11 +90,11 @@
     imgLogo.userInteractionEnabled = YES;
     [self.view addSubview:imgLogo];
     
-    UIView * viewHeader = [[UIView alloc] initWithFrame:CGRectMake(0, 0, DEVICE_WIDTH, yy + globalStatusHeight)];
+    UIView * viewHeader = [[UIView alloc] initWithFrame:CGRectMake(0, 0, DEVICE_WIDTH, yy+ 44)];
     [viewHeader setBackgroundColor:[UIColor blackColor]];
     [self.view addSubview:viewHeader];
     
-    UILabel * lblTitle = [[UILabel alloc] initWithFrame:CGRectMake(50, globalStatusHeight, DEVICE_WIDTH-100, yy)];
+    UILabel * lblTitle = [[UILabel alloc] initWithFrame:CGRectMake(50, globalStatusHeight, DEVICE_WIDTH-100, 44)];
     [lblTitle setBackgroundColor:[UIColor clearColor]];
     [lblTitle setText:@"SIM Configuration"];
     [lblTitle setTextAlignment:NSTextAlignmentCenter];
@@ -103,7 +103,7 @@
     [viewHeader addSubview:lblTitle];
     
     UIButton * btnBack = [UIButton buttonWithType:UIButtonTypeCustom];
-    [btnBack setFrame:CGRectMake(0, 20, 60, yy)];
+    [btnBack setFrame:CGRectMake(10, 20, 60, 44)];
     [btnBack addTarget:self action:@selector(btnBackClick) forControlEvents:UIControlEventTouchUpInside];
     [btnBack setImage:[UIImage imageNamed:@"back_icon.png"] forState:UIControlStateNormal];
     btnBack.backgroundColor = UIColor.clearColor;
@@ -111,7 +111,7 @@
     [viewHeader addSubview:btnBack];
     
     UIButton * btnSaveCh = [UIButton buttonWithType:UIButtonTypeCustom];
-    [btnSaveCh setFrame:CGRectMake((DEVICE_WIDTH-70), 15, 60, 44)];
+    [btnSaveCh setFrame:CGRectMake((DEVICE_WIDTH-70), 20, 60, 44)];
     [btnSaveCh setTitle:@"Save" forState:UIControlStateNormal];
     [btnSaveCh setTitleColor:UIColor.whiteColor forState:UIControlStateNormal];
     [btnSaveCh addTarget:self action:@selector(btnSaveChClick) forControlEvents:UIControlEventTouchUpInside];
@@ -120,10 +120,19 @@
     NSArray * arraySim = [NSArray arrayWithObjects:@"E-SIM",@"Nano SIM", nil];
     arrRadioBtns = [[NSMutableArray alloc] init];
 
+    int yt = 70;
+
+    if (IS_IPHONE_X)
+    {
+        [btnBack setFrame:CGRectMake(10, 44, 60, 44)];
+        [btnSaveCh setFrame:CGRectMake((DEVICE_WIDTH-70), 44, 60, 44)];
+        yt = yy+44;
+    }
+    
     simRadioButtons = [[RadioButtonClass alloc] init];
     simRadioButtons.viewTag = 500;
     simRadioButtons.delegate = self;
-    [simRadioButtons setButtonFrame:CGRectMake(20, 70, DEVICE_WIDTH-40, 50) withNumberofItems:arraySim withSelectedIndex:-1];
+    [simRadioButtons setButtonFrame:CGRectMake(20, yt, DEVICE_WIDTH-40, 50) withNumberofItems:arraySim withSelectedIndex:-1];
     [self.view addSubview:simRadioButtons];
         
     NSMutableDictionary * dictData = [[NSMutableDictionary alloc] init];
@@ -142,6 +151,11 @@
     
     arruratOptions =[[NSMutableArray alloc]initWithObjects:@"LTE Cat M1",@"LTE Cat NB1",@"GPRS / eGPRS",@"GPRS / eGPRS & LTE Cat NB1",@"GPRS / eGPRS & LTE Cat M1",@"LTE Cat NB1 & LTE Cat M1",@"LTE Cat NB1 & GPRS / eGPRS",@"LTE Cat M1 & LTE Cat NB1",@"LTE Cat M1 & GPRS / eGPRS",@"GPRS / eGPRS & LTE Cat NB1 & LTE Cat M1",@"GPRS / eGPRS & LTE Cat M1 & LTE Cat NB1",@"LTE Cat NB1 & GPRS / eGPRS & LTE Cat M1",@"LTE Cat NB1 & LTE Cat M1 & GPRS / eGPRS",@"LTE Cat M1 & LTE Cat NB1 & GPRS / eGPRS",@"LTE Cat M1 & GPRS / eGPRS & LTE Cat NB1", nil];
 
+    if (IS_IPHONE_X)
+    {
+        tblListSIMstup.frame = CGRectMake(0, yt+50, DEVICE_WIDTH, DEVICE_HEIGHT-yt-60);
+    }
+    
 }
 #pragma mark-Tavbleview method
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section
@@ -415,7 +429,7 @@
         {
             NSString * strMsg = [strAPNAddress substringWithRange:NSMakeRange(i * 12, 12)];
             [arrayPackets addObject:strMsg];
-            NSLog(@"Greater Than PocketLength 11======%@",strMsg);
+//            NSLog(@"Greater Than PocketLength 11======%@",strMsg);
         }
         else
         {
@@ -423,7 +437,7 @@
             {
                 NSString * strMsg = [strAPNAddress substringWithRange:NSMakeRange(i * 12, totallength - (i * 12))];
                 [arrayPackets addObject:strMsg];
-                NSLog(@"Msg legth satisfied  11======%@",strMsg);
+//                NSLog(@"Msg legth satisfied  11======%@",strMsg);
             }
         }
     }
@@ -714,7 +728,7 @@
     [APP_DELEGATE endHudProcess];
     if ([strResponse isEqualToString:@"0101"])
     {
-        [self showTypeSuccessMessage:@"Device configuration svaed"];
+        [self showTypeSuccessMessage:@"SIM Configuration applied successfully. Now SC2 Device will restart and auto connect if Re-connect is enabled. Otherwise please connect again."];
     }
     else
     {
@@ -922,7 +936,7 @@
         [newString appendFormat:@"%c", (char)value];
         i+=2;
     }
-    NSLog(@"Final inputs=%@",newString);
+//    NSLog(@"Final inputs=%@",newString);
 
     return newString;
 }
@@ -979,7 +993,7 @@
     [[NSScanner scannerWithString:hex] scanHexInt:&hexAsInt];
     NSString *binary = [NSString stringWithFormat:@"%@", [self toBinary:hexAsInt]];
     
-    NSLog(@"===========Binary==========%@",binary);
+//    NSLog(@"===========Binary==========%@",binary);
     return binary;
 }
 -(NSString *)toBinary:(NSUInteger)input

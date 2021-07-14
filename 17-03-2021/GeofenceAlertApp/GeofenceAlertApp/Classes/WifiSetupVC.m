@@ -28,10 +28,10 @@
 #pragma mark - Set Frames
 -(void)setNavigationViewFrames
 {
-    int yy = 44;
+    int yy = 20;
     if (IS_IPHONE_X)
     {
-        yy = 64;
+        yy = 44;
     }
 
     UIImageView * imgLogo = [[UIImageView alloc] init];
@@ -40,7 +40,7 @@
     imgLogo.userInteractionEnabled = YES;
     [self.view addSubview:imgLogo];
     
-    UIView * viewHeader = [[UIView alloc] initWithFrame:CGRectMake(0, 0, DEVICE_WIDTH, yy + globalStatusHeight)];
+    UIView * viewHeader = [[UIView alloc] initWithFrame:CGRectMake(0, 0, DEVICE_WIDTH, yy + 44)];
     [viewHeader setBackgroundColor:[UIColor blackColor]];
     [self.view addSubview:viewHeader];
     
@@ -53,7 +53,7 @@
     [viewHeader addSubview:lblTitle];
     
      UIButton * btnBack = [UIButton buttonWithType:UIButtonTypeCustom];
-     [btnBack setFrame:CGRectMake(10, 20, 60, yy)];
+     [btnBack setFrame:CGRectMake(10, 20, 60, 44)];
      [btnBack addTarget:self action:@selector(btnBackClick) forControlEvents:UIControlEventTouchUpInside];
      [btnBack setImage:[UIImage imageNamed:@"back_icon.png"] forState:UIControlStateNormal];
      btnBack.backgroundColor = UIColor.clearColor;
@@ -61,7 +61,7 @@
      [viewHeader addSubview:btnBack];
     
     UIButton * btnSaveCh = [UIButton buttonWithType:UIButtonTypeCustom];
-    [btnSaveCh setFrame:CGRectMake((DEVICE_WIDTH-70), 15, 60, 44)];
+    [btnSaveCh setFrame:CGRectMake((DEVICE_WIDTH-70), 20, 60, 44)];
     [btnSaveCh setTitle:@"Save" forState:UIControlStateNormal];
     [btnSaveCh setTitleColor:UIColor.whiteColor forState:UIControlStateNormal];
     [btnSaveCh addTarget:self action:@selector(btnSaveChClick) forControlEvents:UIControlEventTouchUpInside];
@@ -69,8 +69,6 @@
 
     NSMutableArray *  arrEnableWifi = [[NSMutableArray alloc] initWithObjects:@"Disable",@"Enable",@"No change", nil];
 //      NSMutableArray * arrFirmware = [[NSMutableArray alloc] initWithObjects:@"logg_ing",@"firm_ware",@"No_change", nil];
-    
-   
     
     arrRadioBtns = [[NSMutableArray alloc] init];
     
@@ -87,9 +85,9 @@
     
     if (IS_IPHONE_X)
     {
-        yt = 120;
         [btnSaveCh setFrame:CGRectMake((DEVICE_WIDTH-70), 44, 60, 44)];
         [btnBack setFrame:CGRectMake(10, 44, 60, 44)];
+        yt = viewHeader.frame.size.height+5;
     }
     
     for (int i = 0; i< [arrHeadding count]; i++)
@@ -116,8 +114,6 @@
         ySwitch = ySwitch + 100;
 
     }
-
-    
     
     NSMutableDictionary * dict = [[NSMutableDictionary alloc] init];
     [dict setValue:@"255" forKey:@"selection"];

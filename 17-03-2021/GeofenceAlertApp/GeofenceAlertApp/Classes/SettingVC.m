@@ -38,7 +38,7 @@
 @end
 
 @implementation SettingVC
-@synthesize classPeripheral;
+@synthesize classPeripheral,strIdentifier;
 - (void)viewDidLoad
 {
     isFWUpdatedSuccessfull = NO;
@@ -69,7 +69,8 @@
 #pragma mark - Set Frames
 -(void)setNavigationViewFrames
 {
-    int yy = 44;
+    int yy = 20;
+    
     if (IS_IPHONE_X)
     {
         yy = 44;
@@ -81,11 +82,11 @@
     imgLogo.userInteractionEnabled = YES;
     [self.view addSubview:imgLogo];
     
-    UIView * viewHeader = [[UIView alloc] initWithFrame:CGRectMake(0, 0, DEVICE_WIDTH, yy + globalStatusHeight)];
+    UIView * viewHeader = [[UIView alloc] initWithFrame:CGRectMake(0, 0, DEVICE_WIDTH, yy + 44)];
     [viewHeader setBackgroundColor:[UIColor blackColor]];
     [self.view addSubview:viewHeader];
     
-    UILabel * lblTitle = [[UILabel alloc] initWithFrame:CGRectMake(50, globalStatusHeight, DEVICE_WIDTH-100, yy)];
+    UILabel * lblTitle = [[UILabel alloc] initWithFrame:CGRectMake(50, yy, DEVICE_WIDTH-100, 44)];
     [lblTitle setBackgroundColor:[UIColor clearColor]];
     [lblTitle setText:@"Settings"];
     [lblTitle setTextAlignment:NSTextAlignmentCenter];
@@ -94,14 +95,14 @@
     [viewHeader addSubview:lblTitle];
 
      UIButton * btnBack = [UIButton buttonWithType:UIButtonTypeCustom];
-     [btnBack setFrame:CGRectMake(10, 20, 60, yy)];
+     [btnBack setFrame:CGRectMake(10, 20, 60, 44)];
      [btnBack addTarget:self action:@selector(btnBackClick) forControlEvents:UIControlEventTouchUpInside];
      [btnBack setImage:[UIImage imageNamed:@"back_icon.png"] forState:UIControlStateNormal];
      btnBack.backgroundColor = UIColor.clearColor;
      btnBack.contentHorizontalAlignment = UIControlContentHorizontalAlignmentLeft;
      [viewHeader addSubview:btnBack];
     
-    tblSetting = [[UITableView alloc] initWithFrame:CGRectMake(0, yy+globalStatusHeight+1, DEVICE_WIDTH, DEVICE_HEIGHT-yy-globalStatusHeight)];
+    tblSetting = [[UITableView alloc] initWithFrame:CGRectMake(0, viewHeader.frame.size.height+5, DEVICE_WIDTH, DEVICE_HEIGHT-yy+44)];
     tblSetting.delegate = self;
     tblSetting.dataSource= self;
     tblSetting.backgroundColor = UIColor.clearColor;
@@ -109,6 +110,14 @@
     tblSetting.hidden = false;
     tblSetting.scrollEnabled = false;
     [self.view addSubview:tblSetting];
+    
+    if (IS_IPHONE_X)
+    {
+        int yt = viewHeader.frame.size.height+5;
+        [btnBack setFrame:CGRectMake(10, 44, 60, 44)];
+        tblSetting.frame = CGRectMake(0, yt, DEVICE_WIDTH, DEVICE_HEIGHT-yt);
+
+    }
     
 }
 #pragma mark-Tableview method
@@ -141,13 +150,22 @@
         cell.swReconnect.hidden = false;
         cell.lblForSetting.text = @"Re-connect device Enable";
               
-        if ([[NSUserDefaults standardUserDefaults] boolForKey:@"BLEAutoconnect"] == true)//Kalpesh26062021
+        NSString * strValue = [[NSUserDefaults standardUserDefaults] valueForKey:[NSString stringWithFormat:@"BLEAuto_%@",strIdentifier]];
+
+        if ([[self checkforValidString:strValue] isEqualToString:@"NA"])
         {
-            [cell.swReconnect setOn:YES animated:YES];
+            [cell.swReconnect setOn:NO animated:YES];
         }
         else
         {
-            [cell.swReconnect setOn:NO animated:YES];
+            if ([strValue isEqualToString:@"1"])
+            {
+                [cell.swReconnect setOn:YES animated:YES];
+            }
+            else
+            {
+                [cell.swReconnect setOn:NO animated:YES];
+            }
         }
     }
     else if (indexPath.row == 2)
@@ -446,15 +464,18 @@
      UISwitch *RecntSwitch = (UISwitch *)sender;
     
        if ([RecntSwitch isOn])
-              {
-                  isReconnect = true;
+       {
+           isReconnect = true;
                   [[NSUserDefaults standardUserDefaults] setBool:YES forKey:@"BLEAutoconnect"];//Kalpesh26062021
+                  [[NSUserDefaults standardUserDefaults] setValue:@"1" forKey:[NSString stringWithFormat:@"BLEAuto_%@",strIdentifier]];
+           
                   [self TostNotification:@"Device Re-Connect Enabled"];
               }
               else
               {
                   isReconnect = false;
                   [[NSUserDefaults standardUserDefaults] setBool:NO forKey:@"BLEAutoconnect"];//Kalpesh26062021
+                  [[NSUserDefaults standardUserDefaults] setValue:@"0" forKey:[NSString stringWithFormat:@"BLEAuto_%@",strIdentifier]];
                   [self TostNotification:@"Device Re-Connect Disabled"];
               }
 }
@@ -519,7 +540,7 @@
 }
 -(void)btnDoneClicked
 {
-    if ([[APP_DELEGATE checkforValidString:selectedTime] isEqualToString:@"NA"])
+    if ([[self checkforValidString:selectedTime] isEqualToString:@"NA"])
     {
         NSInteger index = [pickerSetting selectedRowInComponent:0];
         
@@ -629,14 +650,14 @@
 
     [APP_DELEGATE startHudProcess:@"Updating Firmware..."];
 
-    NSLog(@"FilePath======>>>>>>>%@",urls);
+//    NSLog(@"FilePath======>>>>>>>%@",urls);
     
     NSString * result = [[urls valueForKey:@"description"] componentsJoinedByString:@""];//description
     NSString * strfilePath =  [result substringWithRange:NSMakeRange(8, result.length-8)];
     
     NSURL *uRL = [NSURL URLWithString:strfilePath];
     DFUFirmware * selectedFirmware = [[DFUFirmware alloc] initWithUrlToZipFile:uRL type:DFUFirmwareTypeApplication];
-    NSLog(@"Selected Firmware========>>>>>>>%@",selectedFirmware);
+//    NSLog(@"Selected Firmware========>>>>>>>%@",selectedFirmware);
   
     dispatch_queue_t queue = dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0);
 
@@ -654,7 +675,7 @@
     initiator.delegate = self; //
     initiator.progressDelegate = self;
     DFUServiceController * controller1 = [initiator startWithTarget:classPeripheral];
-    NSLog(@"DFU Class=%@",controller1);
+//    NSLog(@"DFU Class=%@",controller1);
     
     [timerForDFU invalidate];
     timerForDFU = nil;
@@ -682,8 +703,8 @@
         self->timerForDFU = nil;
         [APP_DELEGATE endHudProcess];
         [self ErrorPopUP:@"Something went wrong. \n Please try again."];
-        NSLog(@"DFU Error====>>>=%ld",(long)error);
-        NSLog(@"Error message DFU===>>>%@",message);
+//        NSLog(@"DFU Error====>>>=%ld",(long)error);
+//        NSLog(@"Error message DFU===>>>%@",message);
         
     });
 }
@@ -691,10 +712,10 @@
 {
     
     dispatch_async(dispatch_get_main_queue(), ^{
-        NSLog(@"LogWith Message=%@",message);
-        NSLog(@"Udating level =====>>>>>%ld", level);
+//        NSLog(@"LogWith Message=%@",message);
+//        NSLog(@"Udating level =====>>>>>%ld", level);
 
-        NSString * strMsg = [APP_DELEGATE checkforValidString:message];
+        NSString * strMsg = [self checkforValidString:message];
         
         if ([strMsg rangeOfString:@"Upload completed"].location != NSNotFound )
         {
@@ -761,5 +782,28 @@
                             andButtons:nil];
 
     });
+}
+
+-(NSString *)checkforValidString:(NSString *)strRequest
+{
+    NSString * strValid;
+    if (![strRequest isEqual:[NSNull null]])
+    {
+        if (strRequest != nil && strRequest != NULL && ![strRequest isEqualToString:@""])
+        {
+            strValid = strRequest;
+        }
+        else
+        {
+            strValid = @"NA";
+        }
+    }
+    else
+    {
+        strValid = @"NA";
+    }
+    strValid = [strValid stringByReplacingOccurrencesOfString:@"\"" withString:@""];
+    
+    return strValid;
 }
 @end

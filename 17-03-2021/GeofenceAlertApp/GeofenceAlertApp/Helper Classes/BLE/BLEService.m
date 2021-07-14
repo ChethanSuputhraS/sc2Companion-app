@@ -275,7 +275,7 @@ static BLEService    *sharedInstance    = nil;
                 NSString * strOpcode = [valueCharStr substringWithRange:NSMakeRange(0, 2)];
                 if ([strOpcode isEqualToString:@"01"] && [valueCharStr length] == 6)
                 {
-                    NSLog(@"<<<<<Kalpesh>>>>Recieved_from_Device>>%@",characteristic);
+//                    NSLog(@"<<<<<Kalpesh>>>>Recieved_from_Device>>%@",characteristic);
 
                     NSString * strValue = [valueCharStr substringWithRange:NSMakeRange(4, 2)];
                     NSString * strinfromHex = [self stringFroHex:strValue];
@@ -293,7 +293,7 @@ static BLEService    *sharedInstance    = nil;
                     [finalData appendData:lengthData];
                     [finalData appendData:authData];
                     [self SendCommandNSData:finalData withPeripheral:peripheral];
-                    NSLog(@"Wrote data for Authentication=%@",finalData);
+//                    NSLog(@"Wrote data for Authentication=%@",finalData);
                     [[NSNotificationCenter defaultCenter] postNotificationName:@"AuthenticationCompleted" object:nil];
                     
                     [globalHomeVC ConnectionSuccessfulStatSyncGeofence];
@@ -308,7 +308,7 @@ static BLEService    *sharedInstance    = nil;
                         NSString * strKeyUnsigned = [self getStringConvertedinUnsigned:strKey];
                         NSString * strFirstPacket = [self getStringConvertedinUnsigned:strRawDataFirst];
                         NSString * valueStr = [self GetDecrypedDataKeyforData:strFirstPacket withKey:strKeyUnsigned withLength:strKey.length / 2];
-                        NSLog(@"Decrypted.................=%@",valueStr);
+//                        NSLog(@"Decrypted.................=%@",valueStr);
                         
                      NSString * strOpcode = [valueStr substringWithRange:NSMakeRange(0, 2)];
                      if ([[strOpcode lowercaseString] isEqualToString:@"a4"])
@@ -413,6 +413,10 @@ static BLEService    *sharedInstance    = nil;
                                  NSString * strTimeStamp = [valueStr substringWithRange:NSMakeRange(24, 8)];
 
                                  [globalHomeVC ReceivedFirstPacketofGeofence:strID withSize:strSize withType:strType withRadius:strRadVetices withTime:strTimeStamp];
+                                 
+//                                 NSLog(@"A201====%@ =======vertice====%@",valueStr,strRadVetices);
+
+                                 
                                  if ([strType isEqualToString:@"00"])
                                  {
                                      self->isRadialTypeGeo = YES;
@@ -422,6 +426,7 @@ static BLEService    *sharedInstance    = nil;
                                      self->isRadialTypeGeo = NO;
                                  }
                              }
+
                          }
                          else if ([strOpcode isEqualToString:@"a202"])//Second Packet
                          {
@@ -435,8 +440,8 @@ static BLEService    *sharedInstance    = nil;
                                  NSString * strFinalLat = [NSString stringWithFormat:@"%f",latFloat];
                                  NSString * strFinalLong = [NSString stringWithFormat:@"%f",longFloat];
 
-                                 NSLog(@"Second Packet BLE Service=====>%@  lat=%@",valueStr,strLat);
-                                 NSLog(@"ISRADIALONOT=====>%hhd",self->isRadialTypeGeo);
+//                                 NSLog(@"Second Packet BLE Service=====>%@  lat=%@",valueStr,strLat);
+//                                 NSLog(@"ISRADIALONOT=====>%hhd",self->isRadialTypeGeo);
 
                                  if (self->isRadialTypeGeo == YES)//Radial
                                  {
@@ -461,7 +466,7 @@ static BLEService    *sharedInstance    = nil;
                                              NSMutableArray * arrLatLon = [[NSMutableArray alloc] init];
                                              [arrLatLon addObject:dict1];
                                              
-                                             NSLog(@"BLE Service A202 LASTTTTTTTTTTTT=======%@",arrLatLon);
+//                                             NSLog(@"BLE Service A202 LASTTTTTTTTTTTT=======%@",arrLatLon);
                                              [globalHomeVC ReceivedPolygonLatLongsofGeofenceData:arrLatLon];
                                          }
                                      }
@@ -479,6 +484,7 @@ static BLEService    *sharedInstance    = nil;
                                  NSString * strRules = [valueStr substringWithRange:NSMakeRange(22, 2)];
 
                                  [globalHomeVC ReceivedThirdPacketofGeofenceData:strLegth withGSMTime:strGSMTime withIrridiumTime:strIrridiumTime withRuleId:strRules];
+                                 
                              }
                          }
                          else if ([strOpcode isEqualToString:@"a204"]) // fourth packet
@@ -562,7 +568,7 @@ static BLEService    *sharedInstance    = nil;
                                      {
                                          [globalHomeVC ReceivedGeofenceAlert:dictData isGeoAvailable:recordExist];
                                      }
-                                     NSLog(@"========A5 Second Packet Data=========%@",dictData);
+//                                     NSLog(@"========A5 Second Packet Data=========%@",dictData);
                                  }
                              }
                          }
@@ -581,7 +587,7 @@ static BLEService    *sharedInstance    = nil;
                          }
                        else if ([[strOpcode lowercaseString] isEqualToString:@"b1"]) // For Message Acknowledgement
                         {
-                            NSLog(@"Decrypted Recieved Chat Msg.................=%@",valueStr);
+//                            NSLog(@"Decrypted Recieved Chat Msg.................=%@",valueStr);
 
                             NSString * strOpcode = [valueStr substringWithRange:NSMakeRange(0, 4)];
                             if ([strOpcode isEqualToString:@"b105"]) // Acknowledgement
@@ -593,7 +599,7 @@ static BLEService    *sharedInstance    = nil;
                                     strSequence = [strSequence stringByReplacingOccurrencesOfString:@"<" withString:@""];
                                     strSequence = [strSequence stringByReplacingOccurrencesOfString:@">" withString:@""];
 
-                                    NSLog(@"----->>>>>>>Sequence No---->%@",strSequence);
+//                                    NSLog(@"----->>>>>>>Sequence No---->%@",strSequence);
                                     if (![[self checkforValidString:strSequence] isEqualToString:@"NA"])
                                     {
                                         if ([[arrGlobalChatHistory valueForKey:@"sequence"] containsObject:strSequence])
@@ -958,7 +964,7 @@ static BLEService    *sharedInstance    = nil;
                            if ([valueStr length] >= 6)
                            {
                                NSString * strSuccessResponse =  [valueStr substringWithRange:NSMakeRange(4, 2)];
-                               NSLog(@"=== Token Write Response ====%@",strSuccessResponse);
+//                               NSLog(@"=== Token Write Response ====%@",strSuccessResponse);
 
                                if ([strSuccessResponse isEqualToString:@"00"])
                                {
@@ -1003,7 +1009,7 @@ static BLEService    *sharedInstance    = nil;
                                [dictData setValue:strBatteryPercentage forKey:@"batteryValue"];
 
                                [globalHomeVC ReceviedBattryPercentageFromDevice:strBatteryPercentage withDictPeriferal:dictData];
-                               NSLog(@"E4 Received ====>>>>>%@",dictData);
+//                               NSLog(@"E4 Received ====>>>>>%@",dictData);
                            }
                        }
                     }
@@ -1043,7 +1049,7 @@ static BLEService    *sharedInstance    = nil;
         NSData * strEncryptedData = [self GetEncryptedKeyforData:strPacket withKey:strKeyUnsigned withLength:strKey.length / 2];
 
         
-        NSLog(@"=======>A5 Packet ACK Written");
+//        NSLog(@"=======>A5 Packet ACK Written");
         
     [self SendCommandNSData:strEncryptedData withPeripheral:peripheral];
     });
@@ -1072,7 +1078,7 @@ static BLEService    *sharedInstance    = nil;
     NSString * strKey = [[NSUserDefaults standardUserDefaults] valueForKey:@"EncryptionKey"];
     NSString * strKeyUnsigned = [self getStringConvertedinUnsigned:strKey];
     NSData * strEncryptedData = [self GetEncryptedKeyforData:strPacket withKey:strKeyUnsigned withLength:strKey.length / 2];
-        NSLog(@"Wrote for Getting Geofence Detail---==%@",strEncryptedData);
+//        NSLog(@"Wrote for Getting Geofence Detail---==%@",strEncryptedData);
 
     [self WriteValuestoSC2device:strEncryptedData with:globalPeripheral];
       });
@@ -1130,7 +1136,7 @@ static BLEService    *sharedInstance    = nil;
             [completeData appendData:remainData];
         }
 
-        NSLog(@"Wrote for Getting Geofence Detail---==%@",completeData);
+//        NSLog(@"Wrote for Getting Geofence Detail---==%@",completeData);
         
         NSString * StrData = [NSString stringWithFormat:@"%@",completeData.debugDescription];
         StrData = [StrData stringByReplacingOccurrencesOfString:@" " withString:@""];
@@ -1141,7 +1147,7 @@ static BLEService    *sharedInstance    = nil;
         NSString * strKeyUnsigned = [self getStringConvertedinUnsigned:strKey];
         NSData * strEncryptedData = [self GetEncryptedKeyforData:strPacket withKey:strKeyUnsigned withLength:strKey.length / 2];
         
-        NSLog(@"After Encrypion---==%@",strEncryptedData);
+//        NSLog(@"After Encrypion---==%@",strEncryptedData);
 
         [self WriteValuestoSC2device:strEncryptedData with:globalPeripheral];
     });
@@ -1158,7 +1164,7 @@ static BLEService    *sharedInstance    = nil;
     
     NSMutableData *completeData = [dataOpcode mutableCopy];
     [completeData appendData:dataLength];
-    NSLog(@"Wrote A4FF---==%@",completeData);
+//    NSLog(@"Wrote A4FF---==%@",completeData);
     
     NSString * StrData = [NSString stringWithFormat:@"%@",completeData.debugDescription];
     StrData = [StrData stringByReplacingOccurrencesOfString:@" " withString:@""];
@@ -1212,7 +1218,7 @@ static BLEService    *sharedInstance    = nil;
         [newString appendFormat:@"%c", (char)value];
         i+=2;
     }
-    NSLog(@"Final inputs=%@",newString);
+//    NSLog(@"Final inputs=%@",newString);
     NSDictionary * dict = [NSDictionary dictionaryWithObject:newString forKey:@"value"];
 
     if ([[ValueStr substringWithRange:NSMakeRange(0, 2)] isEqualToString:@"01"])
@@ -2136,7 +2142,7 @@ float ConverttoFloatfromHexadecimal(NSString *  strHex)
         [newString appendFormat:@"%c", (char)value];
         i+=2;
     }
-    NSLog(@"Final inputs=%@",newString);
+//    NSLog(@"Final inputs=%@",newString);
 
     return newString;
 }

@@ -150,7 +150,7 @@
 }
 -(void)GetLatLongFromSelectedDevice:(NSString *)strDeviceId
 {
-    NSLog(@"GetLatLongFromSelectedDevice====>>>>>%@",strDeviceId);
+//    NSLog(@"GetLatLongFromSelectedDevice====>>>>>%@",strDeviceId);
 
     NSMutableDictionary * dict = [[NSMutableDictionary alloc] init];
     [dict setValue:CURRENT_USER_EMAIL forKey:@"email"];
@@ -266,7 +266,7 @@
 #pragma mark - UrlManager Delegate
 - (void)onResult:(NSDictionary *)result
 {
-    NSLog(@"RESULT====>>>>>%@",result);
+//    NSLog(@"RESULT====>>>>>%@",result);
     [APP_DELEGATE endHudProcess];
     if ([[result valueForKey:@"result"] isKindOfClass:[NSDictionary class]]) //[[result valueForKey:@"result"] valueForKey:@"deviceId"]
     {
@@ -288,7 +288,7 @@
             [mapView addAnnotation:annotation1];
             [mapView addAnnotation:placemark];
             
-            NSLog(@"Lat ====>>>>%f long===>>>><<%f ",latestLat,latestLong);
+//            NSLog(@"Lat ====>>>>%f long===>>>><<%f ",latestLat,latestLong);
             [mapView reloadInputViews];
             [mapView showAnnotations:mapView.annotations animated:YES];
         }

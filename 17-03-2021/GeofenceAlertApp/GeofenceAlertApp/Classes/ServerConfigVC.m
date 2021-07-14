@@ -68,10 +68,10 @@
 #pragma mark - Set Frames
 -(void)setNavigationViewFrames
 {
-    int yy = 44;
+    int yy = 20;
     if (IS_IPHONE_X)
     {
-        yy = 64;
+        yy = 44;
     }
 
     UIImageView * imgLogo = [[UIImageView alloc] init];
@@ -80,11 +80,11 @@
     imgLogo.userInteractionEnabled = YES;
     [self.view addSubview:imgLogo];
     
-    UIView * viewHeader = [[UIView alloc] initWithFrame:CGRectMake(0, 0, DEVICE_WIDTH, yy + globalStatusHeight)];
+    UIView * viewHeader = [[UIView alloc] initWithFrame:CGRectMake(0, 0, DEVICE_WIDTH, yy + 44)];
     [viewHeader setBackgroundColor:[UIColor blackColor]];
     [self.view addSubview:viewHeader];
     
-    UILabel * lblTitle = [[UILabel alloc] initWithFrame:CGRectMake(50, globalStatusHeight, DEVICE_WIDTH-100, yy)];
+    UILabel * lblTitle = [[UILabel alloc] initWithFrame:CGRectMake(50, globalStatusHeight, DEVICE_WIDTH-100, 44)];
     [lblTitle setBackgroundColor:[UIColor clearColor]];
     [lblTitle setText:@"Server Configuration"];
     [lblTitle setTextAlignment:NSTextAlignmentCenter];
@@ -93,7 +93,7 @@
     [viewHeader addSubview:lblTitle];
     
      UIButton * btnBack = [UIButton buttonWithType:UIButtonTypeCustom];
-     [btnBack setFrame:CGRectMake(10, 20, 60, yy)];
+     [btnBack setFrame:CGRectMake(10, 20, 60, 44)];
      [btnBack addTarget:self action:@selector(btnBackClick) forControlEvents:UIControlEventTouchUpInside];
      [btnBack setImage:[UIImage imageNamed:@"back_icon.png"] forState:UIControlStateNormal];
      btnBack.backgroundColor = UIColor.clearColor;
@@ -102,7 +102,7 @@
     
     
     UIButton * btnSaveCh = [UIButton buttonWithType:UIButtonTypeCustom];
-    [btnSaveCh setFrame:CGRectMake((DEVICE_WIDTH-70), 15, 60, 44)];
+    [btnSaveCh setFrame:CGRectMake((DEVICE_WIDTH-70), 20, 60, 44)];
 //    [btnSaveCh setBackgroundImage:[UIImage imageNamed:@"BTN.png"] forState:UIControlStateNormal];
     [btnSaveCh setTitle:@"Save" forState:UIControlStateNormal];
     [btnSaveCh setTitleColor:UIColor.whiteColor forState:UIControlStateNormal];
@@ -114,9 +114,9 @@
     
     if (IS_IPHONE_X)
     {
-        ya = viewHeader.frame.size.height+10;
-        [btnSaveCh setFrame:CGRectMake((DEVICE_WIDTH-70), 55, 60, 45)];
-        [btnBack setFrame:CGRectMake(10, 55, 60, 45)];
+        ya = viewHeader.frame.size.height+5;
+        [btnSaveCh setFrame:CGRectMake((DEVICE_WIDTH-70), 44, 60, 45)];
+        [btnBack setFrame:CGRectMake(10, 44, 60, 45)];
         
     }
     
@@ -380,7 +380,7 @@
         {
             NSString * strMsg = [strAPNAddress substringWithRange:NSMakeRange(i * 11, 11)];
             [arrayPackets addObject:strMsg];
-            NSLog(@"Greater Than PocketLength 11======%@",strMsg);
+//            NSLog(@"Greater Than PocketLength 11======%@",strMsg);
         }
         else
         {
@@ -388,7 +388,7 @@
             {
                 NSString * strMsg = [strAPNAddress substringWithRange:NSMakeRange(i * 11, totallength - (i * 11))];
                 [arrayPackets addObject:strMsg];
-                NSLog(@"Msg legth satisfied  11======%@",strMsg);
+//                NSLog(@"Msg legth satisfied  11======%@",strMsg);
             }
         }
     }
@@ -429,7 +429,6 @@
     
     [[BLEService sharedInstance] WriteNSDataforEncryptionAndthenSendtoPeripheral:completeData withPeripheral:classPeripheral];
 }
-
 -(void)WriteStartPackettoDevicewithtotalPackets:(NSInteger)TotalPackets
 {
     NSInteger intCmd = [@"196" integerValue];
@@ -537,7 +536,7 @@
         [APP_DELEGATE endHudProcess];
         if ([strResponse isEqualToString:@"0101"])
         {
-            [self showSuccesMessage:@"Server Specific configuration applied successfully. Device will restart after 3 minutes. Please connect after some time. "];
+            [self showSuccesMessage:@"Server Configuration applied successfully. Now SC2 Device will restart and auto connect if Re-connect is enabled. Otherwise please connect again."];
         }
         else
         {
@@ -605,7 +604,6 @@
 
         }
     });
-
 }
 -(NSString *)checkforValidString:(NSString *)strRequest
 {

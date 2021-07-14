@@ -62,7 +62,7 @@
     arrGlobalGeofenceList = [[NSMutableArray alloc]init];
     arrGlobalGeofenceList = arrGeofence;
     
-    NSLog(@"<----==Geofence Arr--==%@",arrGeofence);
+//    NSLog(@"<----==Geofence Arr--==%@",arrGeofence);
     globalDict = [[NSMutableDictionary alloc] init];
     arrActons = [[NSMutableArray alloc] init];
     arrPolygon = [[NSMutableArray alloc] init];
@@ -222,7 +222,7 @@
         {
             NSString * strIMEI = [self isStringValid:[result valueForKey:@"IMEI"]];
             NSString * strDeviceToken = [self isStringValid:[result valueForKey:@"result"]];
-            NSLog(@"Device Token====>>>>>%@",strDeviceToken);
+//            NSLog(@"Device Token====>>>>>%@",strDeviceToken);
             
             NSString * strQuery =    [NSString stringWithFormat:@"insert into 'tbl_Device_IMEI'('bleAddress','IMEI','devicetoken') values(\"%@\",\"%@\",\"%@\")",[self isStringValid:strSelectedBLEAddress],strIMEI,strDeviceToken];
              [[DataBaseManager dataBaseManager] executeSw:strQuery];
@@ -237,7 +237,7 @@
     }
     else
     {
-        NSLog(@"show error popup");
+//        NSLog(@"show error popup");
         [self ErrorPopUP:@"Your not authorized to this device."];
         [[BLEManager sharedManager] disconnectDevice:globalPeripheral];
     }
@@ -245,7 +245,7 @@
 - (void)onError:(NSError *)error
 {
     [APP_DELEGATE endHudProcess];
-    NSLog(@"The error is...%@", error);
+//    NSLog(@"The error is...%@", error);
 }
 #pragma mark- UITableView Header Methods
 - (UIView *)tableView:(UITableView *)tableView viewForHeaderInSection:(NSInteger)section;   // custom view for header. will be adjusted to default or specified header height
@@ -426,7 +426,7 @@
 //    }
     
     
-    NSLog(@"%ld", (long)[sender tag]);
+//    NSLog(@"%ld", (long)[sender tag]);
     NSMutableArray * arrayDevices = [[NSMutableArray alloc] init];
     arrayDevices =[[BLEManager sharedManager] foundDevices];
 
@@ -436,8 +436,9 @@
         if (p.state == CBPeripheralStateConnected)
         {
             [APP_DELEGATE startHudProcess:@"Disconnecting..."];
-            [[BLEManager sharedManager] disconnectDevice:p];
             
+            [[BLEManager sharedManager] SetPeripheralIdentifierforManualDisconnection:[NSString stringWithFormat:@"%@",p.identifier]];
+            [[BLEManager sharedManager] disconnectDevice:p];            
         }
         else
         {
@@ -488,6 +489,7 @@
         
         globalSettings = [[SettingVC alloc] init];
         globalSettings.classPeripheral = p;
+        globalSettings.strIdentifier = [NSString stringWithFormat:@"%@",p.identifier];
         [self.navigationController pushViewController:globalSettings animated:true];
     }
 }
@@ -635,12 +637,12 @@
        customField.tag = 123;
        customField.placeholder = @"Enter Name";
        [alert addTextFieldWithCustomTextField:customField andPlaceholder:nil andTextReturnBlock:^(NSString *text) {
-           NSLog(@"Custom TextField Returns: %@", text); // Do what you'd like with the text returned from the field
+//           NSLog(@"Custom TextField Returns: %@", text); // Do what you'd like with the text returned from the field
        }];
     
     [alert addButton:@"Cancel" withActionBlock:^
     {
-        NSLog(@"Cancel click");
+//        NSLog(@"Cancel click");
         [self setDefaultDeviceName:[NSString stringWithFormat:@"SC2 Device %lu",arrGlobalDeviceNames.count+1]];
     }];
        [alert showAlertInView:self
@@ -652,7 +654,7 @@
 }
 - (void)FCAlertDoneButtonClicked:(FCAlertView *)alertView
 {
-    NSLog(@"Done Button Clicked");
+//    NSLog(@"Done Button Clicked");
     
     if (alertView.tag == 123)
     {
@@ -1039,7 +1041,7 @@ dispatch_async(dispatch_get_main_queue(), ^(void)
         [completeData appendData:lengthData];
         [completeData appendData:packetNoData];
         [completeData appendData:msgData];
-        NSLog(@"Tokent Sent Data=====%@",completeData);
+//        NSLog(@"Tokent Sent Data=====%@",completeData);
             
         [[BLEService sharedInstance] WriteNSDataforEncryptionAndthenSendtoPeripheral:completeData withPeripheral:globalPeripheral];
     }
@@ -1071,7 +1073,7 @@ dispatch_async(dispatch_get_main_queue(), ^(void)
     {
         [arrTempListGeofence addObject:[arrGeoTimeStamp objectAtIndex:i]];
     }
-    NSLog(@"All Geofence ID & Time Stamp =%@",arrTempListGeofence);
+//    NSLog(@"All Geofence ID & Time Stamp =%@",arrTempListGeofence);
 }
 
 #pragma mark : Token Verified, Got list of Geofence and now Syncing Geofence
@@ -1131,7 +1133,7 @@ dispatch_async(dispatch_get_main_queue(), ^(void)
         dispatch_async(dispatch_get_main_queue(), ^(void){
         [APP_DELEGATE endHudProcess];
         });
-        NSLog(@"==========>[[BLEService sharedInstance] SendAcknowledgementofDataSyncFinished]");
+//        NSLog(@"==========>[[BLEService sharedInstance] SendAcknowledgementofDataSyncFinished]");
             [[BLEService sharedInstance] SendAcknowledgementofDataSyncFinished];
     }
 }
@@ -1153,7 +1155,7 @@ dispatch_async(dispatch_get_main_queue(), ^(void)
 
 -(void)ReceivedFirstPacketofGeofence:(NSString *)strID withSize:(NSString *)strSize withType:(NSString *)strType  withRadius:(NSString *)strRadius withTime:(NSString *)strTimeStamp
 {
-    NSLog(@"=First Packet ID====>%@, SIZE ==%@, TYPE==%@, RADIUS ==%@",strID, strSize, strType, strRadius);
+//    NSLog(@"=First Packet ID====>%@, SIZE ==%@, TYPE==%@, RADIUS ==%@",strID, strSize, strType, strRadius);
     [globalDict setValue:strID forKey:@"geofence_ID"];
     [globalDict setValue:strSize forKey:@"GeofenceSize"];
     [globalDict setValue:strType forKey:@"type"];
@@ -1162,14 +1164,14 @@ dispatch_async(dispatch_get_main_queue(), ^(void)
 }
 -(void)ReceivedSecondPacketLatLong:(NSString *)latitude withLongitude:(NSString *)longitude
 {
-    NSLog(@"=Second Packet Lat====>%@ Long==%@",latitude, longitude);
+//    NSLog(@"=Second Packet Lat====>%@ Long==%@",latitude, longitude);
   
     [globalDict setValue:latitude forKey:@"lat"];
     [globalDict setValue:longitude forKey:@"long"];
 }
 -(void)ReceivedThirdPacketofGeofenceData:(NSString *)strLength withGSMTime:(NSString *)strGsmTime withIrridiumTime:(NSString *)strIrridmTime withRuleId:(NSString *)strRuleId
 {
-    NSLog(@"=Third packet No.of Rules=>%@",strRuleId);
+//    NSLog(@"=Third packet No.of Rules=>%@",strRuleId);
     [globalDict setValue:strLength forKey:@"PacketLength"];
     [globalDict setValue:strRuleId forKey:@"number_of_rules"];
     [globalDict setValue:strGsmTime forKey:@"gsm_time"];
@@ -1177,7 +1179,7 @@ dispatch_async(dispatch_get_main_queue(), ^(void)
 }
 -(void)ReceivedFourthPacketofGeofenceData:(NSString *)strruleID withValue:(NSString *)strValue withNoOfAction:(NSString *)strNoAction
 {
-    NSLog(@"=Fourth Packet Rule ID=>%@  RuleValue==%@  No.of Action-==%@",strruleID, strValue, strNoAction);
+//    NSLog(@"=Fourth Packet Rule ID=>%@  RuleValue==%@  No.of Action-==%@",strruleID, strValue, strNoAction);
     
     NSMutableDictionary * dict = [[NSMutableDictionary alloc] init];
     [dict setValue:strruleID forKey:@"rule_ID"];
@@ -1195,7 +1197,7 @@ dispatch_async(dispatch_get_main_queue(), ^(void)
 }
 -(void)ReceivedFifthPacketofGeofenceData //
 {
-    NSLog(@"=Sixth Packet =>");
+//    NSLog(@"=Sixth Packet =>");
     [self InsertToDataBase];
 }
 #pragma mark : After Receiving fifth Packet Insert Geofence Data to Database
@@ -1227,7 +1229,7 @@ dispatch_async(dispatch_get_main_queue(), ^(void)
             strLong = @"0";
         }
         
-        NSLog(@"=======================>Geofence Data===%@",globalDict);
+//        NSLog(@"=======================>Geofence Data===%@",globalDict);
         if (recordExist)
         {
             NSString *  strUpdateQury =  [NSString stringWithFormat:@"update Geofence set name = \"%@\", geofence_ID = \"%@\", type = \"%@\", lat = \"%@\", long = \"%@\", number_of_rules = \"%@\", is_active = \"%@\", radiusOrvertices = \"%@\", gsm_time = '%@', irridium_time = '%@', time_stamp = '%@' where id =\"%@\"",strName,strGeoFncID,strGeoFncType,strLat,strLong,strNoRules,strIsActive,strRadiusVertices,strGSMtime,strIrridiumTime,strTimeStamp,[globalDict valueForKey:@"geofence_ID"]];
@@ -1254,7 +1256,7 @@ dispatch_async(dispatch_get_main_queue(), ^(void)
             [[DataBaseManager dataBaseManager] execute:strGeofenceQuery];
             [arrGlobalGeofenceList addObject:globalDict];
         }
-        NSLog(@"=======================>RUles Data===%@",arrRules);
+//        NSLog(@"=======================>RUles Data===%@",arrRules);
 
         NSString * strDeleteRules = [NSString stringWithFormat:@"delete from Rules_Table where geofence_ID = '%@'",strGeoFncID];
         [[DataBaseManager dataBaseManager] executeSw:strDeleteRules];
@@ -1382,7 +1384,7 @@ dispatch_async(dispatch_get_main_queue(), ^(void)
     NSString * strGeoLog = @"NA";
     NSString * strGeoRadius = @"NA";
 
-    NSLog(@"-----------------> here we got the Popup delayed by 3 send--------->%@",[theTimer userInfo]);
+//    NSLog(@"-----------------> here we got the Popup delayed by 3 send--------->%@",[theTimer userInfo]);
 
     bool isGotData = NO;
     if ([[arrGlobalGeofenceList valueForKey:@"geofence_ID"] containsObject:strGeoID])
@@ -1535,7 +1537,7 @@ dispatch_async(dispatch_get_main_queue(), ^(void)
         UIApplication * app=[UIApplication sharedApplication];
         if (app.applicationState == UIApplicationStateBackground)
         {
-            NSLog(@"We are in the background Disconnect");
+//            NSLog(@"We are in the background Disconnect");
             UIUserNotificationSettings *notifySettings=[[UIApplication sharedApplication] currentUserNotificationSettings];
             if ((notifySettings.types & UIUserNotificationTypeAlert)!=0)
             {
@@ -1565,7 +1567,7 @@ dispatch_async(dispatch_get_main_queue(), ^(void)
 
            [geofenceAlertPopup addButton:@"Seen in Map" withActionBlock:^
            { // see in map action here
-               NSLog(@"This alert's Data =%@",detailDict);
+//               NSLog(@"This alert's Data =%@",detailDict);
                
                globalBadgeCount = globalBadgeCount - 1;
                [UIApplication sharedApplication].applicationIconBadgeNumber = globalBadgeCount;
@@ -1599,6 +1601,10 @@ dispatch_async(dispatch_get_main_queue(), ^(void)
     notificationDict = [[NSMutableDictionary alloc] init];
     notificationDict = [dataDict mutableCopy];
     
+    if (IS_IPHONE_X)
+    {
+        
+    }
     strMsg = [strMsg stringByReplacingOccurrencesOfString:@"\n" withString:@" "];
     
     [viewForNotification removeFromSuperview];
@@ -1623,9 +1629,11 @@ dispatch_async(dispatch_get_main_queue(), ^(void)
 
     if (IS_IPHONE_X)
     {
-        lblAlertMsg.frame = CGRectMake(8, 44, DEVICE_WIDTH - 16, 22);
-        viewForNotification.frame = CGRectMake(0, -140 - 44, DEVICE_WIDTH, 140);
+        lblAlertMsg.frame = CGRectMake(8, 44, DEVICE_WIDTH - 16, 40);
+        lblAlertMsg.font = [UIFont fontWithName:CGRegular size:textSize-1];
+        viewForNotification.frame = CGRectMake(0, -180 - 44, DEVICE_WIDTH, 180);
     }
+    
     
     CGFloat btnWidth = (viewForNotification.frame.size.width / 2 ) - 10;
     UIButton * btnSeenInMap = [[UIButton alloc] initWithFrame:CGRectMake(5, viewForNotification.frame.size.height-50, btnWidth, 44)];
@@ -1655,10 +1663,16 @@ dispatch_async(dispatch_get_main_queue(), ^(void)
     [timerForNotification invalidate];
     timerForNotification = nil;
     timerForNotification = [NSTimer scheduledTimerWithTimeInterval:3 target:self selector:@selector(TimeoutforHideNotification) userInfo:nil repeats:NO];
+
     
     [UIView transitionWithView:self.view duration:0.3 options:UIViewAnimationOptionCurveEaseOut animations:^
        {
         viewForNotification.frame = CGRectMake(0, 0, DEVICE_WIDTH-0, 140);
+        
+        if (IS_IPHONE_X)
+        {
+            viewForNotification.frame = CGRectMake(0, 0, DEVICE_WIDTH-0, 180);
+        }
        }
        completion:(^(BOOL finished)
        {
@@ -1819,7 +1833,7 @@ dispatch_async(dispatch_get_main_queue(), ^(void)
 }
 -(void)ShowToastNotification:(NSString *)StrToast
 {
-    NSLog(@"====ShowToastNotification===%@",self.view);
+//    NSLog(@"====ShowToastNotification===%@",self.view);
 
     MBProgressHUD *hud = [MBProgressHUD showHUDAddedTo:self.view animated:YES];
     // Configure for text only and offset down
@@ -1840,7 +1854,7 @@ dispatch_async(dispatch_get_main_queue(), ^(void)
         {
             NSString * strMsg = [strDeviceToken substringWithRange:NSMakeRange(i * 13, 13)];
             [arrayPackets addObject:strMsg];
-            NSLog(@"Greater Than PocketLength 13======%@",strMsg);
+//            NSLog(@"Greater Than PocketLength 13======%@",strMsg);
         }
         else
         {
@@ -1848,7 +1862,7 @@ dispatch_async(dispatch_get_main_queue(), ^(void)
             {
                 NSString * strMsg = [strDeviceToken substringWithRange:NSMakeRange(i * 13, totallength - (i * 13))];
                 [arrayPackets addObject:strMsg];
-                NSLog(@"Msg legth satisfied  13======%@",strMsg);
+//                NSLog(@"Msg legth satisfied  13======%@",strMsg);
             }
         }
     }
@@ -1870,7 +1884,7 @@ dispatch_async(dispatch_get_main_queue(), ^(void)
         {
             totalPackets = [[tmpArr objectAtIndex:0] integerValue] + 1;
         }
-        NSLog(@"its integer=%ld",(long)afterPoint);
+//        NSLog(@"its integer=%ld",(long)afterPoint);
     }
     return totalPackets;
 }
@@ -1897,6 +1911,11 @@ dispatch_async(dispatch_get_main_queue(), ^(void)
     [UIView transitionWithView:self.view duration:0.3 options:UIViewAnimationOptionCurveEaseOut animations:^
        {
         viewForNotification.frame = CGRectMake(0, -140, DEVICE_WIDTH-0, 140);
+        
+        if (IS_IPHONE_X)
+        {
+            viewForNotification.frame = CGRectMake(0, -180, DEVICE_WIDTH-0, 180);
+        }
        }
        completion:(^(BOOL finished)
        {
@@ -1935,7 +1954,7 @@ dispatch_async(dispatch_get_main_queue(), ^(void)
         [completeData appendData:dataOpcode];
         
         [[BLEService sharedInstance] WriteNSDataforEncryptionAndthenSendtoPeripheral:completeData withPeripheral:classPeripheral];
-        NSLog(@"100==Packets =====>>>>%@",completeData);
+//        NSLog(@"100==Packets =====>>>>%@",completeData);
     }
 }
 -(void)ReceviedBattryPercentageFromDevice:(NSString *)strBattery withDictPeriferal:(NSMutableDictionary *) dictPeriPheral

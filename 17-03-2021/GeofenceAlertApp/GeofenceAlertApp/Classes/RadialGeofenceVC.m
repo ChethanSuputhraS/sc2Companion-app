@@ -413,6 +413,6 @@
     CLLocation *locA = [[CLLocation alloc] initWithLatitude:lat1 longitude:lon1];
     CLLocation *locB = [[CLLocation alloc] initWithLatitude:lat2 longitude:lon2];
     CLLocationDistance distance = [locA distanceFromLocation:locB];
-    NSLog(@"KILOMETER1=%f",(distance/1000) * R);
+//    NSLog(@"KILOMETER1=%f",(distance/1000) * R);
 }
 @end

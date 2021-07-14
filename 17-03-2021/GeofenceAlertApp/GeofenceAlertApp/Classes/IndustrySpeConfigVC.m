@@ -60,11 +60,11 @@
 #pragma mark - Set Frames
 -(void)setNavigationViewFrames
 {
-    int yy = 44;
+    int yy = 20;
     
       if (IS_IPHONE_X)
       {
-          yy = 64;
+          yy = 44;
       }
 //    self.view.backgroundColor = UIColor.whiteColor;
 
@@ -74,7 +74,7 @@
     imgLogo.userInteractionEnabled = YES;
     [self.view addSubview:imgLogo];
     
-    UIView * viewHeader = [[UIView alloc] initWithFrame:CGRectMake(0, 0, DEVICE_WIDTH,  yy+ globalStatusHeight)];
+    UIView * viewHeader = [[UIView alloc] initWithFrame:CGRectMake(0, 0, DEVICE_WIDTH, yy + 44)];
     [viewHeader setBackgroundColor:[UIColor blackColor]];
     [self.view addSubview:viewHeader];
     
@@ -86,16 +86,16 @@
     [lblTitle setTextColor:[UIColor whiteColor]];
     [viewHeader addSubview:lblTitle];
     
-     UIButton * btnBack = [UIButton buttonWithType:UIButtonTypeCustom];
-     [btnBack setFrame:CGRectMake(0, 20, 60, yy)];
-     [btnBack addTarget:self action:@selector(btnBackClick) forControlEvents:UIControlEventTouchUpInside];
-     [btnBack setImage:[UIImage imageNamed:@"back_icon.png"] forState:UIControlStateNormal];
-     btnBack.backgroundColor = UIColor.clearColor;
-     btnBack.contentHorizontalAlignment = UIControlContentHorizontalAlignmentLeft;
-     [viewHeader addSubview:btnBack];
+    UIButton * btnBack = [UIButton buttonWithType:UIButtonTypeCustom];
+    [btnBack setFrame:CGRectMake(10, 20, 60, 44)];
+    [btnBack addTarget:self action:@selector(btnBackClick) forControlEvents:UIControlEventTouchUpInside];
+    [btnBack setImage:[UIImage imageNamed:@"back_icon.png"] forState:UIControlStateNormal];
+    btnBack.backgroundColor = UIColor.clearColor;
+    btnBack.contentHorizontalAlignment = UIControlContentHorizontalAlignmentLeft;
+    [viewHeader addSubview:btnBack];
     
     UIButton * btnSaveCh = [UIButton buttonWithType:UIButtonTypeCustom];
-    [btnSaveCh setFrame:CGRectMake((DEVICE_WIDTH-70), 15, 60, 44)];
+    [btnSaveCh setFrame:CGRectMake((DEVICE_WIDTH-70), 20, 60, 44)];
 //    [btnSaveCh setBackgroundImage:[UIImage imageNamed:@"BTN.png"] forState:UIControlStateNormal];
     [btnSaveCh setTitle:@"Save" forState:UIControlStateNormal];
     [btnSaveCh setTitleColor:UIColor.whiteColor forState:UIControlStateNormal];
@@ -108,9 +108,10 @@
     int yt = 70;
     int ySwitch = 0;
     arrRadioBtns = [[NSMutableArray alloc] init];
+    
     if (IS_IPHONE_X)
     {
-        yt = 120;
+        yt = viewHeader.frame.size.height+5;
         [btnSaveCh setFrame:CGRectMake((DEVICE_WIDTH-70), 44, 60, 44)];
         [btnBack setFrame:CGRectMake(10, 44, 60, 44)];
     }
@@ -131,10 +132,6 @@
         lblMenu.textColor= UIColor.whiteColor;
         lblMenu.font = [UIFont fontWithName:CGRegular size:textSize-1];
         [switchView addSubview:lblMenu];
-            
-        
-        
- 
         
         RadioButtonClass * globalRadioButtonClass = [[RadioButtonClass alloc] init];
         globalRadioButtonClass.viewTag = 500 + i;
@@ -427,7 +424,9 @@
         [APP_DELEGATE endHudProcess];
     if ([strResponse isEqualToString:@"0101"])
     {
-        [self showSuccesMessage:@"Industry Specific configuration applied successfully. Device will restart after 3 minutes. Please connect after some time."];
+        
+        [self showSuccesMessage:@"Industry Specific Configuration applied successfully. Now SC2 Device will restart and auto connect if Re-connect is enabled. Otherwise please connect again."];
+    
     }
     else
     {

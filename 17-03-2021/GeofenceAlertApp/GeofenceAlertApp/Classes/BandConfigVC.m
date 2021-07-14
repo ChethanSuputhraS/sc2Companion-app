@@ -34,23 +34,23 @@
 #pragma mark - Set Frames
 -(void)setNavigationViewFrames
 {
-    int yy = 44;
+    int yy = 20;
       if (IS_IPHONE_X)
       {
           yy = 44;
       }
 
-        UIImageView * imgLogo = [[UIImageView alloc] init];
-        imgLogo.frame = CGRectMake(0, 0, DEVICE_WIDTH, DEVICE_HEIGHT);
-        imgLogo.image = [UIImage imageNamed:@"Splash_bg.png"];
-        imgLogo.userInteractionEnabled = YES;
-        [self.view addSubview:imgLogo];
+    UIImageView * imgLogo = [[UIImageView alloc] init];
+    imgLogo.frame = CGRectMake(0, 0, DEVICE_WIDTH, DEVICE_HEIGHT);
+    imgLogo.image = [UIImage imageNamed:@"Splash_bg.png"];
+    imgLogo.userInteractionEnabled = YES;
+    [self.view addSubview:imgLogo];
     
-    UIView * viewHeader = [[UIView alloc] initWithFrame:CGRectMake(0, 0, DEVICE_WIDTH, yy + globalStatusHeight)];
+    UIView * viewHeader = [[UIView alloc] initWithFrame:CGRectMake(0, 0, DEVICE_WIDTH, yy + 44)];
     [viewHeader setBackgroundColor:[UIColor blackColor]];
     [self.view addSubview:viewHeader];
     
-    UILabel * lblTitle = [[UILabel alloc] initWithFrame:CGRectMake(50, globalStatusHeight, DEVICE_WIDTH-100, yy)];
+    UILabel * lblTitle = [[UILabel alloc] initWithFrame:CGRectMake(50, globalStatusHeight, DEVICE_WIDTH-100, 44)];
     [lblTitle setBackgroundColor:[UIColor clearColor]];
     [lblTitle setText:@"Band Configuration"];
     [lblTitle setTextAlignment:NSTextAlignmentCenter];
@@ -59,7 +59,7 @@
     [viewHeader addSubview:lblTitle];
     
      UIButton * btnBack = [UIButton buttonWithType:UIButtonTypeCustom];
-     [btnBack setFrame:CGRectMake(0, 20, 60, yy)];
+     [btnBack setFrame:CGRectMake(10, 20, 60, 44)];
      [btnBack addTarget:self action:@selector(btnBackClick) forControlEvents:UIControlEventTouchUpInside];
      [btnBack setImage:[UIImage imageNamed:@"back_icon.png"] forState:UIControlStateNormal];
      btnBack.backgroundColor = UIColor.clearColor;
@@ -67,7 +67,7 @@
      [viewHeader addSubview:btnBack];
     
     UIButton * btnSaveCh = [UIButton buttonWithType:UIButtonTypeCustom];
-    [btnSaveCh setFrame:CGRectMake((DEVICE_WIDTH-70), 15, 60, 44)];
+    [btnSaveCh setFrame:CGRectMake((DEVICE_WIDTH-70), 20, 60, 44)];
 //    [btnSaveCh setBackgroundImage:[UIImage imageNamed:@"BTN.png"] forState:UIControlStateNormal];
     [btnSaveCh setTitle:@"Save" forState:UIControlStateNormal];
     [btnSaveCh setTitleColor:UIColor.whiteColor forState:UIControlStateNormal];
@@ -140,6 +140,17 @@
             [arrayBand addObject:dictBAndData];
         }
     }
+    
+    if (IS_IPHONE_X)
+    {
+        int yt = viewHeader.frame.size.height+5;
+        [btnBack setFrame:CGRectMake(10, 44, 60, 44)];
+        [btnSaveCh setFrame:CGRectMake((DEVICE_WIDTH-70), 44, 60, 44)];
+        _collectionView.frame = CGRectMake(5, yt, DEVICE_WIDTH-10, DEVICE_HEIGHT-yt);
+
+
+    }
+    
     [self.view addSubview:_collectionView];
 }
 -(void)btnBackClick
@@ -331,7 +342,7 @@
     [[NSScanner scannerWithString:hex] scanHexInt:&hexAsInt];
     NSString *binary = [NSString stringWithFormat:@"%@", [self toBinary:hexAsInt]];
     
-    NSLog(@"===========Binary==========%@",binary);
+//    NSLog(@"===========Binary==========%@",binary);
     return binary;
 }
 -(NSString *)toBinary:(NSUInteger)input

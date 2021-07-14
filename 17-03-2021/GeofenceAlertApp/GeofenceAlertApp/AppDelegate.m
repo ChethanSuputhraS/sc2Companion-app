@@ -42,7 +42,7 @@
     NSData * sequencData = [[NSData alloc] initWithBytes:&sequenceInt length:4];
 
     NSData* nsData = [@"$%^&!@*#$$%%()?<:{}{|+`~}" dataUsingEncoding:NSUTF8StringEncoding];
-    NSLog(@"=================================%@",sequencData);
+//    NSLog(@"=================================%@",sequencData);
 
     [FIRApp configure];// dont forget //IMP_UNCOMMENT
     if ([UIApplication instancesRespondToSelector:@selector(registerUserNotificationSettings:)])
@@ -103,8 +103,8 @@
     
     deviceTokenStr = @"1234567";
     
-//    globalChatVC  = [[ChatVC alloc]init];
-//    UINavigationController *navig = [[UINavigationController alloc]initWithRootViewController:globalChatVC];
+//    globalSettings  = [[SettingVC alloc]init];
+//    UINavigationController *navig = [[UINavigationController alloc]initWithRootViewController:globalSettings];
 //    self.window = [[UIWindow alloc]init];
 //    navig.navigationBarHidden = YES;
 //    self.window.frame = self.window.bounds;
@@ -701,7 +701,7 @@
     long hexAsInt;
     [[NSScanner scannerWithString:hex] scanHexInt:&hexAsInt];
     NSString *binary = [NSString stringWithFormat:@"%@", [self toBinary:hexAsInt]];
-    NSLog(@"===========Binary==========%@",binary);
+//    NSLog(@"===========Binary==========%@",binary);
 
 }
 -(NSString *)toBinary:(NSUInteger)input

@@ -23,6 +23,7 @@ static BLEManager    *sharedManager    = nil;
     BLEService * blutoothService;
     BOOL isVitDeviceFound;
     NSTimer * checkDeviceTimer;
+    NSMutableDictionary * manualDisconnectDict;
 }
 @end
 
@@ -35,6 +36,7 @@ static BLEManager    *sharedManager    = nil;
     if(self = [super init])
     {
         [self initialize];
+        
     }
     return self;
 }
@@ -52,6 +54,7 @@ static BLEManager    *sharedManager    = nil;
     if(!nonConnectArr)nonConnectArr = [[NSMutableArray alloc] init];
     if(!connectedServices)connectedServices = [[NSMutableArray alloc] init];
     if(!disconnectedPeripherals)disconnectedPeripherals = [NSMutableArray new];
+    if(!manualDisconnectDict)manualDisconnectDict = [[NSMutableDictionary alloc] init];
 //    [checkDeviceTimer invalidate];
 //    checkDeviceTimer = [NSTimer scheduledTimerWithTimeInterval:1 target:self selector:@selector(checkDeviceWithmas) userInfo:nil repeats:YES];
 }
@@ -394,7 +397,31 @@ static BLEManager    *sharedManager    = nil;
             }
         }
     });
-        if (isReconnect == true)
+    
+    if ([[self checkforValidString:[manualDisconnectDict valueForKey:[NSString stringWithFormat:@"%@",peripheral.identifier]]] isEqualToString:@"1"])
+    {
+        [manualDisconnectDict setValue:@"0" forKey:[NSString stringWithFormat:@"%@",peripheral.identifier]];
+    }
+    else
+    {
+//        [NSString stringWithFormat:@"BLEAuto_%@",strIdentifier]
+        NSString * strIdentifier = [NSString stringWithFormat:@"%@",peripheral.identifier];
+        BOOL isThisDeviceAutoConnect = NO;
+        NSString * strValue = [[NSUserDefaults standardUserDefaults] valueForKey:[NSString stringWithFormat:@"BLEAuto_%@",strIdentifier]];
+
+        if ([[self checkforValidString:strValue] isEqualToString:@"NA"])
+        {
+            isThisDeviceAutoConnect = NO;
+        }
+        else
+        {
+            if ([strValue isEqualToString:@"1"])
+            {
+                isThisDeviceAutoConnect = YES;
+            }
+        }
+
+        if (isThisDeviceAutoConnect == true)
         {
             if ([[arrGlobalDevices valueForKey:@"peripheral"] containsObject:peripheral])
             {
@@ -402,6 +429,8 @@ static BLEManager    *sharedManager    = nil;
                 [self.centralManager connectPeripheral:peripheral options:nil];
             }
         }
+
+    }
 }
 -(void) peripheral:(CBPeripheral *)peripheral didDiscoverServices:(NSError *)error
 {
@@ -494,6 +523,11 @@ static BLEManager    *sharedManager    = nil;
     strValid = [strValid stringByReplacingOccurrencesOfString:@"\"" withString:@""];
     
     return strValid;
+}
+
+-(void)SetPeripheralIdentifierforManualDisconnection:(NSString *)strIdentifier;
+{
+    [manualDisconnectDict setValue:@"1" forKey:strIdentifier];
 }
 @end
 //    kCBAdvDataManufacturerData = <0a00640b 00009059 22590161 00007f0c 09fb0069 00>;

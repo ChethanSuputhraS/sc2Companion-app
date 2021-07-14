@@ -78,7 +78,7 @@
                     break;
             }
     }
-    NSLog(@"-------------->Mode------->%@",strScreenMode);
+//    NSLog(@"-------------->Mode------->%@",strScreenMode);
     self.navigationController.navigationBarHidden = true;
     
     breachLat = globalLatitude;
@@ -105,7 +105,7 @@
     }
     else
     {
-        NSLog(@"BeoreBadge  Count =====>%ld",(long)globalBadgeCount);
+//        NSLog(@"BeoreBadge  Count =====>%ld",(long)globalBadgeCount);
        
 
         NSString * strTime = [APP_DELEGATE checkforValidString:[dictGeofenceInfo valueForKey:@"timeStamp"]];
@@ -247,8 +247,6 @@
         
     }
 }
-
-
 #pragma mark - MKMapViewDelegate
 //- (MKOverlayRenderer *)mapView:(MKMapView *)mapView rendererForOverlay:(id<MKOverlay>)overlay
 //{
@@ -290,8 +288,8 @@
 }
 - (MKAnnotationView *)mapView:(MKMapView *)theMapView viewForAnnotation:(id <MKAnnotation>)annotation
 {
-    NSLog(@"latitude==%f  longitu=%f",[annotation coordinate].latitude,[annotation coordinate].longitude);
-    NSLog(@"latitude1==%f  longitu1=%f",breachLat,breachLong);
+//    NSLog(@"latitude==%f  longitu=%f",[annotation coordinate].latitude,[annotation coordinate].longitude);
+//    NSLog(@"latitude1==%f  longitu1=%f",breachLat,breachLong);
 
     static NSString * const identifier = @"CustomAnnotation";
     if ([annotation coordinate].latitude != breachLat && [annotation coordinate].longitude != breachLong)
@@ -482,7 +480,7 @@
                 (testx < (vertJx-vertx) * (testy-verty) / (vertJy-verty) + vertx) )
                 c = !c;
         }
-    NSLog(@"THIS IS OUTCOME=%d",c);
+//    NSLog(@"THIS IS OUTCOME=%d",c);
 //        return c;
 }
 -(void)refreshBtnClick

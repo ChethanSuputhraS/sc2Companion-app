@@ -772,6 +772,8 @@
         {
             viewBack.frame = CGRectMake(0, DEVICE_HEIGHT-80, DEVICE_WIDTH, 60);
             txtViewChat.frame = CGRectMake(10, 10,viewWidth-60, 40);
+            [self.view endEditing:true];
+
         }
         
         [self.view endEditing:true];
@@ -889,7 +891,7 @@
             {
                 NSData * strMsg = [txtData subdataWithRange:NSMakeRange(i * 12, 12)] ;
                 [[BLEService sharedInstance] sendMessageDataPacketToDevice:strMsg paketNo: i + 1 withPeripheral:globalPeripheral];
-                NSLog(@"Greater Than PocketLength 12======%@",strMsg);
+//                NSLog(@"Greater Than PocketLength 12======%@",strMsg);
             }
             else
             {
@@ -897,7 +899,7 @@
                 {
                     NSData * strMsg = [txtData subdataWithRange:NSMakeRange(i * 12, totallength - (i * 12))];
                     [[BLEService sharedInstance] sendMessageDataPacketToDevice:strMsg paketNo: i + 1 withPeripheral:globalPeripheral];
-                    NSLog(@"Msg legth satisfied  12======%@",strMsg);
+//                    NSLog(@"Msg legth satisfied  12======%@",strMsg);
                 }
             }
         }

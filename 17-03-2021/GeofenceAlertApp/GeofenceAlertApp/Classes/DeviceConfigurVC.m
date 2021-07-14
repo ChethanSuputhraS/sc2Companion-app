@@ -34,7 +34,7 @@
     int yy = 44;
     if (IS_IPHONE_X)
     {
-        yy = 44;
+        yy = 64;
     }
     
     UIImageView * imgLogo = [[UIImageView alloc] init];
@@ -125,7 +125,7 @@
     [viewHeader addSubview:lblTitle];
     
     UIButton * btnBack = [UIButton buttonWithType:UIButtonTypeCustom];
-    [btnBack setFrame:CGRectMake(0, yy, 60, 44)];
+    [btnBack setFrame:CGRectMake(10, yy, 60, 44)];
     [btnBack addTarget:self action:@selector(btnBackClick) forControlEvents:UIControlEventTouchUpInside];
     [btnBack setImage:[UIImage imageNamed:@"back_icon.png"] forState:UIControlStateNormal];
     btnBack.backgroundColor = UIColor.clearColor;
@@ -209,7 +209,7 @@
     NSArray * arrHeadding = [NSArray arrayWithObjects:@"Cheapest mode",@"Ultra low power mode", @"USB download mode",@"Iridium always on",@"Iridium events on",@"Instant tamper",@"Waypoint on movement", nil];
     NSArray * arrDatabaseKye = [NSArray arrayWithObjects:@"chepest_mode",@"ultrapower_mode",@"usb_mode",@"iridium_on",@"iridium_events_on",@"instant_tamper", @"waypoint_on", nil];
 
-    yt = yt + 20;
+    yt = yt + 25;
     arrRadioBtns = [[NSMutableArray alloc] init];
     
     int ySwitch = 0;
@@ -361,7 +361,7 @@
             }
         }
     }
-    NSLog(@"Alertview Texfield Done===%@",alertView.strTextfieldText);
+//    NSLog(@"Alertview Texfield Done===%@",alertView.strTextfieldText);
 }
 -(NSString *)checkforValidString:(NSString *)strRequest
 {
@@ -482,7 +482,7 @@
              for (int i = 0; i< [arrayData count]; i++)       // 7 Textfields & 7 Radio Buttons
              {
                  UILabel * tmpLabel = [self.view viewWithTag:200 + i];
-                 NSLog(@"=========>>>>>%d      ==%@",[self isAllDigits:tmpLabel.text], tmpLabel.text);
+//                 NSLog(@"=========>>>>>%d      ==%@",[self isAllDigits:tmpLabel.text], tmpLabel.text);
                  NSString * strText = @"65535";// == ffff //
 
                  if ([self isAllDigits:tmpLabel.text] == YES)
@@ -545,7 +545,7 @@
                  [[DataBaseManager dataBaseManager] executeSw:strDeivceConfigQuery];
              }
 
-             NSLog(@"Data Saving Query=====%@",strDeivceConfigQuery);
+//             NSLog(@"Data Saving Query=====%@",strDeivceConfigQuery);
             [self WriteDeviceConfigurationtoDevice:@"1" withDataArray:arrFirstOpcode];
             [self performSelector:@selector(WriteSecondOpcodeAfterDelay:) withObject:arrSecondOpcode afterDelay:0];
         }
@@ -556,7 +556,7 @@
     }
     else
     {
-        NSLog(@"Value Has Not Changed.....");
+//        NSLog(@"Value Has Not Changed.....");
 
         [APP_DELEGATE endHudProcess];
         [self.navigationController popViewControllerAnimated:YES];
@@ -582,7 +582,7 @@
             [alert makeAlertTypeSuccess];
             [alert showAlertInView:self
                          withTitle:@"SC2 Companion App"
-                      withSubtitle:@"Device had been configured successfully. Device will restart after 3 minutes. Please connect after some time. "
+                      withSubtitle:@"Device had been configured successfully.Now SC2 Device will restart and auto connect if Re-connect is enabled. Otherwise please connect again."
                    withCustomImage:[UIImage imageNamed:@"logo.png"]
                withDoneButtonTitle:nil
                         andButtons:nil];
@@ -690,7 +690,7 @@
             }
         }
         
-        NSLog(@"Device configuration  arrayyy =====%@",self->arraySetDeviceConfigvalue);
+//        NSLog(@"Device configuration  arrayyy =====%@",self->arraySetDeviceConfigvalue);
         
         [self GetDeviceConfiguration:@"2"];
     }

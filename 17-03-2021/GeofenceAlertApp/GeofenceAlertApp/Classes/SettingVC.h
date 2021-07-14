@@ -22,6 +22,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 -(void)BuzzerTimeAcknowledgementfromDevice:(NSString *)strStatus;
 -(void)ReceviedSuccesResponseFromDevice:(NSString *)strResponse;
+@property(nonatomic, strong)NSString * strIdentifier;
 
 @end
 
